@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Pedidos Quillabamba"
+description = "Plataforma web de pedidos locales para Quillabamba con catálogo de restaurantes, carrito, checkout, seguimiento de pedidos y paneles operativos para restaurantes, repartidores y administración."
+version = "1.0.0"
+id = "artifacts/pedidos-quillabamba"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 24979
+
+[services.development]
+run = "pnpm --filter @workspace/pedidos-quillabamba run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/pedidos-quillabamba", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/pedidos-quillabamba/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "24979"
+BASE_PATH = "/"

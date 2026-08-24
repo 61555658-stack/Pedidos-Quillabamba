@@ -10,6 +10,14 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: restaurants
+    description: Restaurant discovery
+  - name: products
+    description: Menu products
+  - name: orders
+    description: Customer orders
+  - name: dashboard
+    description: Operational summaries
 paths:
   /healthz:
     get:
@@ -24,6 +32,125 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /restaurants:
+    get:
+      operationId: listRestaurants
+      tags: [restaurants]
+      summary: List restaurants
+      responses:
+        "200":
+          description: Restaurants
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Restaurant"
+  /restaurants/{restaurantId}/products:
+    get:
+      operationId: listRestaurantProducts
+      tags: [products]
+      summary: List restaurant products
+      parameters:
+        - name: restaurantId
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Products
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Product"
+  /orders:
+    get:
+      operationId: listOrders
+      tags: [orders]
+      summary: List recent orders
+      responses:
+        "200":
+          description: Orders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Order"
+    post:
+      operationId: createOrder
+      tags: [orders]
+      summary: Create an order
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrderInput"
+      responses:
+        "201":
+          description: Created order
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+  /orders/{orderId}:
+    get:
+      operationId: getOrder
+      tags: [orders]
+      summary: Get order detail
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Order
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+  /orders/{orderId}/status:
+    patch:
+      operationId: updateOrderStatus
+      tags: [orders]
+      summary: Update order status
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrderStatusInput"
+      responses:
+        "200":
+          description: Updated order
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+  /dashboard/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [dashboard]
+      summary: Get operational summary
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +160,93 @@ components:
           type: string
       required:
         - status
+    Restaurant:
+      type: object
+      required: [id, name, cuisine, rating, deliveryMinutes, deliveryFee, isOpen, image]
+      properties:
+        id: { type: number }
+        name: { type: string }
+        cuisine: { type: string }
+        rating: { type: number }
+        deliveryMinutes: { type: number }
+        deliveryFee: { type: number }
+        isOpen: { type: boolean }
+        image: { type: string }
+        featured: { type: boolean }
+    Product:
+      type: object
+      required: [id, restaurantId, name, description, price, category, image, popular]
+      properties:
+        id: { type: number }
+        restaurantId: { type: number }
+        name: { type: string }
+        description: { type: string }
+        price: { type: number }
+        category: { type: string }
+        image: { type: string }
+        popular: { type: boolean }
+    OrderItem:
+      type: object
+      required: [id, name, quantity, price]
+      properties:
+        id: { type: number }
+        name: { type: string }
+        quantity: { type: number }
+        price: { type: number }
+    Order:
+      type: object
+      required: [id, restaurantName, customerName, total, status, paymentMethod, createdAt, items]
+      properties:
+        id: { type: number }
+        restaurantName: { type: string }
+        customerName: { type: string }
+        total: { type: number }
+        status:
+          type: string
+          enum: [received, preparing, ready, on_the_way, delivered, cancelled]
+        paymentMethod:
+          type: string
+          enum: [cash, yape, card]
+        createdAt: { type: string }
+        deliveryAddress: { type: string }
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/OrderItem" }
+    OrderInput:
+      type: object
+      required: [restaurantName, customerName, total, paymentMethod, deliveryAddress, items]
+      properties:
+        restaurantName: { type: string }
+        customerName: { type: string }
+        total: { type: number }
+        paymentMethod:
+          type: string
+          enum: [cash, yape, card]
+        deliveryAddress: { type: string }
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/OrderItem" }
+    OrderStatusInput:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [received, preparing, ready, on_the_way, delivered, cancelled]
+    DashboardSummary:
+      type: object
+      required: [todaySales, activeOrders, restaurants, deliveryPartners, weeklySales]
+      properties:
+        todaySales: { type: number }
+        activeOrders: { type: number }
+        restaurants: { type: number }
+        deliveryPartners: { type: number }
+        weeklySales:
+          type: array
+          items:
+            type: object
+            required: [day, total]
+            properties:
+              day: { type: string }
+              total: { type: number }
 

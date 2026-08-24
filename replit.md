@@ -1,6 +1,6 @@
-# [Project name]
+# Pedidos Quillabamba
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+Plataforma local de delivery para descubrir restaurantes de Quillabamba, pedir comida y operar pedidos desde paneles por rol.
 
 ## Run & Operate
 

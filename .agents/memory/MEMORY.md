@@ -1,0 +1,1 @@
+- [OpenAPI numeric compatibility](zod-openapi-compatibility.md) — use number schemas until the generator and installed Zod runtime agree on integer output.
