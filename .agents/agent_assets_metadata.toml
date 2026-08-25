@@ -1,0 +1,16 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "IVikr0lw33VnYh59th6eL"
+uri = "file://.agents/outputs/pedidos-quillabamba-codigo.zip"
+type = "unspecified"
+title = "Código completo — Pedidos Quillabamba"
+description = "Archivo ZIP con el código fuente de la aplicación web, API, contrato OpenAPI, librerías compartidas y configuración del workspace. No incluye dependencias ni secretos."
+logical_id = "a013c537-95c1-4a49-8401-02a39a5a2138"
+content_hash = "sha256:8733627b9d74ef33d2793c9a137edf5fe59360a46ee1f1a14f40abf873f5de37"
+size = 922218
+mtime_ms = 1787673221568
+storage_uri = "gcs://replit-rams-assets-worf/rams/assets/repl:5bf7870e-c303-4bf7-b1d5-8b3ff45a024c/a013c537-95c1-4a49-8401-02a39a5a2138/98f99cde-ca7a-43ac-8be0-5fdf33686108"
+storage_version_token = "1787673227370666"
+content_type = "application/octet-stream"
