@@ -16,6 +16,8 @@ import {
 
 const router: IRouter = Router();
 
+// Catálogo inicial que permite probar el producto sin una base de datos vacía.
+// En una siguiente etapa estos registros pueden trasladarse a tablas PostgreSQL.
 const restaurants = [
   { id: 1, name: "Sabor Quillabamba", cuisine: "Criolla & amazónica", rating: 4.9, deliveryMinutes: 25, deliveryFee: 3.5, isOpen: true, image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=900&q=80", featured: true },
   { id: 2, name: "La Patarashca", cuisine: "Selva peruana", rating: 4.8, deliveryMinutes: 30, deliveryFee: 4, isOpen: true, image: "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=900&q=80", featured: true },
@@ -32,6 +34,7 @@ const products = [
   { id: 6, restaurantId: 3, name: "Cold brew de altura", description: "Café de especialidad de Quillabamba, extracción en frío.", price: 12, category: "Bebidas", image: "https://images.unsplash.com/photo-1461023058943-07fcbe16d735?auto=format&fit=crop&w=700&q=80", popular: true },
 ];
 
+// Modelo de respuesta que comparten las rutas de consulta y actualización.
 type Order = {
   id: number;
   restaurantName: string;
@@ -50,10 +53,12 @@ const orders: Order[] = [
   { id: 1046, restaurantName: "Café Tunkimayo", customerName: "Ana Lucía", total: 26.5, status: "delivered", paymentMethod: "card", createdAt: "2026-08-24T12:40:00.000Z", deliveryAddress: "Jr. Tarapacá 112", items: [{ id: 6, name: "Cold brew de altura", quantity: 2, price: 12 }] },
 ];
 
+// Devuelve el catálogo para la página de inicio.
 router.get("/restaurants", (_req, res) => {
   res.json(ListRestaurantsResponse.parse(restaurants));
 });
 
+// Devuelve únicamente los productos del restaurante seleccionado.
 router.get("/restaurants/:restaurantId/products", (req, res) => {
   const params = ListRestaurantProductsParams.safeParse(req.params);
   if (!params.success) {
@@ -63,10 +68,12 @@ router.get("/restaurants/:restaurantId/products", (req, res) => {
   res.json(ListRestaurantProductsResponse.parse(products.filter((product) => product.restaurantId === params.data.restaurantId)));
 });
 
+// Lista pedidos recientes para el historial y el panel administrativo.
 router.get("/orders", (_req, res) => {
   res.json(ListOrdersResponse.parse(orders));
 });
 
+// Valida el checkout, crea el pedido y lo inicia en estado "received".
 router.post("/orders", (req, res) => {
   const parsed = CreateOrderBody.safeParse(req.body);
   if (!parsed.success) {
@@ -83,6 +90,7 @@ router.post("/orders", (req, res) => {
   res.status(201).json(CreateOrderResponse.parse(order));
 });
 
+// Obtiene el detalle que se muestra en el seguimiento del cliente.
 router.get("/orders/:orderId", (req, res) => {
   const params = GetOrderParams.safeParse(req.params);
   if (!params.success) {
@@ -97,6 +105,7 @@ router.get("/orders/:orderId", (req, res) => {
   res.json(GetOrderResponse.parse(order));
 });
 
+// Acción operativa para que restaurante/admin/repartidor avance el pedido.
 router.patch("/orders/:orderId/status", (req, res) => {
   const params = UpdateOrderStatusParams.safeParse(req.params);
   const body = UpdateOrderStatusBody.safeParse(req.body);
@@ -118,6 +127,7 @@ router.patch("/orders/:orderId/status", (req, res) => {
   res.json(UpdateOrderStatusResponse.parse(order));
 });
 
+// Métricas agregadas que alimentan el dashboard administrativo.
 router.get("/dashboard/summary", (_req, res) => {
   const summary = {
     todaySales: 1842.5,

@@ -19,6 +19,7 @@ tags:
   - name: dashboard
     description: Operational summaries
 paths:
+  # Comprobación simple para saber si el API está disponible.
   /healthz:
     get:
       operationId: healthCheck
@@ -32,6 +33,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  # Catálogo público que consume la experiencia del cliente.
   /restaurants:
     get:
       operationId: listRestaurants
@@ -46,6 +48,7 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Restaurant"
+  # Menú asociado a un restaurante.
   /restaurants/{restaurantId}/products:
     get:
       operationId: listRestaurantProducts
@@ -66,6 +69,7 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Product"
+  # Lectura y creación de pedidos.
   /orders:
     get:
       operationId: listOrders
@@ -97,6 +101,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Order"
+  # Detalle individual del pedido.
   /orders/{orderId}:
     get:
       operationId: getOrder
@@ -115,6 +120,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Order"
+  # Actualización del flujo operativo del pedido.
   /orders/{orderId}/status:
     patch:
       operationId: updateOrderStatus
@@ -139,6 +145,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Order"
+  # Datos resumidos para la consola administrativa.
   /dashboard/summary:
     get:
       operationId: getDashboardSummary
