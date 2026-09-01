@@ -3,9 +3,9 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Link, Route, Router as WouterRouter, Switch, useLocation, useParams } from 'wouter';
 import {
-  ArrowLeft, ArrowRight, Bike, Check, ChevronDown, CircleUserRound, Clock3, CreditCard,
+  ArrowLeft, ArrowRight, Banknote, BarChart3, Bike, Check, ChevronDown, CircleUserRound, Clock3, CreditCard,
   Flame, MapPin, Minus, MoreHorizontal, PackageCheck, Plus, Search,
-  ShoppingBag, SlidersHorizontal, Star, Store, Tag, TrendingUp, UserRound, Utensils, Wallet,
+  ShoppingBag, SlidersHorizontal, Star, Store, Tag, TrendingUp, UserRound, Users, Utensils, Wallet,
 } from 'lucide-react';
 import {
   getGetDashboardSummaryQueryKey, getGetOrderQueryKey, getListOrdersQueryKey,
@@ -20,6 +20,7 @@ import { ErrorBoundary } from '@/components/error-boundary';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import NotFound from '@/pages/not-found';
+import SystemMapPage from '@/pages/system-map';
 
 // React Query administra las consultas al API y permite refrescar datos
 // después de crear un pedido o cambiar su estado.
@@ -81,7 +82,7 @@ function CustomerHeader({ cartCount }: { cartCount: number }) {
   return <header className="sticky top-0 z-30 border-b border-border/70 bg-[hsl(var(--background)/.94)] backdrop-blur-md">
     <div className="mx-auto flex h-[72px] max-w-[1400px] items-center gap-4 px-5 lg:px-9">
       <Link href="/" className="group flex items-center gap-3" data-testid="link-home">
-        <Mark /><span className="font-display text-[19px] font-bold tracking-[-.04em] text-primary">Pedidos<span className="text-accent">.</span></span>
+        <Mark /><span className="font-display text-[19px] font-bold tracking-[-.04em] text-primary">QUILLAYAA<span className="text-accent">.</span></span>
       </Link>
       <div className="hidden items-center gap-7 pl-8 text-[13px] font-bold text-muted-foreground md:flex">
         <Link href="/" data-testid="link-discover" className={location === '/' ? 'text-primary' : 'hover:text-primary'}>Descubrir</Link>
@@ -107,10 +108,11 @@ function AdminShell({ children }: { children: ReactNode }) {
     { href: '/admin/orders', label: 'Pedidos', icon: PackageCheck },
     { href: '/admin/restaurants', label: 'Restaurantes', icon: Store },
     { href: '/admin/delivery', label: 'Repartidores', icon: Bike },
+    { href: '/admin/system', label: 'Mapa del sistema', icon: TrendingUp },
   ];
   return <div className="min-h-[100dvh] bg-[#f1efe7] md:flex">
     <aside className="hidden w-[244px] shrink-0 flex-col bg-sidebar px-4 py-6 text-sidebar-foreground md:flex">
-      <Link href="/" className="mb-12 flex items-center gap-3 px-3" data-testid="link-admin-brand"><Mark /><span className="font-display text-lg font-bold">Pedidos<span className="text-secondary">.</span></span></Link>
+      <Link href="/" className="mb-12 flex items-center gap-3 px-3" data-testid="link-admin-brand"><Mark /><span className="font-display text-lg font-bold">QUILLAYAA<span className="text-secondary">.</span></span></Link>
       <p className="px-3 pb-3 font-mono-app text-[10px] uppercase tracking-[.16em] text-sidebar-foreground/45">Operaciones</p>
       <nav className="space-y-1">{nav.map(({ href, label, icon: Icon }) => <Link key={href} href={href} data-testid={`link-admin-${label.toLowerCase()}`} className={`flex items-center gap-3 rounded-xl px-3 py-3 text-[13px] font-bold transition ${location === href ? 'bg-secondary text-primary' : 'text-sidebar-foreground/65 hover:bg-sidebar-accent hover:text-sidebar-foreground'}`}><Icon className="h-[17px] w-[17px]" />{label}</Link>)}</nav>
       <div className="mt-auto rounded-2xl bg-sidebar-accent p-4"><div className="mb-3 flex h-8 w-8 items-center justify-center rounded-lg bg-accent text-sm font-bold text-white">MQ</div><p className="text-xs font-bold">María Quispe</p><p className="mt-1 text-[11px] text-sidebar-foreground/50">Administradora</p><Link href="/settings" className="mt-4 block text-[11px] font-bold text-secondary" data-testid="link-admin-settings">Configuración →</Link></div>
@@ -235,7 +237,7 @@ function AuthPage({ mode }: { mode: 'login' | 'register' }) { const [, setLocati
 function SettingsPage() { const [name, setName] = useState(() => localStorage.getItem('pq-name') || 'María Quispe'); const [address, setAddress] = useState(() => localStorage.getItem('pq-address') || ''); const [saved, setSaved] = useState(false); const save = () => { localStorage.setItem('pq-name', name); localStorage.setItem('pq-address', address); setSaved(true); setTimeout(() => setSaved(false), 2200); }; return <><CustomerHeader cartCount={0} /><main className="mx-auto max-w-[850px] px-5 pb-20 pt-10 lg:px-8"><p className="font-mono-app text-[10px] font-bold uppercase tracking-[.16em] text-accent">Tu espacio</p><h1 className="mt-2 font-display text-4xl font-bold tracking-[-.05em] text-primary">Ajustes</h1><p className="mt-2 text-sm text-muted-foreground">Para que la próxima vuelta sea más rápida.</p><div className="mt-8 grid gap-5 md:grid-cols-[220px_1fr]"><aside className="rounded-2xl bg-primary p-5 text-white"><div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-secondary font-display text-xl font-bold text-primary">MQ</div><p className="mt-4 font-bold">{name || 'Tu nombre'}</p><p className="mt-1 text-xs text-white/55">Cliente de Quillabamba</p><div className="mt-7 space-y-1 text-xs font-bold"><div className="rounded-lg bg-white/10 px-3 py-2.5 text-secondary">Perfil</div><div className="px-3 py-2.5 text-white/50">Preferencias</div></div></aside><div className="rounded-2xl bg-card p-6 ring-1 ring-border"><h2 className="font-display text-xl font-bold text-primary">Información personal</h2><div className="mt-6 space-y-4"><label className="block"><span className="mb-1.5 block text-xs font-bold text-primary">Nombre completo</span><input value={name} onChange={(e) => setName(e.target.value)} className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none focus:border-accent" data-testid="input-settings-name" /></label><label className="block"><span className="mb-1.5 block text-xs font-bold text-primary">Dirección frecuente</span><input value={address} onChange={(e) => setAddress(e.target.value)} className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none focus:border-accent" placeholder="Tu dirección de entrega" data-testid="input-settings-address" /></label><div className="flex flex-col justify-between gap-3 border-t border-border pt-5 sm:flex-row sm:items-center"><p className="text-xs text-muted-foreground">Se guarda solo en este dispositivo.</p><button onClick={save} className="rounded-full bg-primary px-5 py-2.5 text-xs font-bold text-white" data-testid="button-save-settings">{saved ? 'Guardado' : 'Guardar cambios'}</button></div></div></div></div></main></>; }
 
 // Mapa de navegación de la aplicación. Wouter mantiene las rutas sin recargar.
-function Router() { const cart = useCart(); return <Switch><Route path="/"><HomePage cart={cart} /></Route><Route path="/restaurant/:id"><RestaurantPage cart={cart} /></Route><Route path="/cart"><CartPage cart={cart} /></Route><Route path="/orders"><OrdersPage /></Route><Route path="/orders/:id"><OrderDetailPage /></Route><Route path="/admin"><AdminDashboard /></Route><Route path="/admin/orders"><AdminOrders /></Route><Route path="/admin/restaurants"><AdminRestaurants /></Route><Route path="/admin/delivery"><AdminDelivery /></Route><Route path="/login"><AuthPage mode="login" /></Route><Route path="/register"><AuthPage mode="register" /></Route><Route path="/settings"><SettingsPage /></Route><Route component={NotFound} /></Switch>; }
+function Router() { const cart = useCart(); return <Switch><Route path="/"><HomePage cart={cart} /></Route><Route path="/restaurant/:id"><RestaurantPage cart={cart} /></Route><Route path="/cart"><CartPage cart={cart} /></Route><Route path="/orders"><OrdersPage /></Route><Route path="/orders/:id"><OrderDetailPage /></Route><Route path="/admin"><AdminDashboard /></Route><Route path="/admin/orders"><AdminOrders /></Route><Route path="/admin/restaurants"><AdminRestaurants /></Route><Route path="/admin/delivery"><AdminDelivery /></Route><Route path="/admin/system"><SystemMapPage /></Route><Route path="/login"><AuthPage mode="login" /></Route><Route path="/register"><AuthPage mode="register" /></Route><Route path="/settings"><SettingsPage /></Route><Route component={NotFound} /></Switch>; }
 
 // Proveedores globales: consultas, tooltips, manejo de errores y notificaciones.
 function App() { return <QueryClientProvider client={queryClient}><TooltipProvider><WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}><ErrorBoundary><Router /></ErrorBoundary></WouterRouter><Toaster /></TooltipProvider></QueryClientProvider>; }
