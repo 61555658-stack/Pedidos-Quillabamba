@@ -87,6 +87,7 @@ function CustomerHeader({ cartCount }: { cartCount: number }) {
       <div className="hidden items-center gap-7 pl-8 text-[13px] font-bold text-muted-foreground md:flex">
         <Link href="/" data-testid="link-discover" className={location === '/' ? 'text-primary' : 'hover:text-primary'}>Descubrir</Link>
         <Link href="/orders" data-testid="link-orders" className={location.startsWith('/orders') ? 'text-primary' : 'hover:text-primary'}>Mis pedidos</Link>
+        <Link href="/admin/system" data-testid="link-system-map" className={location === '/admin/system' ? 'text-primary' : 'hover:text-primary'}>Mapa del sistema</Link>
       </div>
       <div className="ml-auto flex items-center gap-2">
         <div className="hidden items-center gap-2 rounded-full bg-card px-3 py-2 text-xs font-semibold text-muted-foreground ring-1 ring-border md:flex"><MapPin className="h-3.5 w-3.5 text-accent" /> Quillabamba, Cusco <ChevronDown className="h-3.5 w-3.5" /></div>
