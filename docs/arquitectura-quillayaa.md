@@ -11,23 +11,33 @@ restaurantes, administradores y repartidores.
 - Iniciar sesión
 - Ver productos y categorías
 - Gestionar el carrito
+- Modificar cantidades y eliminar productos
 - Realizar pedidos
+- Registrar dirección y referencia de entrega
+- Seleccionar efectivo, Yape o tarjeta
+- Visualizar el total del pedido
 - Consultar el estado de sus pedidos
+- Gestionar sus datos personales
 
 ### Administrador
 
 - Gestionar productos
 - Gestionar categorías
+- Administrar precios, stock y disponibilidad
 - Supervisar pedidos
 - Gestionar clientes
+- Gestionar repartidores y asignar pedidos
 - Revisar pagos
 - Consultar reportes
+- Administrar la configuración general
 
 ### Repartidor
 
 - Ver entregas asignadas
+- Ver cliente, detalle del pedido y método de pago
 - Consultar la dirección del cliente
-- Actualizar el estado de la entrega
+- Actualizar: pendiente de recoger, en camino y entregado
+- Consultar entregas realizadas
 
 ## Flujo central
 
