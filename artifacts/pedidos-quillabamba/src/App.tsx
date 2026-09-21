@@ -3,7 +3,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Link, Route, Router as WouterRouter, Switch, useLocation, useParams } from 'wouter';
 import {
-  ArrowLeft, ArrowRight, Banknote, BarChart3, Bike, Check, ChevronDown, CircleUserRound, Clock3, CreditCard,
+  ArrowLeft, ArrowRight, Banknote, BarChart3, Bike, Check, ChevronDown, CircleUserRound, Clock3, CreditCard, LogOut,
   Flame, MapPin, Minus, MoreHorizontal, PackageCheck, Plus, Search,
   ShoppingBag, SlidersHorizontal, Star, Store, Tag, TrendingUp, UserRound, Users, Utensils, Wallet,
 } from 'lucide-react';
@@ -21,7 +21,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import NotFound from '@/pages/not-found';
 import SystemMapPage from '@/pages/system-map';
-import { RoleAuthPage, RoleGate, roleHome, readSession } from '@/pages/role-access';
+import { clearSession, RoleAuthPage, RoleGate, roleHome, readSession } from '@/pages/role-access';
 import AdminManagementPage from '@/pages/admin-management';
 import EnhancedDeliveryPortalPage from '@/pages/delivery-portal';
 
@@ -81,7 +81,11 @@ function Mark() {
 
 // Encabezado público usado por las pantallas del cliente.
 function CustomerHeader({ cartCount }: { cartCount: number }) {
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
+  const logout = () => {
+    clearSession();
+    setLocation('/login');
+  };
   return <header className="sticky top-0 z-30 border-b border-border/70 bg-[hsl(var(--background)/.94)] backdrop-blur-md">
     <div className="mx-auto flex h-[72px] max-w-[1400px] items-center gap-4 px-5 lg:px-9">
       <Link href="/" className="group flex items-center gap-3" data-testid="link-home">
@@ -95,8 +99,8 @@ function CustomerHeader({ cartCount }: { cartCount: number }) {
       <div className="ml-auto flex items-center gap-2">
         <div className="hidden items-center gap-2 rounded-full bg-card px-3 py-2 text-xs font-semibold text-muted-foreground ring-1 ring-border md:flex"><MapPin className="h-3.5 w-3.5 text-accent" /> Quillabamba, Cusco <ChevronDown className="h-3.5 w-3.5" /></div>
         <Link href="/cart" className="relative flex h-10 w-10 items-center justify-center rounded-full bg-card text-primary ring-1 ring-border transition hover:-translate-y-0.5 hover:ring-secondary" data-testid="link-cart"><ShoppingBag className="h-[18px] w-[18px]" />{cartCount > 0 && <span className="absolute -right-0.5 -top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-accent px-1 font-mono-app text-[10px] font-bold text-white">{cartCount}</span>}</Link>
-        <Link href="/settings" className="hidden h-10 items-center gap-2 rounded-full bg-primary px-3.5 text-xs font-bold text-primary-foreground transition hover:bg-primary/90 sm:flex" data-testid="link-settings"><CircleUserRound className="h-4 w-4" /> Mi cuenta</Link>
-        <Link href="/login" className="flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-primary sm:hidden" data-testid="link-login-mobile"><UserRound className="h-[18px] w-[18px]" /></Link>
+         <Link href="/settings" className="hidden h-10 items-center gap-2 rounded-full bg-primary px-3.5 text-xs font-bold text-primary-foreground transition hover:bg-primary/90 sm:flex" data-testid="link-settings"><CircleUserRound className="h-4 w-4" /> Mi cuenta</Link>
+         <button onClick={logout} className="flex h-10 items-center gap-2 rounded-full border border-border bg-card px-3 text-xs font-bold text-primary transition hover:border-accent hover:text-accent" aria-label="Cerrar sesión" data-testid="button-customer-logout"><LogOut className="h-4 w-4" /><span className="hidden sm:inline">Salir</span></button>
       </div>
     </div>
   </header>;
