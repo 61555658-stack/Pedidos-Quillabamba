@@ -1,7 +1,7 @@
 # Arquitectura funcional de QUILLAYAA
 
 QUILLAYAA es una plataforma de pedidos de comida y bebidas que conecta a clientes,
-restaurantes, administradores y repartidores.
+negocios, repartidores y administradores del sistema.
 
 ## Roles
 
@@ -19,17 +19,14 @@ restaurantes, administradores y repartidores.
 - Consultar el estado de sus pedidos
 - Gestionar sus datos personales
 
-### Administrador
+### Administrador del negocio
 
 - Gestionar productos
 - Gestionar categorías
 - Administrar precios, stock y disponibilidad
-- Supervisar pedidos
-- Gestionar clientes
-- Gestionar repartidores y asignar pedidos
-- Revisar pagos
-- Consultar reportes
-- Administrar la configuración general
+- Registrar información comercial, dirección, teléfono y RUC
+- Recibir pedidos
+- Actualizar pedidos hasta dejarlos listos para entrega
 
 ### Repartidor
 
@@ -38,6 +35,16 @@ restaurantes, administradores y repartidores.
 - Consultar la dirección del cliente
 - Actualizar: pendiente de recoger, en camino y entregado
 - Consultar entregas realizadas
+
+### Administrador del sistema
+
+- Gestionar usuarios y sus estados
+- Gestionar y aprobar negocios
+- Supervisar productos y pedidos
+- Gestionar repartidores y asignaciones
+- Revisar pagos
+- Consultar reportes
+- Administrar la configuración general
 
 ## Flujo central
 
@@ -48,12 +55,12 @@ restaurantes, administradores y repartidores.
                          │ de comida y bebidas  │
                          └──────────┬───────────┘
                                     │
-                 ┌──────────────────┼──────────────────┐
-                 │                  │                  │
-                 ▼                  ▼                  ▼
-        ┌────────────────┐ ┌────────────────┐ ┌────────────────┐
-        │    CLIENTE     │ │ ADMINISTRADOR  │ │  REPARTIDOR    │
-        └───────┬────────┘ └───────┬────────┘ └───────┬────────┘
+                 ┌────────────┬─────┴──────┬────────────┐
+                 │            │            │            │
+                 ▼            ▼            ▼            ▼
+        ┌──────────────┐ ┌──────────┐ ┌──────────┐ ┌──────────────┐
+        │   CLIENTE    │ │ NEGOCIO  │ │ DELIVERY │ │ ADMIN. SIST. │
+        └──────┬───────┘ └────┬─────┘ └────┬─────┘ └──────┬───────┘
                 │                  │                  │
                 ▼                  ▼                  ▼
         ┌────────────────┐ ┌────────────────┐ ┌────────────────┐
@@ -80,6 +87,8 @@ restaurantes, administradores y repartidores.
 ## Implementación actual
 
 - La página `/admin/system` representa este esquema de forma visual y responsive.
+- El administrador del negocio usa `/business` y solo administra su establecimiento.
+- El administrador del sistema usa `/admin` y supervisa toda la plataforma.
 - El cliente ya cuenta con catálogo, carrito, checkout y seguimiento.
 - El administrador ya cuenta con resumen, pedidos, restaurantes y repartidores.
 - Los estados de pedido son: recibido, en cocina, listo, en camino, entregado y cancelado.

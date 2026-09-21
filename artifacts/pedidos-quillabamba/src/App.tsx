@@ -24,6 +24,7 @@ import SystemMapPage from '@/pages/system-map';
 import { clearSession, RoleAuthPage, RoleGate, roleHome, readSession } from '@/pages/role-access';
 import AdminManagementPage from '@/pages/admin-management';
 import EnhancedDeliveryPortalPage from '@/pages/delivery-portal';
+import BusinessPortalPage from '@/pages/business-portal';
 
 // React Query administra las consultas al API y permite refrescar datos
 // después de crear un pedido o cambiar su estado.
@@ -94,7 +95,6 @@ function CustomerHeader({ cartCount }: { cartCount: number }) {
       <div className="hidden items-center gap-7 pl-8 text-[13px] font-bold text-muted-foreground md:flex">
         <Link href="/" data-testid="link-discover" className={location === '/' ? 'text-primary' : 'hover:text-primary'}>Descubrir</Link>
         <Link href="/orders" data-testid="link-orders" className={location.startsWith('/orders') ? 'text-primary' : 'hover:text-primary'}>Mis pedidos</Link>
-        <Link href="/admin/system" data-testid="link-system-map" className={location === '/admin/system' ? 'text-primary' : 'hover:text-primary'}>Mapa del sistema</Link>
       </div>
       <div className="ml-auto flex items-center gap-2">
         <div className="hidden items-center gap-2 rounded-full bg-card px-3 py-2 text-xs font-semibold text-muted-foreground ring-1 ring-border md:flex"><MapPin className="h-3.5 w-3.5 text-accent" /> Quillabamba, Cusco <ChevronDown className="h-3.5 w-3.5" /></div>
@@ -108,9 +108,14 @@ function CustomerHeader({ cartCount }: { cartCount: number }) {
 
 // Contenedor común para las pantallas internas de administración.
 function AdminShell({ children }: { children: ReactNode }) {
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
+  const session = readSession();
   const health = useHealthCheck();
   void health;
+  const logout = () => {
+    clearSession();
+    setLocation('/login');
+  };
   const nav = [
     { href: '/admin', label: 'Resumen', icon: TrendingUp },
     { href: '/admin/orders', label: 'Pedidos', icon: PackageCheck },
@@ -121,12 +126,12 @@ function AdminShell({ children }: { children: ReactNode }) {
   ];
   return <div className="min-h-[100dvh] bg-[#f1efe7] md:flex">
     <aside className="hidden w-[244px] shrink-0 flex-col bg-sidebar px-4 py-6 text-sidebar-foreground md:flex">
-      <Link href="/" className="mb-12 flex items-center gap-3 px-3" data-testid="link-admin-brand"><Mark /><span className="font-display text-lg font-bold">QUILLAYAA<span className="text-secondary">.</span></span></Link>
+      <Link href="/admin" className="mb-12 flex items-center gap-3 px-3" data-testid="link-admin-brand"><Mark /><span className="font-display text-lg font-bold">QUILLAYAA<span className="text-secondary">.</span></span></Link>
       <p className="px-3 pb-3 font-mono-app text-[10px] uppercase tracking-[.16em] text-sidebar-foreground/45">Operaciones</p>
       <nav className="space-y-1">{nav.map(({ href, label, icon: Icon }) => <Link key={href} href={href} data-testid={`link-admin-${label.toLowerCase()}`} className={`flex items-center gap-3 rounded-xl px-3 py-3 text-[13px] font-bold transition ${location === href ? 'bg-secondary text-primary' : 'text-sidebar-foreground/65 hover:bg-sidebar-accent hover:text-sidebar-foreground'}`}><Icon className="h-[17px] w-[17px]" />{label}</Link>)}</nav>
-      <div className="mt-auto rounded-2xl bg-sidebar-accent p-4"><div className="mb-3 flex h-8 w-8 items-center justify-center rounded-lg bg-accent text-sm font-bold text-white">MQ</div><p className="text-xs font-bold">María Quispe</p><p className="mt-1 text-[11px] text-sidebar-foreground/50">Administradora</p><Link href="/settings" className="mt-4 block text-[11px] font-bold text-secondary" data-testid="link-admin-settings">Configuración →</Link></div>
+      <div className="mt-auto rounded-2xl bg-sidebar-accent p-4"><div className="mb-3 flex h-8 w-8 items-center justify-center rounded-lg bg-accent text-sm font-bold text-white">{session?.name?.slice(0, 2).toUpperCase() || 'AS'}</div><p className="text-xs font-bold">{session?.name || 'Administrador'}</p><p className="mt-1 text-[11px] text-sidebar-foreground/50">Administrador del sistema</p><Link href="/admin/manage" className="mt-4 block text-[11px] font-bold text-secondary" data-testid="link-admin-settings">Configuración →</Link></div>
     </aside>
-    <div className="min-w-0 flex-1"><div className="flex h-16 items-center justify-between border-b border-border/60 bg-[#f7f5ee] px-5 md:px-8"><div className="flex items-center gap-3"><Link href="/" className="md:hidden" data-testid="link-admin-home"><Mark /></Link><div><p className="font-mono-app text-[10px] uppercase tracking-[.14em] text-muted-foreground">Panel de control</p><p className="text-sm font-extrabold text-primary">{nav.find((n) => n.href === location)?.label || 'Operaciones'}</p></div></div><div className="flex items-center gap-3"><span className="hidden items-center gap-1.5 text-xs font-semibold text-muted-foreground sm:flex"><span className="h-2 w-2 rounded-full bg-lime-500" /> Sistema operativo</span><div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-xs font-bold text-secondary">MQ</div></div></div><main className="mx-auto max-w-[1400px] p-5 md:p-8">{children}</main></div>
+    <div className="min-w-0 flex-1"><div className="flex h-16 items-center justify-between border-b border-border/60 bg-[#f7f5ee] px-5 md:px-8"><div className="flex items-center gap-3"><Link href="/admin" className="md:hidden" data-testid="link-admin-home"><Mark /></Link><div><p className="font-mono-app text-[10px] uppercase tracking-[.14em] text-muted-foreground">Administrador del sistema</p><p className="text-sm font-extrabold text-primary">{nav.find((n) => n.href === location)?.label || 'Operaciones'}</p></div></div><div className="flex items-center gap-3"><span className="hidden items-center gap-1.5 text-xs font-semibold text-muted-foreground sm:flex"><span className="h-2 w-2 rounded-full bg-lime-500" /> Sistema operativo</span><button onClick={logout} className="flex h-9 items-center gap-2 rounded-full bg-primary px-3 text-xs font-bold text-white" data-testid="button-system-admin-logout"><LogOut className="h-3.5 w-3.5" /><span className="hidden sm:inline">Salir</span></button></div></div><main className="mx-auto max-w-[1400px] p-5 md:p-8">{children}</main></div>
   </div>;
 }
 
@@ -256,7 +261,7 @@ function RoleEntryPage({ cart }: { cart: ReturnType<typeof useCart> }) {
 }
 
 // Mapa de navegación de la aplicación. Wouter mantiene las rutas sin recargar.
-function Router() { const cart = useCart(); return <Switch><Route path="/"><RoleEntryPage cart={cart} /></Route><Route path="/restaurant/:id"><RoleGate allowed={['cliente']}><RestaurantPage cart={cart} /></RoleGate></Route><Route path="/cart"><RoleGate allowed={['cliente']}><CartPage cart={cart} /></RoleGate></Route><Route path="/orders"><RoleGate allowed={['cliente']}><OrdersPage /></RoleGate></Route><Route path="/orders/:id"><RoleGate allowed={['cliente']}><OrderDetailPage /></RoleGate></Route><Route path="/admin/system"><RoleGate allowed={['administrador']}><SystemMapPage /></RoleGate></Route><Route path="/admin/manage"><RoleGate allowed={['administrador']}><AdminManagementPage /></RoleGate></Route><Route path="/admin"><RoleGate allowed={['administrador']}><AdminDashboard /></RoleGate></Route><Route path="/admin/orders"><RoleGate allowed={['administrador']}><AdminOrders /></RoleGate></Route><Route path="/admin/restaurants"><RoleGate allowed={['administrador']}><AdminRestaurants /></RoleGate></Route><Route path="/admin/delivery"><RoleGate allowed={['administrador']}><AdminDelivery /></RoleGate></Route><Route path="/delivery"><RoleGate allowed={['repartidor']}><EnhancedDeliveryPortalPage /></RoleGate></Route><Route path="/login"><RoleAuthPage mode="login" /></Route><Route path="/register"><RoleAuthPage mode="register" /></Route><Route path="/settings"><RoleGate allowed={['cliente']}><SettingsPage /></RoleGate></Route><Route component={NotFound} /></Switch>; }
+function Router() { const cart = useCart(); return <Switch><Route path="/"><RoleEntryPage cart={cart} /></Route><Route path="/restaurant/:id"><RoleGate allowed={['cliente']}><RestaurantPage cart={cart} /></RoleGate></Route><Route path="/cart"><RoleGate allowed={['cliente']}><CartPage cart={cart} /></RoleGate></Route><Route path="/orders"><RoleGate allowed={['cliente']}><OrdersPage /></RoleGate></Route><Route path="/orders/:id"><RoleGate allowed={['cliente']}><OrderDetailPage /></RoleGate></Route><Route path="/business"><RoleGate allowed={['administrador_negocio']}><BusinessPortalPage /></RoleGate></Route><Route path="/admin/system"><RoleGate allowed={['administrador_sistema']}><SystemMapPage /></RoleGate></Route><Route path="/admin/manage"><RoleGate allowed={['administrador_sistema']}><AdminManagementPage /></RoleGate></Route><Route path="/admin"><RoleGate allowed={['administrador_sistema']}><AdminDashboard /></RoleGate></Route><Route path="/admin/orders"><RoleGate allowed={['administrador_sistema']}><AdminOrders /></RoleGate></Route><Route path="/admin/restaurants"><RoleGate allowed={['administrador_sistema']}><AdminRestaurants /></RoleGate></Route><Route path="/admin/delivery"><RoleGate allowed={['administrador_sistema']}><AdminDelivery /></RoleGate></Route><Route path="/delivery"><RoleGate allowed={['repartidor']}><EnhancedDeliveryPortalPage /></RoleGate></Route><Route path="/login"><RoleAuthPage mode="login" /></Route><Route path="/register"><RoleAuthPage mode="register" /></Route><Route path="/settings"><RoleGate allowed={['cliente']}><SettingsPage /></RoleGate></Route><Route component={NotFound} /></Switch>; }
 
 // Proveedores globales: consultas, tooltips, manejo de errores y notificaciones.
 function App() { return <QueryClientProvider client={queryClient}><TooltipProvider><WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}><ErrorBoundary><Router /></ErrorBoundary></WouterRouter><Toaster /></TooltipProvider></QueryClientProvider>; }

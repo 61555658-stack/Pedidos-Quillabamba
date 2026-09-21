@@ -1,8 +1,8 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { ArrowRight, Bike, Check, ClipboardList, LogOut, MapPin, PackageCheck, Store, Users, Utensils } from 'lucide-react';
+import { ArrowRight, Bike, Building2, Check, ClipboardList, LogOut, MapPin, PackageCheck, ShieldCheck, Store, Users, Utensils } from 'lucide-react';
 import { Link, useLocation } from 'wouter';
 
-export type UserRole = 'cliente' | 'administrador' | 'repartidor';
+export type UserRole = 'cliente' | 'administrador_negocio' | 'repartidor' | 'administrador_sistema';
 
 export type UserSession = {
   name: string;
@@ -17,26 +17,41 @@ const ACCOUNTS_KEY = 'quillayaa-accounts';
 
 export const roleHome: Record<UserRole, string> = {
   cliente: '/',
-  administrador: '/admin',
+  administrador_negocio: '/business',
   repartidor: '/delivery',
+  administrador_sistema: '/admin',
 };
 
 export const roleLabels: Record<UserRole, string> = {
   cliente: 'Cliente',
-  administrador: 'Administrador',
+  administrador_negocio: 'Administrador del negocio',
   repartidor: 'Repartidor',
+  administrador_sistema: 'Administrador del sistema',
 };
 
 export const roleDescriptions: Record<UserRole, string> = {
   cliente: 'Compra, carrito y seguimiento de pedidos.',
-  administrador: 'Productos, pedidos, pagos y reportes.',
+  administrador_negocio: 'Negocio, productos y pedidos recibidos.',
   repartidor: 'Entregas asignadas y estados de delivery.',
+  administrador_sistema: 'Usuarios, negocios, operaciones y reportes.',
 };
+
+function normalizeRole(role: unknown): UserRole | null {
+  if (role === 'administrador') return 'administrador_sistema';
+  if (role === 'cliente' || role === 'administrador_negocio' || role === 'repartidor' || role === 'administrador_sistema') return role;
+  return null;
+}
 
 export function readSession(): UserSession | null {
   try {
     const raw = localStorage.getItem(SESSION_KEY);
-    return raw ? JSON.parse(raw) as UserSession : null;
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Omit<UserSession, 'role'> & { role: unknown };
+    const role = normalizeRole(parsed.role);
+    if (!role) return null;
+    const session = { name: parsed.name, email: parsed.email, role };
+    if (parsed.role !== role) saveSession(session);
+    return session;
   } catch {
     return null;
   }
@@ -53,7 +68,14 @@ export function clearSession() {
 function readAccounts(): StoredAccount[] {
   try {
     const raw = localStorage.getItem(ACCOUNTS_KEY);
-    return raw ? JSON.parse(raw) as StoredAccount[] : [];
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as Array<Omit<StoredAccount, 'role'> & { role: unknown }>;
+    const accounts = parsed.flatMap((account) => {
+      const role = normalizeRole(account.role);
+      return role ? [{ ...account, role }] : [];
+    });
+    if (accounts.some((account, index) => account.role !== parsed[index]?.role)) writeAccounts(accounts);
+    return accounts;
   } catch {
     return [];
   }
@@ -102,8 +124,9 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
 
   const roleOptions: Array<{ value: UserRole; icon: typeof Users }> = [
     { value: 'cliente', icon: Users },
-    { value: 'administrador', icon: Store },
+    { value: 'administrador_negocio', icon: Building2 },
     { value: 'repartidor', icon: Bike },
+    { value: 'administrador_sistema', icon: ShieldCheck },
   ];
 
   return (
@@ -118,7 +141,7 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
           <div className="relative flex h-full flex-col justify-between">
             <p className="font-mono-app text-[10px] uppercase tracking-[.18em] text-secondary">Acceso por roles</p>
             <div>
-              <h1 className="font-display text-4xl font-bold leading-tight text-white">Una plataforma,<br /><span className="text-secondary">tres formas</span><br />de trabajar.</h1>
+              <h1 className="font-display text-4xl font-bold leading-tight text-white">Una plataforma,<br /><span className="text-secondary">cuatro formas</span><br />de trabajar.</h1>
               <p className="mt-5 max-w-xs text-sm leading-6 text-white/60">Cada persona entra al espacio que corresponde a su cargo dentro de QUILLAYAA.</p>
             </div>
           </div>
@@ -134,7 +157,7 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
 
           <div className="mt-7">
             <p className="mb-3 text-xs font-bold text-primary">¿Cómo ingresarás?</p>
-            <div className="grid gap-2 sm:grid-cols-3">
+            <div className="grid gap-2 sm:grid-cols-2">
               {roleOptions.map(({ value, icon: Icon }) => <button type="button" key={value} onClick={() => setRole(value)} className={`rounded-xl p-3 text-left ring-1 transition ${role === value ? 'bg-secondary/35 text-primary ring-accent' : 'bg-background text-muted-foreground ring-border hover:ring-secondary'}`} data-testid={`button-role-${value}`}>
                 <Icon className="h-4 w-4" />
                 <span className="mt-2 block text-xs font-extrabold">{roleLabels[value]}</span>

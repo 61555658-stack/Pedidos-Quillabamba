@@ -1,4 +1,4 @@
-import { Banknote, BarChart3, Bike, PackageCheck, Store, Users, Utensils } from 'lucide-react';
+import { Banknote, BarChart3, Bike, Building2, PackageCheck, ShieldCheck, Users, Utensils } from 'lucide-react';
 import { Link } from 'wouter';
 
 type Role = {
@@ -20,11 +20,11 @@ const roles: Role[] = [
     items: ['Registrarse e iniciar sesión', 'Ver productos y categorías', 'Gestionar carrito', 'Realizar y consultar pedidos'],
   },
   {
-    title: 'Administrador',
-    eyebrow: 'Control de la plataforma',
-    icon: Store,
+    title: 'Administrador del negocio',
+    eyebrow: 'Operación del establecimiento',
+    icon: Building2,
     tone: 'bg-[#dce9d7]',
-    items: ['Gestionar productos y categorías', 'Supervisar pedidos y clientes', 'Revisar pagos', 'Consultar reportes'],
+    items: ['Registrar información y RUC', 'Gestionar productos y categorías', 'Controlar disponibilidad', 'Atender pedidos recibidos'],
   },
   {
     title: 'Repartidor',
@@ -32,6 +32,13 @@ const roles: Role[] = [
     icon: Bike,
     tone: 'bg-[#f1d7c7]',
     items: ['Ver entregas asignadas', 'Consultar dirección del cliente', 'Actualizar estado de entrega'],
+  },
+  {
+    title: 'Administrador del sistema',
+    eyebrow: 'Supervisión general',
+    icon: ShieldCheck,
+    tone: 'bg-[#d9e5ef]',
+    items: ['Gestionar usuarios y negocios', 'Supervisar productos y pedidos', 'Gestionar repartidores', 'Consultar pagos y reportes'],
   },
 ];
 
@@ -45,7 +52,7 @@ export default function SystemMapPage() {
         <div className="mt-8 max-w-3xl">
           <p className="font-mono-app text-[10px] font-bold uppercase tracking-[.18em] text-accent">Arquitectura funcional</p>
           <h1 className="mt-2 font-display text-3xl font-bold tracking-[-.04em] sm:text-4xl">Mapa del sistema QUILLAYAA</h1>
-          <p className="mt-2 text-sm leading-6 text-muted-foreground">Tres roles, un pedido y dos procesos conectados: pago y delivery.</p>
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">Cuatro roles, un pedido y dos procesos conectados: pago y delivery.</p>
         </div>
 
         <section className="mt-8 rounded-3xl bg-primary p-6 text-white shadow-[0_18px_50px_hsl(163_48%_18%/.15)] sm:p-9">
@@ -57,7 +64,7 @@ export default function SystemMapPage() {
             <p className="mt-1 text-sm text-white/60">Plataforma de pedidos de comida y bebidas</p>
           </div>
           <div className="mx-auto mt-8 h-8 w-px bg-white/20" />
-          <div className="grid gap-4 lg:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-2">
             {roles.map(({ title, eyebrow, icon: Icon, tone, items }) => (
               <article key={title} className={`rounded-2xl p-5 text-primary ${tone}`} data-testid={`card-system-role-${title.toLowerCase()}`}>
                 <div className="flex items-start justify-between gap-3">
