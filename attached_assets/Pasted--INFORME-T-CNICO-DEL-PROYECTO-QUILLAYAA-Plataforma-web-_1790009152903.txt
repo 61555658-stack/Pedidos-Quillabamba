@@ -1,0 +1,659 @@
+# INFORME TÉCNICO DEL PROYECTO
+
+# QUILLAYAA!
+
+## Plataforma web responsive para la gestión de pedidos de comida y bebidas en Quillabamba
+
+---
+
+# I. DATOS GENERALES
+
+| Dato                     | Descripción                                                                             |
+| ------------------------ | --------------------------------------------------------------------------------------- |
+| **Nombre del proyecto**  | QUILLAYAA!                                                                              |
+| **Título del proyecto**  | Plataforma web responsive para la gestión de pedidos de comida y bebidas en Quillabamba |
+| **Ubicación**            | Quillabamba, provincia de La Convención, Cusco                                          |
+| **Caso de estudio**      | Quilla Morro                                                                            |
+| **Periodo**              | 2026                                                                                    |
+| **Área**                 | Desarrollo de Sistemas / Programación Web                                               |
+| **Tipo de solución**     | Plataforma web responsive                                                               |
+| **Usuarios principales** | Clientes, Administrador del negocio, repartidores y administrador del sistema                                       |
+
+---
+
+# II. RESUMEN DEL PROYECTO
+
+QUILLAYAA! es una propuesta de plataforma web orientada a la gestión de pedidos de comida y bebidas en la ciudad de Quillabamba. El proyecto busca facilitar la interacción entre clientes, negocios y repartidores mediante un sistema que permita consultar establecimientos, visualizar productos, realizar pedidos, gestionar pagos y coordinar el servicio de delivery.
+
+El proyecto toma como caso de estudio a **Quilla Morro**, establecimiento dedicado a la venta de comidas rápidas, bebidas frías y bebidas calientes. En el contexto actual, parte de la gestión de pedidos puede realizarse mediante procesos manuales, como el uso de comandas de papel, mientras que los pagos pueden efectuarse mediante efectivo y billeteras digitales.
+
+QUILLAYAA! plantea centralizar estos procesos mediante una plataforma digital.
+
+Una característica importante del proyecto será su **diseño responsive**, permitiendo que la plataforma sea utilizada desde computadoras, laptops, teléfonos Android, iPhone, tablets Android e iPad mediante navegadores web compatibles.
+
+---
+
+# III. DESCRIPCIÓN DEL PROBLEMA
+
+## 3.1 Realidad problemática
+
+En Quillabamba existe una variedad de negocios dedicados a la comercialización de alimentos y bebidas, entre ellos restaurantes, pollerías, cevicherías, cafeterías, pastelerías, chifas, pizzerías y establecimientos de comida rápida.
+
+Los procesos de atención y recepción de pedidos pueden variar entre cada negocio. En determinados casos se utilizan mecanismos tradicionales, como llamadas, mensajes, atención presencial o registros manuales mediante comandas.
+
+Esta situación puede dificultar la organización de los pedidos, especialmente cuando aumenta la cantidad de clientes o cuando es necesario coordinar simultáneamente productos, pagos y entregas.
+
+Como caso de estudio se considera a Quilla Morro, donde se identifican necesidades relacionadas con la gestión organizada de pedidos, productos, pagos y entregas.
+
+A partir de esta situación se plantea el desarrollo de QUILLAYAA!, una plataforma web orientada a centralizar estos procesos.
+
+---
+
+# IV. PLANTEAMIENTO DEL PROBLEMA
+
+## 4.1 Problema general
+
+¿Cómo mejorar la gestión de pedidos de comida y bebidas de los negocios de Quillabamba mediante una plataforma web responsive accesible desde diferentes dispositivos?
+
+## 4.2 Problemas específicos
+
+* Gestión manual de determinados procesos relacionados con los pedidos.
+* Dificultad para consultar diferentes negocios y sus productos desde una plataforma centralizada.
+* Falta de un proceso digital integrado para registrar y controlar pedidos.
+* Necesidad de organizar los diferentes estados de un pedido.
+* Necesidad de gestionar los pagos asociados a los pedidos.
+* Dificultad para coordinar el servicio de delivery cuando un negocio no dispone de repartidores propios.
+* Necesidad de contar con una plataforma accesible desde diferentes dispositivos.
+
+---
+
+# V. JUSTIFICACIÓN
+
+## 5.1 Justificación tecnológica
+
+QUILLAYAA! permitirá aplicar tecnologías de desarrollo web para digitalizar procesos relacionados con negocios de comida y bebidas.
+
+La plataforma integrará diferentes módulos dentro de un mismo sistema, permitiendo gestionar usuarios, negocios, productos, pedidos, pagos y delivery.
+
+Además, se utilizará un diseño responsive para adaptar la interfaz a diferentes tamaños de pantalla.
+
+## 5.2 Justificación práctica
+
+La plataforma busca facilitar el proceso de pedido tanto para los clientes como para los negocios.
+
+El cliente podrá consultar productos, seleccionar lo que desea adquirir y realizar un pedido.
+
+El negocio podrá administrar sus productos y recibir los pedidos realizados mediante la plataforma.
+
+Cuando el negocio no cuente con personal propio para realizar una entrega, podrá utilizar el componente de delivery de QUILLAYAA!, mediante repartidores registrados.
+
+## 5.3 Justificación local
+
+El proyecto está orientado específicamente al contexto de Quillabamba. Por ello, la solución considera las características de los negocios locales, los medios de pago utilizados y la disponibilidad de personas que pueden realizar servicios de entrega mediante motocicletas o mototaxis.
+
+---
+
+# VI. OBJETIVOS
+
+## 6.1 Objetivo general
+
+Desarrollar una plataforma web responsive denominada QUILLAYAA! para gestionar pedidos de comida y bebidas en Quillabamba, permitiendo la interacción entre clientes, administrador del negocio, repartidores y administrador del sistema mediante la gestión de productos, pedidos, pagos y servicios de delivery.
+
+## 6.2 Objetivos específicos
+
+1. Analizar el proceso actual de gestión de pedidos tomando como caso de estudio a Quilla Morro.
+
+2. Identificar los requisitos funcionales y no funcionales de la plataforma.
+
+3. Diseñar una estructura de base de datos para gestionar la información del sistema.
+
+4. Implementar el registro y gestión de negocios.
+
+5. Implementar la gestión de productos y categorías.
+
+6. Desarrollar un carrito de compras para los clientes.
+
+7. Implementar el registro y seguimiento de pedidos.
+
+8. Gestionar los diferentes estados de los pedidos.
+
+9. Incorporar la gestión de pagos digitales.
+
+10. Implementar el registro y gestión de repartidores.
+
+11. Implementar un panel de administración.
+
+12. Diseñar interfaces responsive compatibles con computadoras, laptops, teléfonos Android, iPhone, tablets Android e iPad.
+
+13. Realizar pruebas funcionales y de compatibilidad en diferentes dispositivos.
+
+---
+
+# VII. ALCANCE DEL PROYECTO
+
+QUILLAYAA! estará orientado a la gestión digital del proceso de pedidos de comida y bebidas.
+
+El sistema comprenderá los siguientes componentes:
+
+## 7.1 Gestión de clientes
+
+El cliente podrá:
+
+* Registrarse.
+* Iniciar sesión.
+* Consultar negocios.
+* Consultar productos.
+* Seleccionar productos.
+* Utilizar el carrito.
+* Registrar una dirección.
+* Realizar pedidos.
+* Seleccionar un método de pago.
+* Consultar el estado de sus pedidos.
+* Registrar una calificación del servicio.
+
+## 7.2 Gestión de negocios
+
+Los negocios podrán:
+
+* Registrar información del establecimiento.
+* Registrar RUC.
+* Gestionar información comercial.
+* Registrar productos.
+* Editar productos.
+* Eliminar productos.
+* Gestionar categorías.
+* Controlar disponibilidad.
+* Recibir pedidos.
+* Actualizar el estado de los pedidos.
+
+## 7.3 Gestión de repartidores
+
+Los repartidores podrán:
+
+* Registrarse en la plataforma.
+* Gestionar su disponibilidad.
+* Consultar entregas asignadas.
+* Recoger pedidos.
+* Confirmar la entrega.
+
+## 7.4 Gestión administrativa
+
+El administrador del sistema podrá:
+
+* Gestionar usuarios.
+* Gestionar negocios.
+* Gestionar productos.
+* Gestionar pedidos.
+* Gestionar repartidores.
+* Supervisar operaciones.
+* Consultar información y reportes básicos.
+
+---
+
+# VIII. ACTORES DEL SISTEMA
+
+Los actores principales de QUILLAYAA! serán:
+
+| Actor             | Descripción                                                 |
+| ----------------- | ----------------------------------------------------------- |
+| **Cliente**       | Persona que consulta productos y realiza pedidos            |
+| **Administrador del Negocio**       | Establecimiento que ofrece productos mediante la plataforma |
+| **Repartidor**    | Persona encargada de realizar entregas                      |
+| **Administrador del Sistema** | Usuario encargado de administrar y supervisar la plataforma |
+
+## 8.1 Cliente
+
+Interactúa principalmente con el catálogo, carrito, pedidos, pagos y seguimiento.
+
+## 8.2 Administrador del Negocio
+
+Administra sus productos y atiende los pedidos recibidos.
+
+## 8.3 Repartidor
+
+Realiza las entregas cuando corresponde utilizar el servicio de delivery.
+
+## 8.4 Administrador del Sistema
+
+Supervisa los diferentes componentes del sistema y administra la información general.
+
+---
+
+# IX. FLUJO GENERAL DEL SISTEMA
+
+El proceso principal de QUILLAYAA! será:
+
+**Cliente**
+
+→ Ingresa a QUILLAYAA!
+→ Selecciona un negocio
+→ Consulta productos
+→ Selecciona productos
+→ Agrega productos al carrito
+→ Confirma el pedido
+→ Registra/selecciona dirección
+→ Selecciona método de pago
+→ Confirma pedido
+→ El negocio recibe el pedido
+→ El negocio acepta y prepara el pedido
+→ El pedido pasa a estado listo
+→ Se asigna delivery cuando corresponda
+→ El repartidor recoge el pedido
+→ El repartidor realiza la entrega
+→ El pedido se marca como entregado.
+
+---
+
+# X. ESTADOS DEL PEDIDO
+
+Para representar el proceso real se plantea utilizar diferentes estados:
+
+| Estado             | Descripción                                         |
+| ------------------ | --------------------------------------------------- |
+| **Pendiente**      | Pedido registrado y esperando confirmación          |
+| **Confirmado**     | El negocio aceptó el pedido                         |
+| **En preparación** | El negocio está preparando los productos            |
+| **Listo**          | El pedido está preparado para ser recogido          |
+| **En camino**      | El pedido fue entregado al repartidor               |
+| **Entregado**      | El cliente recibió el pedido                        |
+| **Cancelado**      | Pedido cancelado según las condiciones establecidas |
+
+---
+
+# XI. SERVICIO DE DELIVERY
+
+El sistema contempla dos situaciones.
+
+### Caso 1: El negocio tiene repartidor propio
+
+El negocio puede gestionar directamente la entrega.
+
+### Caso 2: El negocio no tiene repartidor
+
+QUILLAYAA! podrá utilizar repartidores registrados en la plataforma para realizar la entrega.
+
+Este componente permite que personas interesadas en trabajar como repartidores puedan registrarse y participar en el servicio de delivery.
+
+El flujo sería:
+
+**Pedido listo**
+
+→ búsqueda/asignación de repartidor
+→ repartidor acepta
+→ recoge pedido
+→ realiza entrega
+→ confirma entrega.
+
+---
+
+# XII. PAGOS
+
+QUILLAYAA! contempla la gestión de pagos asociados a los pedidos.
+
+Entre los métodos que pueden considerarse se encuentran:
+
+* Efectivo.
+* Billeteras digitales.
+* Pago mediante plataforma.
+* Otros métodos que puedan integrarse posteriormente.
+
+La estructura del sistema deberá permitir registrar información relacionada con:
+
+* Pedido.
+* Método de pago.
+* Monto.
+* Estado del pago.
+* Fecha de operación.
+
+La integración definitiva con una pasarela de pagos dependerá de las condiciones técnicas y del alcance establecido durante la etapa de desarrollo.
+
+---
+
+# XIII. REQUISITOS FUNCIONALES
+
+| Código   | Requisito                                                                   |
+| -------- | --------------------------------------------------------------------------- |
+| **RF01** | El sistema permitirá registrar clientes.                                    |
+| **RF02** | El sistema permitirá registrar negocios.                                    |
+| **RF03** | El sistema permitirá registrar repartidores.                                |
+| **RF04** | El sistema permitirá iniciar sesión según el tipo de usuario.               |
+| **RF05** | El negocio podrá gestionar sus productos.                                   |
+| **RF06** | El cliente podrá consultar negocios.                                        |
+| **RF07** | El cliente podrá consultar productos.                                       |
+| **RF08** | El cliente podrá agregar productos al carrito.                              |
+| **RF09** | El cliente podrá registrar pedidos.                                         |
+| **RF10** | El sistema permitirá actualizar el estado del pedido.                       |
+| **RF11** | El sistema permitirá registrar información de pagos.                        |
+| **RF12** | El sistema permitirá gestionar direcciones de entrega.                      |
+| **RF13** | El sistema permitirá gestionar repartidores.                                |
+| **RF14** | El administrador podrá gestionar la información general del sistema.        |
+| **RF15** | El sistema permitirá consultar información básica de pedidos y operaciones. |
+
+---
+
+# XIV. REQUISITOS NO FUNCIONALES
+
+## 14.1 Responsive
+
+La interfaz deberá adaptarse a diferentes tamaños de pantalla.
+
+## 14.2 Compatibilidad multiplataforma
+
+La plataforma deberá poder utilizarse desde:
+
+* Computadoras de escritorio.
+* Laptops.
+* Teléfonos Android.
+* iPhone.
+* Tablets Android.
+* iPad.
+
+La plataforma será desarrollada como un sistema web, por lo que no será necesario crear una aplicación nativa independiente para cada sistema operativo.
+
+## 14.3 Usabilidad
+
+Las interfaces deberán ser sencillas, claras y fáciles de utilizar.
+
+## 14.4 Rendimiento
+
+Las páginas y operaciones principales deberán responder en tiempos adecuados para la utilización normal del sistema.
+
+## 14.5 Seguridad
+
+El sistema deberá proteger la información de los usuarios y controlar el acceso según los roles establecidos.
+
+## 14.6 Disponibilidad
+
+La plataforma deberá estar disponible mediante conexión a Internet y un navegador web compatible.
+
+---
+
+# XV. DISEÑO RESPONSIVE Y MULTIPLATAFORMA
+
+Una característica fundamental de QUILLAYAA! será su capacidad de adaptación a diferentes dispositivos.
+
+La plataforma utilizará una estructura responsive para modificar la distribución de sus elementos según el tamaño de pantalla.
+
+### Dispositivos considerados
+
+| Dispositivo    | Acceso |
+| -------------- | ------ |
+| PC             | Sí     |
+| Laptop         | Sí     |
+| Android        | Sí     |
+| iPhone         | Sí     |
+| Tablet Android | Sí     |
+| iPad           | Sí     |
+
+El objetivo es mantener las principales funciones disponibles independientemente del dispositivo utilizado.
+
+Por ejemplo, un cliente podrá realizar un pedido desde una computadora o desde un teléfono móvil sin necesitar una versión diferente del sistema.
+
+---
+
+# XVI. DISEÑO DE LA BASE DE DATOS
+
+La base de datos será diseñada para organizar la información de los principales procesos del sistema.
+
+Entre las entidades consideradas se encuentran:
+
+* Usuarios.
+* Roles.
+* Negocios.
+* Categorías.
+* Productos.
+* Pedidos.
+* Detalle de pedidos.
+* Pagos.
+* Repartidores.
+* Direcciones.
+* Calificaciones.
+
+La estructura definitiva será determinada durante la etapa de diseño de base de datos, considerando las relaciones entre las diferentes entidades.
+
+---
+
+# XVII. TECNOLOGÍAS PROPUESTAS
+
+Para el desarrollo de QUILLAYAA! se plantea utilizar:
+
+| Tecnología      | Utilización                  |
+| --------------- | ---------------------------- |
+| **PHP**         | Desarrollo del backend       |
+| **MySQL**       | Gestión de base de datos     |
+| **HTML5**       | Estructura de las interfaces |
+| **CSS3**        | Estilos y adaptación visual  |
+| **Bootstrap 5** | Diseño responsive            |
+| **JavaScript**  | Interacciones del sistema    |
+| **XAMPP**       | Entorno de desarrollo local  |
+| **VS Code**     | Editor de código             |
+
+La combinación de HTML, CSS y Bootstrap permitirá desarrollar las interfaces responsive para los diferentes dispositivos.
+
+---
+
+# XVIII. CRONOGRAMA DEL PROYECTO
+
+El proyecto se desarrollará considerando un periodo de 12 semanas.
+
+| Semana | Actividad principal                            | Resultado esperado                                         |
+| -----: | ---------------------------------------------- | ---------------------------------------------------------- |
+|  **1** | Análisis del problema y definición del alcance | Problema, justificación y alcance definidos                |
+|  **2** | Identificación y definición de requisitos      | Requisitos funcionales y no funcionales definidos          |
+|  **3** | Análisis y modelado del sistema                | Actores, procesos y modelos definidos                      |
+|  **4** | Diseño del sistema y base de datos             | Interfaces y estructura de datos diseñadas                 |
+|  **5** | Desarrollo de usuarios y negocios              | Registro y gestión de usuarios y negocios                  |
+|  **6** | Desarrollo de productos y catálogo             | Catálogo y gestión de productos                            |
+|  **7** | Desarrollo de carrito y pedidos                | Carrito y creación de pedidos                              |
+|  **8** | Gestión de estados y seguimiento               | Flujo de estados del pedido                                |
+|  **9** | Desarrollo de pagos                            | Gestión de métodos y estados de pago                       |
+| **10** | Desarrollo de delivery                         | Gestión de repartidores y entregas                         |
+| **11** | Administración y reportes                      | Panel administrativo y reportes básicos                    |
+| **12** | Pruebas y cierre                               | Sistema probado, documentado y preparado para presentación |
+
+---
+
+# XIX. MODIFICACIÓN DEL CRONOGRAMA POR EL DISEÑO RESPONSIVE
+
+El cronograma original se mantiene como base. La incorporación del diseño responsive no requiere crear semanas adicionales.
+
+Los principales ajustes se realizan en las primeras etapas:
+
+### Semana 1
+
+Se incorpora dentro del alcance que QUILLAYAA! será una plataforma web accesible desde diferentes dispositivos.
+
+### Semana 2
+
+Se incorpora como requisito no funcional la compatibilidad multiplataforma y el diseño responsive.
+
+### Durante el desarrollo
+
+El requisito será aplicado en las interfaces de los diferentes módulos.
+
+### Semana 12
+
+Se realizarán pruebas de visualización y funcionamiento en diferentes tamaños de pantalla y dispositivos.
+
+Por lo tanto, **el carácter responsive atraviesa el proyecto completo, pero no modifica la estructura principal del cronograma de 12 semanas.**
+
+---
+
+# XX. PRINCIPALES MÓDULOS DEL SISTEMA
+
+El proyecto se organiza principalmente en los siguientes módulos:
+
+## Módulo 1: Usuarios y negocios
+
+Registro, inicio de sesión, roles, información de negocios y RUC.
+
+## Módulo 2: Productos
+
+Categorías, productos, precios, imágenes y disponibilidad.
+
+## Módulo 3: Carrito y pedidos
+
+Selección de productos, cantidades, carrito, dirección y confirmación.
+
+## Módulo 4: Pagos
+
+Registro y gestión del método y estado del pago.
+
+## Módulo 5: Delivery
+
+Registro de repartidores, asignación y gestión de entregas.
+
+## Módulo 6: Administración
+
+Gestión y supervisión general de la plataforma.
+
+---
+
+# XXI. PRUEBAS DEL SISTEMA
+
+Se realizarán pruebas para verificar:
+
+### Pruebas funcionales
+
+* Registro de usuarios.
+* Inicio de sesión.
+* Registro de negocios.
+* Registro de productos.
+* Creación de pedidos.
+* Actualización de estados.
+* Gestión de pagos.
+* Gestión de delivery.
+
+### Pruebas responsive
+
+Se verificará la interfaz en:
+
+* Computadoras.
+* Laptops.
+* Android.
+* iPhone.
+* Tablets.
+* iPad.
+
+### Pruebas de usabilidad
+
+Se verificará que los botones, formularios, menús y procesos principales sean comprensibles y utilizables.
+
+---
+
+# XXII. RESULTADOS ESPERADOS
+
+Al finalizar el proyecto se espera obtener una plataforma web funcional denominada QUILLAYAA!, capaz de gestionar el proceso de pedidos de comida y bebidas desde la selección del negocio hasta la entrega.
+
+El sistema deberá permitir la participación de cuatro actores principales:
+
+**Cliente → Negocio → Repartidor → Administrador.**
+
+Asimismo, se espera contar con una interfaz responsive que permita acceder a la plataforma desde diferentes dispositivos sin necesidad de desarrollar aplicaciones independientes para cada sistema operativo.
+
+---
+
+# XXIII. LIMITACIONES DEL PROYECTO
+
+Entre las posibles limitaciones se consideran:
+
+* Tiempo disponible para el desarrollo académico.
+* Disponibilidad de información de los negocios.
+* Necesidad de validar los requisitos con el caso de estudio.
+* Dependencia de servicios externos para determinadas funciones de pago.
+* Necesidad de realizar pruebas en diferentes dispositivos.
+* Alcance limitado para implementar funciones avanzadas que no sean esenciales para la primera versión.
+
+---
+
+# XXIV. CONCLUSIONES
+
+1. QUILLAYAA! plantea una solución tecnológica orientada a mejorar la gestión de pedidos de comida y bebidas en Quillabamba.
+
+2. El proyecto toma como referencia el caso de estudio Quilla Morro para identificar necesidades reales relacionadas con pedidos, productos, pagos y delivery.
+
+3. La plataforma permitirá la interacción entre clientes, negocios, repartidores y administrador.
+
+4. La gestión de pedidos estará organizada mediante diferentes estados que permitirán representar el proceso desde la recepción hasta la entrega.
+
+5. El sistema contemplará la gestión de pagos y delivery como componentes importantes del proceso de pedido.
+
+6. El diseño responsive permitirá utilizar la plataforma desde computadoras, laptops, dispositivos Android, iPhone, tablets Android e iPad.
+
+7. El proyecto será desarrollado progresivamente de acuerdo con el cronograma establecido de 12 semanas.
+
+---
+
+# XXV. RECOMENDACIONES
+
+1. Validar periódicamente los requisitos con el caso de estudio.
+
+2. Mantener una estructura modular durante el desarrollo.
+
+3. Realizar pruebas después de implementar cada módulo.
+
+4. Verificar la interfaz en diferentes tamaños de pantalla.
+
+5. Mantener la base de datos organizada y correctamente relacionada.
+
+6. Priorizar las funciones principales antes de incorporar características adicionales.
+
+7. Documentar los cambios realizados durante cada etapa del desarrollo.
+
+---
+
+# XXVI. PROPUESTA GENERAL DEL SISTEMA
+
+La propuesta final de QUILLAYAA! puede representarse de la siguiente manera:
+
+**CLIENTE**
+
+↓
+Consulta negocios
+↓
+Consulta productos
+↓
+Carrito
+↓
+Pedido
+↓
+Pago
+↓
+**ADMINISTRADOR DEL NEGOCIO**
+↓
+Acepta y prepara
+↓
+Pedido listo
+↓
+**DELIVERY**
+↓
+Repartidor
+↓
+Entrega
+↓
+**CLIENTE**
+
+Mientras tanto:
+
+**ADMINISTRADOR DEL SISTEMA**
+
+→ Usuarios
+→ Negocios
+→ Productos
+→ Pedidos
+→ Repartidores
+→ Reportes
+
+Todo el sistema será accesible mediante una **plataforma web responsive**, adaptada a computadoras, laptops, teléfonos Android, iPhone, tablets Android e iPad.
+
+---
+
+# XXVII. SÍNTESIS DEL PROYECTO
+
+QUILLAYAA! será una plataforma web orientada al contexto comercial de Quillabamba, cuyo propósito será facilitar la gestión de pedidos de comida y bebidas mediante la integración de negocios, clientes y repartidores.
+
+El sistema contemplará como procesos principales la gestión de usuarios y negocios, catálogo de productos, carrito, pedidos, pagos, delivery y administración.
+
+La solución será desarrollada bajo un enfoque web responsive, permitiendo que los usuarios puedan acceder desde diferentes dispositivos y tamaños de pantalla.
+
+El desarrollo se organizará mediante un cronograma de 12 semanas, iniciando con el análisis del problema y los requisitos, continuando con el diseño y desarrollo de los módulos, y finalizando con las pruebas, documentación y presentación del sistema.

@@ -21,7 +21,9 @@ import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import NotFound from '@/pages/not-found';
 import SystemMapPage from '@/pages/system-map';
-import { DeliveryPortalPage, RoleAuthPage, RoleGate, roleHome, readSession } from '@/pages/role-access';
+import { RoleAuthPage, RoleGate, roleHome, readSession } from '@/pages/role-access';
+import AdminManagementPage from '@/pages/admin-management';
+import EnhancedDeliveryPortalPage from '@/pages/delivery-portal';
 
 // React Query administra las consultas al API y permite refrescar datos
 // después de crear un pedido o cambiar su estado.
@@ -111,6 +113,7 @@ function AdminShell({ children }: { children: ReactNode }) {
     { href: '/admin/restaurants', label: 'Restaurantes', icon: Store },
     { href: '/admin/delivery', label: 'Repartidores', icon: Bike },
     { href: '/admin/system', label: 'Mapa del sistema', icon: TrendingUp },
+    { href: '/admin/manage', label: 'Gestión integral', icon: SlidersHorizontal },
   ];
   return <div className="min-h-[100dvh] bg-[#f1efe7] md:flex">
     <aside className="hidden w-[244px] shrink-0 flex-col bg-sidebar px-4 py-6 text-sidebar-foreground md:flex">
@@ -249,7 +252,7 @@ function RoleEntryPage({ cart }: { cart: ReturnType<typeof useCart> }) {
 }
 
 // Mapa de navegación de la aplicación. Wouter mantiene las rutas sin recargar.
-function Router() { const cart = useCart(); return <Switch><Route path="/"><RoleEntryPage cart={cart} /></Route><Route path="/restaurant/:id"><RoleGate allowed={['cliente']}><RestaurantPage cart={cart} /></RoleGate></Route><Route path="/cart"><RoleGate allowed={['cliente']}><CartPage cart={cart} /></RoleGate></Route><Route path="/orders"><RoleGate allowed={['cliente']}><OrdersPage /></RoleGate></Route><Route path="/orders/:id"><RoleGate allowed={['cliente']}><OrderDetailPage /></RoleGate></Route><Route path="/admin/system"><RoleGate allowed={['administrador']}><SystemMapPage /></RoleGate></Route><Route path="/admin"><RoleGate allowed={['administrador']}><AdminDashboard /></RoleGate></Route><Route path="/admin/orders"><RoleGate allowed={['administrador']}><AdminOrders /></RoleGate></Route><Route path="/admin/restaurants"><RoleGate allowed={['administrador']}><AdminRestaurants /></RoleGate></Route><Route path="/admin/delivery"><RoleGate allowed={['administrador']}><AdminDelivery /></RoleGate></Route><Route path="/delivery"><RoleGate allowed={['repartidor']}><DeliveryPortalPage /></RoleGate></Route><Route path="/login"><RoleAuthPage mode="login" /></Route><Route path="/register"><RoleAuthPage mode="register" /></Route><Route path="/settings"><RoleGate allowed={['cliente']}><SettingsPage /></RoleGate></Route><Route component={NotFound} /></Switch>; }
+function Router() { const cart = useCart(); return <Switch><Route path="/"><RoleEntryPage cart={cart} /></Route><Route path="/restaurant/:id"><RoleGate allowed={['cliente']}><RestaurantPage cart={cart} /></RoleGate></Route><Route path="/cart"><RoleGate allowed={['cliente']}><CartPage cart={cart} /></RoleGate></Route><Route path="/orders"><RoleGate allowed={['cliente']}><OrdersPage /></RoleGate></Route><Route path="/orders/:id"><RoleGate allowed={['cliente']}><OrderDetailPage /></RoleGate></Route><Route path="/admin/system"><RoleGate allowed={['administrador']}><SystemMapPage /></RoleGate></Route><Route path="/admin/manage"><RoleGate allowed={['administrador']}><AdminManagementPage /></RoleGate></Route><Route path="/admin"><RoleGate allowed={['administrador']}><AdminDashboard /></RoleGate></Route><Route path="/admin/orders"><RoleGate allowed={['administrador']}><AdminOrders /></RoleGate></Route><Route path="/admin/restaurants"><RoleGate allowed={['administrador']}><AdminRestaurants /></RoleGate></Route><Route path="/admin/delivery"><RoleGate allowed={['administrador']}><AdminDelivery /></RoleGate></Route><Route path="/delivery"><RoleGate allowed={['repartidor']}><EnhancedDeliveryPortalPage /></RoleGate></Route><Route path="/login"><RoleAuthPage mode="login" /></Route><Route path="/register"><RoleAuthPage mode="register" /></Route><Route path="/settings"><RoleGate allowed={['cliente']}><SettingsPage /></RoleGate></Route><Route component={NotFound} /></Switch>; }
 
 // Proveedores globales: consultas, tooltips, manejo de errores y notificaciones.
 function App() { return <QueryClientProvider client={queryClient}><TooltipProvider><WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}><ErrorBoundary><Router /></ErrorBoundary></WouterRouter><Toaster /></TooltipProvider></QueryClientProvider>; }
