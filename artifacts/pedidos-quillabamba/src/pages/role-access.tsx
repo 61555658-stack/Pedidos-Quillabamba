@@ -14,6 +14,12 @@ type StoredAccount = UserSession & { password: string };
 
 const SESSION_KEY = 'quillayaa-session';
 const ACCOUNTS_KEY = 'quillayaa-accounts';
+const SYSTEM_ADMIN_ACCOUNT: StoredAccount = {
+  name: 'Administrador del sistema',
+  email: 'admin@gmail.com',
+  password: 'admin',
+  role: 'administrador_sistema',
+};
 
 export const roleHome: Record<UserRole, string> = {
   cliente: '/',
@@ -68,16 +74,28 @@ export function clearSession() {
 function readAccounts(): StoredAccount[] {
   try {
     const raw = localStorage.getItem(ACCOUNTS_KEY);
-    if (!raw) return [];
+    if (!raw) return [SYSTEM_ADMIN_ACCOUNT];
     const parsed = JSON.parse(raw) as Array<Omit<StoredAccount, 'role'> & { role: unknown }>;
     const accounts = parsed.flatMap((account) => {
       const role = normalizeRole(account.role);
       return role ? [{ ...account, role }] : [];
     });
-    if (accounts.some((account, index) => account.role !== parsed[index]?.role)) writeAccounts(accounts);
-    return accounts;
+    const accountsWithoutSystemAdmin = accounts.filter((account) => account.email !== SYSTEM_ADMIN_ACCOUNT.email);
+    const normalizedAccounts = [...accountsWithoutSystemAdmin, SYSTEM_ADMIN_ACCOUNT];
+    if (
+      accounts.some((account, index) => account.role !== parsed[index]?.role)
+      || normalizedAccounts.length !== accounts.length
+      || !accounts.some((account) => (
+        account.email === SYSTEM_ADMIN_ACCOUNT.email
+        && account.password === SYSTEM_ADMIN_ACCOUNT.password
+        && account.role === SYSTEM_ADMIN_ACCOUNT.role
+      ))
+    ) {
+      writeAccounts(normalizedAccounts);
+    }
+    return normalizedAccounts;
   } catch {
-    return [];
+    return [SYSTEM_ADMIN_ACCOUNT];
   }
 }
 

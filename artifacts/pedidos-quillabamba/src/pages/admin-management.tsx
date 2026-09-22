@@ -18,7 +18,7 @@ const initialUsers: PlatformUser[] = [
   { id: 1, name: 'María Fernanda', email: 'maria@correo.com', role: 'Cliente', active: true },
   { id: 2, name: 'Luis Cárdenas', email: 'luis@delivery.pe', role: 'Repartidor', active: true },
   { id: 3, name: 'Teresa Ríos', email: 'tere@sazon.pe', role: 'Administrador del negocio', active: true },
-  { id: 4, name: 'Admin Sistema', email: 'admin@quillayaa.pe', role: 'Administrador del sistema', active: true },
+  { id: 4, name: 'Admin Sistema', email: 'admin@gmail.com', role: 'Administrador del sistema', active: true },
   { id: 5, name: 'Rosa Huamán', email: 'rosa@delivery.pe', role: 'Repartidor', active: true },
 ];
 
