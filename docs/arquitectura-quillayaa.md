@@ -25,7 +25,7 @@ negocios, repartidores y administradores del sistema.
 - Gestionar productos
 - Gestionar categorías
 - Administrar precios, stock y disponibilidad
-- Gestionar imágenes de productos
+- Gestionar imágenes de productos mediante URL o archivo del dispositivo
 - Registrar información comercial, dirección, teléfono y RUC
 - Recibir pedidos
 - Actualizar pedidos hasta dejarlos listos para entrega

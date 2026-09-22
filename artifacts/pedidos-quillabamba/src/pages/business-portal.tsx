@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { PackageCheck, Store, LogOut, Plus, Pencil, Trash2, Save, Store as StoreIcon, Settings, BarChart3, Tag, TrendingUp, Image as ImageIcon } from 'lucide-react';
+import { PackageCheck, Store, LogOut, Plus, Pencil, Trash2, Save, Store as StoreIcon, Settings, BarChart3, Tag, TrendingUp, Image as ImageIcon, Upload } from 'lucide-react';
 import { useLocation } from 'wouter';
 import { clearSession } from '@/pages/role-access';
 
@@ -51,6 +51,27 @@ export default function BusinessPortalPage() {
   const announce = (message: string) => {
     setNotice(message);
     window.setTimeout(() => setNotice(''), 2400);
+  };
+
+  const readImageFile = (file: File | undefined, onLoad: (image: string) => void) => {
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      announce('Selecciona un archivo de imagen válido.');
+      return;
+    }
+    if (file.size > 4 * 1024 * 1024) {
+      announce('La imagen debe pesar menos de 4 MB.');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        onLoad(reader.result);
+        announce('Imagen cargada desde el dispositivo.');
+      }
+    };
+    reader.onerror = () => announce('No se pudo leer la imagen seleccionada.');
+    reader.readAsDataURL(file);
   };
 
   const logout = () => { clearSession(); setLocation('/login'); };
@@ -265,7 +286,14 @@ export default function BusinessPortalPage() {
                   <select value={newProduct.category} onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })} className="h-10 w-full rounded-xl border border-input bg-background px-3 text-xs outline-none focus:border-accent lg:col-span-1" data-testid="select-business-product-category">
                     {categories.length ? categories.map((cat) => <option key={cat}>{cat}</option>) : <option value="">Sin categoría</option>}
                   </select>
-                  <input value={newProduct.image} onChange={(e) => setNewProduct({ ...newProduct, image: e.target.value })} placeholder="URL de imagen (opcional)" className="h-10 w-full rounded-xl border border-input bg-background px-3 text-xs outline-none focus:border-accent lg:col-span-3" data-testid="input-business-product-image" />
+                  <div className="grid gap-2 sm:grid-cols-[1fr_auto] lg:col-span-3">
+                    <input value={newProduct.image.startsWith('data:') ? '' : newProduct.image} onChange={(e) => setNewProduct({ ...newProduct, image: e.target.value })} placeholder={newProduct.image.startsWith('data:') ? 'Imagen cargada desde archivo' : 'URL de imagen (opcional)'} className="h-10 w-full rounded-xl border border-input bg-background px-3 text-xs outline-none focus:border-accent" data-testid="input-business-product-image" />
+                    <label className="flex h-10 cursor-pointer items-center justify-center gap-2 rounded-xl border border-accent/35 bg-secondary/30 px-4 text-xs font-bold text-primary transition hover:bg-secondary/55">
+                      <Upload className="h-4 w-4" /> Subir archivo
+                      <input type="file" accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp" className="sr-only" onChange={(event) => { readImageFile(event.target.files?.[0], (image) => setNewProduct((current) => ({ ...current, image }))); event.target.value = ''; }} data-testid="input-business-product-image-file" />
+                    </label>
+                    {newProduct.image && <div className="flex items-center gap-3 rounded-xl bg-muted/50 p-2 sm:col-span-2"><img src={newProduct.image} alt="Vista previa del producto" className="h-14 w-14 rounded-lg object-cover ring-1 ring-border" /><div><p className="text-xs font-bold">Vista previa</p><button type="button" onClick={() => setNewProduct({ ...newProduct, image: '' })} className="mt-1 text-[10px] font-bold text-red-700">Quitar imagen</button></div></div>}
+                  </div>
                   <input type="number" value={newProduct.price} onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })} placeholder="Precio (S/)" className="h-10 w-full rounded-xl border border-input bg-background px-3 text-xs outline-none focus:border-accent lg:col-span-2" data-testid="input-business-product-price" />
                   <input type="number" value={newProduct.stock} onChange={(e) => setNewProduct({ ...newProduct, stock: e.target.value })} placeholder="Stock" className="h-10 w-full rounded-xl border border-input bg-background px-3 text-xs outline-none focus:border-accent lg:col-span-2" data-testid="input-business-product-stock" />
                   <button onClick={addProduct} className="flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 text-xs font-bold text-white lg:col-span-2" data-testid="button-business-add-product">
@@ -302,7 +330,11 @@ export default function BusinessPortalPage() {
                               {editingId === product.id ? (
                                 <div className="flex flex-col gap-1">
                                   <input value={product.name} onChange={(e) => updateProduct(product.id, { name: e.target.value })} placeholder="Nombre del plato" className="h-8 w-full rounded-lg border border-input bg-background px-2 text-xs outline-none focus:border-accent" />
-                                  <input value={product.image || ''} onChange={(e) => updateProduct(product.id, { image: e.target.value })} placeholder="URL de imagen" className="h-8 w-full rounded-lg border border-input bg-background px-2 text-[10px] outline-none focus:border-accent" />
+                                  <input value={product.image?.startsWith('data:') ? '' : product.image || ''} onChange={(e) => updateProduct(product.id, { image: e.target.value })} placeholder={product.image?.startsWith('data:') ? 'Imagen cargada desde archivo' : 'URL de imagen'} className="h-8 w-full rounded-lg border border-input bg-background px-2 text-[10px] outline-none focus:border-accent" />
+                                  <label className="flex h-8 cursor-pointer items-center justify-center gap-1 rounded-lg border border-accent/35 bg-secondary/30 px-2 text-[10px] font-bold text-primary">
+                                    <Upload className="h-3 w-3" /> Cambiar archivo
+                                    <input type="file" accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp" className="sr-only" onChange={(event) => { readImageFile(event.target.files?.[0], (image) => updateProduct(product.id, { image })); event.target.value = ''; }} data-testid={`input-business-product-image-file-${product.id}`} />
+                                  </label>
                                 </div>
                               ) : (
                                 <span className="block truncate font-bold">{product.name}</span>
