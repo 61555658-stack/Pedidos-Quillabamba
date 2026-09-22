@@ -47,6 +47,7 @@ export default function BusinessPortalPage() {
   const [newCategory, setNewCategory] = useState('');
   const [newProduct, setNewProduct] = useState({ name: '', category: categories[0] || '', image: '', price: '', stock: '' });
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [productCategoryFilter, setProductCategoryFilter] = useState('Todas');
 
   const announce = (message: string) => {
     setNotice(message);
@@ -91,6 +92,7 @@ export default function BusinessPortalPage() {
 
   const removeCategory = (cat: string) => {
     setCategories(categories.filter((c) => c !== cat));
+    if (productCategoryFilter === cat) setProductCategoryFilter('Todas');
     announce('Categoría eliminada.');
   };
 
@@ -125,6 +127,10 @@ export default function BusinessPortalPage() {
     setOrders((current) => current.map((o) => o.id === id ? { ...o, status } : o));
     announce(`Estado del pedido actualizado.`);
   };
+
+  const visibleProducts = productCategoryFilter === 'Todas'
+    ? products
+    : products.filter((product) => product.category === productCategoryFilter);
 
   return (
     <main className="min-h-[100dvh] bg-[#f1efe7] text-primary">
@@ -280,6 +286,22 @@ export default function BusinessPortalPage() {
           {tab === 'products' && (
             <section className="mt-7 space-y-5">
               <div className="rounded-2xl bg-card p-5 ring-1 ring-border">
+                <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+                  <div>
+                    <p className="font-mono-app text-[10px] font-bold uppercase tracking-[.16em] text-accent">Secciones de la carta</p>
+                    <h2 className="mt-2 font-display text-xl font-bold">Productos por categoría</h2>
+                    <p className="mt-1 text-xs text-muted-foreground">Selecciona una categoría para revisar lo que contiene.</p>
+                  </div>
+                  <span className="font-mono-app text-[10px] font-bold uppercase tracking-wide text-muted-foreground">{visibleProducts.length} productos visibles</span>
+                </div>
+                <div className="mt-5 flex gap-2 overflow-x-auto pb-1">
+                  {['Todas', ...categories].map((category) => {
+                    const count = category === 'Todas' ? products.length : products.filter((product) => product.category === category).length;
+                    return <button key={category} onClick={() => setProductCategoryFilter(category)} className={`whitespace-nowrap rounded-full px-4 py-2 text-xs font-bold transition ${productCategoryFilter === category ? 'bg-primary text-white' : 'bg-muted text-muted-foreground hover:bg-secondary/60 hover:text-primary'}`} data-testid={`button-business-category-filter-${category.toLowerCase().replace(/\s+/g, '-')}`}>{category} <span className={`ml-1 rounded-full px-1.5 py-0.5 font-mono-app text-[9px] ${productCategoryFilter === category ? 'bg-white/15' : 'bg-card'}`}>{count}</span></button>;
+                  })}
+                </div>
+              </div>
+              <div className="rounded-2xl bg-card p-5 ring-1 ring-border">
                 <div className="flex items-center gap-2"><Plus className="h-4 w-4 text-accent" /><h2 className="font-display text-xl font-bold">Agregar a la carta</h2></div>
                 <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
                   <input value={newProduct.name} onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })} placeholder="Nombre del plato" className="h-10 w-full rounded-xl border border-input bg-background px-3 text-xs outline-none focus:border-accent lg:col-span-2" data-testid="input-business-product-name" />
@@ -315,7 +337,7 @@ export default function BusinessPortalPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {products.map((product) => (
+                    {visibleProducts.map((product) => (
                       <tr key={product.id} className="border-b border-border/70 last:border-0" data-testid={`row-business-product-${product.id}`}>
                         <td className="px-5 py-4">
                           <div className="flex items-center gap-3">
@@ -378,6 +400,7 @@ export default function BusinessPortalPage() {
                         </td>
                       </tr>
                     ))}
+                    {!visibleProducts.length && <tr><td colSpan={6} className="px-5 py-12 text-center"><ImageIcon className="mx-auto h-6 w-6 text-muted-foreground/50" /><p className="mt-3 text-sm font-bold">Esta categoría todavía no tiene productos</p><p className="mt-1 text-xs text-muted-foreground">Agrega un producto y selecciona “{productCategoryFilter}” como categoría.</p></td></tr>}
                     {products.length === 0 && (
                       <tr>
                         <td colSpan={6} className="px-5 py-8 text-center text-sm text-muted-foreground">
