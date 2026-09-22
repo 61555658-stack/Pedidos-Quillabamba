@@ -29,14 +29,14 @@ const initialOrders: BusinessOrder[] = [
 const menu: Array<{ id: BusinessTab; label: string; icon: any }> = [
   { id: 'orders', label: 'Pedidos activos', icon: PackageCheck },
   { id: 'sales', label: 'Resumen de ventas', icon: BarChart3 },
-  { id: 'products', label: 'Carta y productos', icon: StoreIcon },
+  { id: 'products', label: 'Carta por categorías', icon: StoreIcon },
   { id: 'categories', label: 'Categorías', icon: Tag },
   { id: 'profile', label: 'Perfil del negocio', icon: Settings },
 ];
 
 export default function BusinessPortalPage() {
   const [, setLocation] = useLocation();
-  const [tab, setTab] = useState<BusinessTab>('orders');
+  const [tab, setTab] = useState<BusinessTab>('products');
   
   const [profile, setProfile] = useState<BusinessProfile>(initialProfile);
   const [categories, setCategories] = useState(['Favoritos', 'Platos principales', 'Sopas', 'Bebidas', 'Postres']);
