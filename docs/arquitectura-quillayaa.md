@@ -44,11 +44,14 @@ negocios, repartidores y administradores del sistema.
 ### Administrador del sistema
 
 - Gestionar usuarios y sus estados
+- Controlar roles y permisos
+- Supervisar administradores del negocio y sus asociaciones
 - Gestionar y aprobar negocios
-- Supervisar productos y pedidos
-- Gestionar repartidores y asignaciones
-- Revisar pagos
-- Consultar reportes
+- Supervisar productos, categorías y disponibilidad
+- Consultar pedidos con cliente, negocio, pago, repartidor y fecha
+- Gestionar repartidores, disponibilidad, asignaciones y delivery
+- Revisar métodos, montos y estados de pago
+- Consultar reportes y estadísticas generales
 - Administrar la configuración general
 
 ## Flujo central

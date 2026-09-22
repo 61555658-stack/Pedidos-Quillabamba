@@ -1,0 +1,355 @@
+# ADMINISTRADOR DEL SISTEMA
+
+## 1. Definición
+
+El **Administrador del sistema** será el usuario encargado de administrar, supervisar y controlar el funcionamiento general de la plataforma web QUILLAYAA!.
+
+A diferencia del administrador del negocio, sus funciones estarán orientadas a la gestión global de la plataforma y de la información registrada por los diferentes usuarios.
+
+---
+
+## 2. Funciones principales
+
+El administrador del sistema podrá:
+
+* Gestionar usuarios.
+* Gestionar administradores del negocio.
+* Gestionar negocios registrados.
+* Gestionar repartidores.
+* Supervisar productos registrados.
+* Supervisar pedidos.
+* Supervisar pagos.
+* Supervisar servicios de delivery.
+* Gestionar categorías generales.
+* Consultar reportes básicos.
+* Supervisar las operaciones realizadas dentro de la plataforma.
+* Gestionar el estado de las cuentas de los usuarios.
+* Administrar los roles y permisos de acceso.
+* Consultar estadísticas generales de la plataforma.
+
+---
+
+## 3. Gestión de usuarios
+
+El administrador del sistema podrá administrar las cuentas registradas en QUILLAYAA!.
+
+Entre sus funciones estarán:
+
+* Consultar usuarios registrados.
+* Registrar usuarios cuando corresponda.
+* Editar información de usuarios.
+* Activar o desactivar cuentas.
+* Consultar el tipo de usuario.
+* Controlar los roles asignados.
+
+Los principales roles serán:
+
+* Cliente.
+* Administrador del negocio.
+* Repartidor.
+* Administrador del sistema.
+
+---
+
+## 4. Gestión de administradores del negocio
+
+El administrador del sistema podrá supervisar las cuentas de los administradores responsables de cada negocio.
+
+Podrá:
+
+* Consultar administradores del negocio registrados.
+* Asociar un administrador con un negocio.
+* Actualizar información.
+* Activar o desactivar cuentas.
+* Verificar el estado de los negocios asociados.
+* Controlar los permisos correspondientes.
+
+---
+
+## 5. Gestión de negocios
+
+El administrador del sistema podrá administrar los establecimientos registrados en la plataforma.
+
+Podrá:
+
+* Registrar negocios.
+* Consultar negocios.
+* Editar información comercial.
+* Actualizar datos del establecimiento.
+* Activar o desactivar negocios.
+* Consultar el administrador responsable.
+* Supervisar el estado del negocio dentro de la plataforma.
+
+La información podrá incluir:
+
+* Nombre comercial.
+* RUC.
+* Dirección.
+* Teléfono.
+* Descripción.
+* Estado del negocio.
+* Administrador responsable.
+
+---
+
+## 6. Gestión de productos
+
+El administrador del sistema podrá supervisar los productos registrados por los diferentes negocios.
+
+Podrá:
+
+* Consultar productos.
+* Consultar categorías.
+* Supervisar precios.
+* Supervisar disponibilidad.
+* Verificar el negocio al que pertenece cada producto.
+* Activar o desactivar productos cuando corresponda.
+
+La gestión detallada de los productos corresponderá principalmente al **administrador del negocio**.
+
+---
+
+## 7. Gestión de pedidos
+
+El administrador del sistema podrá supervisar los pedidos realizados dentro de QUILLAYAA!.
+
+Podrá consultar:
+
+* Número de pedido.
+* Cliente.
+* Negocio.
+* Productos.
+* Monto total.
+* Método de pago.
+* Estado del pedido.
+* Repartidor asignado.
+* Fecha del pedido.
+
+Esto permitirá realizar una supervisión general del flujo de pedidos de la plataforma.
+
+---
+
+## 8. Gestión de pagos
+
+El administrador del sistema podrá supervisar la información relacionada con los pagos.
+
+Podrá consultar:
+
+* Pedido asociado.
+* Método de pago.
+* Monto.
+* Estado del pago.
+* Fecha de operación.
+
+Los estados podrán incluir:
+
+* Pendiente.
+* Pagado.
+* Rechazado.
+* Cancelado.
+
+La información permitirá realizar una supervisión general de las operaciones de pago.
+
+---
+
+## 9. Gestión de repartidores
+
+El administrador del sistema podrá administrar y supervisar a los repartidores registrados.
+
+Podrá:
+
+* Consultar repartidores.
+* Revisar su información.
+* Activar o desactivar cuentas.
+* Consultar disponibilidad.
+* Consultar entregas asignadas.
+* Supervisar el estado de las entregas.
+
+---
+
+## 10. Gestión de categorías
+
+El administrador del sistema podrá gestionar las categorías generales utilizadas dentro de la plataforma.
+
+Podrá:
+
+* Registrar categorías.
+* Editar categorías.
+* Desactivar categorías.
+* Consultar categorías disponibles.
+
+Las categorías permitirán organizar los productos ofrecidos por los diferentes negocios.
+
+---
+
+## 11. Reportes y estadísticas generales
+
+El administrador del sistema podrá consultar información general de la plataforma mediante un panel administrativo.
+
+Podrá visualizar indicadores como:
+
+* Cantidad de clientes registrados.
+* Cantidad de administradores del negocio.
+* Cantidad de negocios registrados.
+* Cantidad de repartidores.
+* Cantidad de pedidos.
+* Pedidos pendientes.
+* Pedidos entregados.
+* Pedidos cancelados.
+* Monto total de ventas registrado en la plataforma.
+* Cantidad de pedidos por periodo.
+* Información general de pagos.
+* Información general de delivery.
+
+Estas estadísticas estarán orientadas a la **supervisión general de QUILLAYAA!** y no reemplazarán las estadísticas individuales de cada negocio.
+
+---
+
+# 12. Panel del administrador del sistema
+
+El administrador del sistema contará con un panel administrativo desde el cual podrá acceder a los diferentes módulos.
+
+### Panel principal
+
+**ADMINISTRADOR DEL SISTEMA**
+
+→ Dashboard
+→ Usuarios
+→ Administradores del negocio
+→ Negocios
+→ Productos
+→ Categorías
+→ Pedidos
+→ Pagos
+→ Repartidores
+→ Delivery
+→ Reportes
+→ Estadísticas
+→ Configuración
+
+---
+
+# 13. Dashboard del administrador del sistema
+
+El dashboard podrá mostrar información resumida de la plataforma mediante indicadores.
+
+Por ejemplo:
+
+| Indicador              | Información                       |
+| ---------------------- | --------------------------------- |
+| **Usuarios**           | Total de usuarios registrados     |
+| **Negocios**           | Total de negocios registrados     |
+| **Pedidos**            | Total de pedidos registrados      |
+| **Repartidores**       | Total de repartidores registrados |
+| **Ventas**             | Monto total registrado            |
+| **Pedidos pendientes** | Pedidos que requieren atención    |
+| **Pedidos entregados** | Pedidos completados               |
+| **Pedidos cancelados** | Pedidos cancelados                |
+
+El dashboard permitirá al administrador del sistema obtener una visión general del funcionamiento de la plataforma.
+
+---
+
+# 14. Roles y permisos
+
+El administrador del sistema será responsable de controlar los permisos asociados a cada tipo de usuario.
+
+| Rol                           | Función principal                                 |
+| ----------------------------- | ------------------------------------------------- |
+| **Cliente**                   | Consultar productos y realizar pedidos            |
+| **Administrador del negocio** | Gestionar su negocio, productos, pedidos y ventas |
+| **Repartidor**                | Gestionar entregas asignadas                      |
+| **Administrador del sistema** | Administrar y supervisar toda la plataforma       |
+
+Cada usuario deberá acceder únicamente a las funciones correspondientes a su rol.
+
+---
+
+# 15. Requisitos funcionales del administrador del sistema
+
+| Código       | Requisito                                                                              |
+| ------------ | -------------------------------------------------------------------------------------- |
+| **RF-ADM01** | El administrador del sistema podrá iniciar sesión en el panel administrativo.          |
+| **RF-ADM02** | El administrador del sistema podrá gestionar usuarios.                                 |
+| **RF-ADM03** | El administrador del sistema podrá gestionar administradores del negocio.              |
+| **RF-ADM04** | El administrador del sistema podrá gestionar negocios.                                 |
+| **RF-ADM05** | El administrador del sistema podrá supervisar productos.                               |
+| **RF-ADM06** | El administrador del sistema podrá gestionar categorías.                               |
+| **RF-ADM07** | El administrador del sistema podrá supervisar pedidos.                                 |
+| **RF-ADM08** | El administrador del sistema podrá supervisar pagos.                                   |
+| **RF-ADM09** | El administrador del sistema podrá gestionar repartidores.                             |
+| **RF-ADM10** | El administrador del sistema podrá supervisar el servicio de delivery.                 |
+| **RF-ADM11** | El administrador del sistema podrá consultar reportes básicos.                         |
+| **RF-ADM12** | El administrador del sistema podrá consultar estadísticas generales de la plataforma.  |
+| **RF-ADM13** | El administrador del sistema podrá activar o desactivar cuentas de usuarios.           |
+| **RF-ADM14** | El administrador del sistema podrá supervisar las operaciones generales de QUILLAYAA!. |
+
+---
+
+# 16. Alcance del administrador del sistema
+
+El administrador del sistema tendrá una visión global de QUILLAYAA!.
+
+Su función principal será **administrar y supervisar la plataforma**, mientras que el administrador del negocio será responsable de la gestión específica de su establecimiento.
+
+Por ejemplo:
+
+**Administrador del negocio**
+
+→ Sus productos
+→ Sus pedidos
+→ Sus clientes
+→ Sus ventas
+→ Sus estadísticas
+
+**Administrador del sistema**
+
+→ Todos los negocios
+→ Todos los usuarios
+→ Todos los pedidos
+→ Todos los repartidores
+→ Todos los pagos
+→ Estadísticas generales
+→ Supervisión de toda la plataforma
+
+---
+
+# 17. Flujo principal del administrador del sistema
+
+**Administrador del sistema**
+
+→ Inicia sesión
+→ Accede al panel administrativo
+→ Consulta el dashboard
+→ Gestiona usuarios
+→ Gestiona administradores del negocio
+→ Gestiona negocios
+→ Supervisa productos
+→ Supervisa pedidos
+→ Supervisa pagos
+→ Gestiona repartidores
+→ Consulta delivery
+→ Consulta reportes y estadísticas
+→ Supervisa el funcionamiento general de QUILLAYAA!.
+
+---
+
+# 18. Base de datos relacionada
+
+Las principales entidades relacionadas con el administrador del sistema serán:
+
+* Usuarios.
+* Roles.
+* Negocios.
+* Administradores del negocio.
+* Productos.
+* Categorías.
+* Pedidos.
+* Detalle de pedidos.
+* Pagos.
+* Repartidores.
+* Entregas.
+* Direcciones.
+* Ventas.
+
+El administrador del sistema tendrá acceso a la información necesaria para realizar las funciones de administración y supervisión correspondientes.
