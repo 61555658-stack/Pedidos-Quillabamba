@@ -9,7 +9,7 @@ type PlatformUser = { id: number; name: string; email: string; role: string; act
 type BusinessAdmin = { id: number; userId: number; name: string; email: string; businessName: string; accountActive: boolean; permissionsActive: boolean };
 type BusinessAccount = { id: number; name: string; ruc: string; address: string; phone: string; administrator: string; active: boolean };
 type ProductRow = { id: number; name: string; business: string; category: string; price: number; stock: number; active: boolean };
-type CategoryRow = { id: number; name: string; active: boolean };
+type CategoryRow = { id: number; name: string; business: string; active: boolean };
 type OrderRow = { id: string; customer: string; business: string; summary: string; total: number; payment: string; status: string; assigned: string; date: string };
 type PaymentRow = { id: string; orderId: string; method: string; amount: number; status: string; date: string };
 type CourierRow = { id: number; userId: number; name: string; contact: string; status: string; availability: string; deliveries: number; active: boolean };
@@ -40,10 +40,12 @@ const initialProducts: ProductRow[] = [
 ];
 
 const initialCategories: CategoryRow[] = [
-  { id: 1, name: 'Platos fuertes', active: true },
-  { id: 2, name: 'Sopas', active: true },
-  { id: 3, name: 'Especialidades', active: true },
-  { id: 4, name: 'Bebidas', active: true },
+  { id: 1, name: 'Platos fuertes', business: 'Sazón de la Plaza', active: true },
+  { id: 2, name: 'Sopas', business: 'Sazón de la Plaza', active: true },
+  { id: 3, name: 'Pescados', business: 'Cevichería La Ribera', active: true },
+  { id: 4, name: 'Mariscos', business: 'Cevichería La Ribera', active: true },
+  { id: 5, name: 'Bebidas', business: 'Café Pangoa', active: true },
+  { id: 6, name: 'Postres', business: 'Café Pangoa', active: true },
 ];
 
 const initialOrders: OrderRow[] = [
@@ -83,6 +85,7 @@ const menu: Array<{ id: ManagementTab; label: string; icon: any }> = [
 export default function AdminManagementPage() {
   const [, setLocation] = useLocation();
   const [tab, setTab] = useState<ManagementTab>('users');
+  const [selectedBusinessId, setSelectedBusinessId] = useState<number | null>(null);
   
   const [users, setUsers] = useState(initialUsers);
   const [businessAdmins, setBusinessAdmins] = useState(initialBusinessAdmins);
@@ -146,7 +149,6 @@ export default function AdminManagementPage() {
 
     setUsers(users.map(u => u.id === id ? { ...u, ...patch } : u));
     
-    // Sync dependent models
     if (oldUser.role !== patch.role) {
       if (patch.role === 'Administrador del negocio') {
         setBusinessAdmins([...businessAdmins, { id: Date.now(), userId: id, name: patch.name, email: patch.email, businessName: 'Sin asignar', accountActive: true, permissionsActive: true }]);
@@ -199,6 +201,19 @@ export default function AdminManagementPage() {
   };
 
   const handleSaveBusiness = (id: number) => {
+    const oldBiz = businesses.find(b => b.id === id);
+    if (!oldBiz) return;
+
+    const newName = editingBusinessData.name;
+    const oldName = oldBiz.name;
+
+    if (oldName !== newName) {
+      setBusinessAdmins(admins => admins.map(a => a.businessName === oldName ? { ...a, businessName: newName } : a));
+      setProducts(prods => prods.map(p => p.business === oldName ? { ...p, business: newName } : p));
+      setCategories(cats => cats.map(c => c.business === oldName ? { ...c, business: newName } : c));
+      setOrders(ords => ords.map(o => o.business === oldName ? { ...o, business: newName } : o));
+    }
+
     setBusinesses(businesses.map(b => b.id === id ? { ...b, ...editingBusinessData } : b));
     setEditingBusinessId(null);
     announce('Datos del negocio guardados.');
@@ -210,6 +225,23 @@ export default function AdminManagementPage() {
     announce(biz?.active ? 'Negocio pausado.' : 'Negocio habilitado.');
   };
   
+  const handleBusinessAccess = (businessId: number, targetTab: ManagementTab) => {
+    setSelectedBusinessId(businessId);
+    setTab(targetTab);
+  };
+
+  // -- CONTEXT-AWARE DATA --
+  const selectedBusiness = businesses.find(b => b.id === selectedBusinessId);
+  const isScopedTab = ['products', 'categories', 'orders', 'payments'].includes(tab);
+
+  const filteredProducts = selectedBusiness ? products.filter(p => p.business === selectedBusiness.name) : [];
+  const filteredCategories = selectedBusiness ? categories.filter(c => c.business === selectedBusiness.name) : [];
+  const filteredOrders = selectedBusiness ? orders.filter(o => o.business === selectedBusiness.name) : [];
+  const filteredPayments = selectedBusiness ? payments.filter(p => {
+    const order = orders.find(o => o.id === p.orderId);
+    return order?.business === selectedBusiness.name;
+  }) : [];
+
   // -- PRODUCTS --
   const toggleProductActive = (id: number) => {
     setProducts(products.map(p => p.id === id ? { ...p, active: !p.active } : p));
@@ -218,16 +250,16 @@ export default function AdminManagementPage() {
   
   // -- CATEGORIES --
   const addCategory = () => {
-    if (!newCategory.trim()) return;
-    setCategories([...categories, { id: Date.now(), name: newCategory.trim(), active: true }]);
+    if (!newCategory.trim() || !selectedBusiness) return;
+    setCategories([...categories, { id: Date.now(), name: newCategory.trim(), business: selectedBusiness.name, active: true }]);
     setNewCategory('');
     announce('Categoría creada.');
   };
   
   const saveCategory = (id: number) => {
     const cat = categories.find(c => c.id === id);
-    if (cat && cat.name !== editingCategoryName) {
-      setProducts(products.map(p => p.category === cat.name ? { ...p, category: editingCategoryName } : p));
+    if (cat && cat.name !== editingCategoryName && selectedBusiness) {
+      setProducts(products.map(p => (p.category === cat.name && p.business === selectedBusiness.name) ? { ...p, category: editingCategoryName } : p));
     }
     setCategories(categories.map(c => c.id === id ? { ...c, name: editingCategoryName } : c));
     setEditingCategoryId(null);
@@ -263,7 +295,7 @@ export default function AdminManagementPage() {
 
   const logout = () => { clearSession(); setLocation('/login'); };
 
-  // Deriving Stats and Chart Data
+  // Deriving Stats and Chart Data (Global)
   const statsClients = users.filter(u => u.role === 'Cliente').length;
   const statsAdmins = businessAdmins.length;
   const statsBusinesses = businesses.length;
@@ -284,7 +316,6 @@ export default function AdminManagementPage() {
       return acc;
     }, {} as Record<string, number>);
     
-    // Sort dates or default if empty
     let keys = Object.keys(dates).sort((a, b) => {
        const pa = a.split('/').reverse().join('');
        const pb = b.split('/').reverse().join('');
@@ -295,11 +326,19 @@ export default function AdminManagementPage() {
     const max = Math.max(...Object.values(dates), 1);
     
     return keys.map(k => ({
-      date: k.substring(0, 5), // '25/10'
+      date: k.substring(0, 5),
       count: dates[k] || 0,
       height: ((dates[k] || 0) / max) * 100
     }));
   }, [orders]);
+
+  const EmptyBusinessSelector = ({ title }: { title: string }) => (
+    <div className="mt-2 rounded-2xl bg-card p-12 text-center ring-1 ring-border">
+      <Store className="mx-auto h-10 w-10 text-muted-foreground opacity-50" />
+      <h3 className="mt-4 font-display text-xl font-bold">Selecciona un negocio</h3>
+      <p className="mt-2 text-sm text-muted-foreground">Debes elegir un negocio para gestionar sus {title}.</p>
+    </div>
+  );
 
   return <main className="min-h-[100dvh] bg-[#f1efe7] text-primary">
     <header className="border-b border-border/70 bg-[#f7f5ee]">
@@ -348,6 +387,33 @@ export default function AdminManagementPage() {
         
         {notice && <p className="mt-5 rounded-xl bg-emerald-50 px-4 py-3 text-xs font-bold text-emerald-700" data-testid="status-management-feedback">{notice}</p>}
         
+        {isScopedTab && (
+          <div className="mt-7 mb-6 rounded-2xl bg-card p-5 ring-1 ring-border flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+            <div className="w-full lg:max-w-xs">
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">Contexto de negocio</p>
+              <select
+                value={selectedBusinessId || ''}
+                onChange={e => setSelectedBusinessId(Number(e.target.value) || null)}
+                className="h-10 w-full rounded-xl border border-input bg-background px-3 text-sm font-bold text-primary focus:border-accent outline-none"
+                data-testid="select-business-context"
+              >
+                <option value="">Seleccionar negocio...</option>
+                {businesses.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+              </select>
+            </div>
+            {selectedBusiness && (
+              <div className="flex flex-wrap gap-x-8 gap-y-4 text-xs bg-muted/50 rounded-xl px-5 py-3 lg:bg-transparent lg:px-0 lg:py-0">
+                <div><p className="text-muted-foreground mb-1 text-[10px] uppercase tracking-wider">RUC</p><p className="font-mono-app font-bold text-sm">{selectedBusiness.ruc}</p></div>
+                <div><p className="text-muted-foreground mb-1 text-[10px] uppercase tracking-wider">Admin Responsable</p><p className="font-bold text-sm">{selectedBusiness.administrator}</p></div>
+                <div>
+                  <p className="text-muted-foreground mb-1 text-[10px] uppercase tracking-wider">Estado</p>
+                  <span className={`inline-block rounded-full px-2.5 py-0.5 font-bold text-[10px] ${selectedBusiness.active ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>{selectedBusiness.active ? 'Activo' : 'Pausado'}</span>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         {tab === 'users' && <section className="mt-7 space-y-5">
           <div className="rounded-2xl bg-card p-5 ring-1 ring-border">
             <h2 className="font-display text-lg font-bold mb-4">Crear usuario</h2>
@@ -472,9 +538,9 @@ export default function AdminManagementPage() {
           
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {businesses.map((business) => (
-              <article key={business.id} className="rounded-2xl bg-card p-5 ring-1 ring-border" data-testid={`card-admin-business-${business.id}`}>
+              <article key={business.id} className="rounded-2xl bg-card p-5 ring-1 ring-border flex flex-col" data-testid={`card-admin-business-${business.id}`}>
                 {editingBusinessId === business.id ? (
-                  <div className="space-y-3">
+                  <div className="space-y-3 flex-1">
                     <input value={editingBusinessData.name} onChange={e => setEditingBusinessData({ ...editingBusinessData, name: e.target.value })} placeholder="Nombre" className="h-9 w-full rounded-lg border border-input px-2 text-xs font-bold" />
                     <input value={editingBusinessData.ruc} onChange={e => setEditingBusinessData({ ...editingBusinessData, ruc: e.target.value })} placeholder="RUC" className="h-9 w-full rounded-lg border border-input px-2 text-xs font-mono-app" />
                     <input value={editingBusinessData.address} onChange={e => setEditingBusinessData({ ...editingBusinessData, address: e.target.value })} placeholder="Dirección" className="h-9 w-full rounded-lg border border-input px-2 text-xs" />
@@ -487,9 +553,9 @@ export default function AdminManagementPage() {
                     </div>
                   </div>
                 ) : (
-                  <>
+                  <div className="flex-1 flex flex-col">
                     <div className="flex items-start justify-between gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-secondary text-primary">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-secondary text-primary">
                         <Store className="h-4 w-4" />
                       </div>
                       <div className="flex items-center gap-2">
@@ -499,131 +565,181 @@ export default function AdminManagementPage() {
                     </div>
                     <h2 className="mt-4 font-display text-lg font-bold">{business.name}</h2>
                     <p className="mt-1 font-mono-app text-[10px] text-muted-foreground">RUC {business.ruc}</p>
-                    <div className="mt-3 space-y-1">
+                    <div className="mt-3 space-y-1 mb-4 flex-1">
                       <p className="text-xs text-muted-foreground"><span className="font-semibold text-primary">Dir:</span> {business.address}</p>
                       <p className="text-xs text-muted-foreground"><span className="font-semibold text-primary">Tel:</span> {business.phone}</p>
                       <p className="text-xs text-muted-foreground"><span className="font-semibold text-primary">Admin:</span> {business.administrator}</p>
                     </div>
-                    <button onClick={() => toggleBusinessActive(business.id)} className="mt-5 w-full rounded-xl bg-muted px-3 py-2.5 text-xs font-bold transition hover:bg-secondary">
+
+                    <div className="grid grid-cols-2 gap-2 border-t border-border pt-4 mt-auto">
+                      <button onClick={() => handleBusinessAccess(business.id, 'products')} className="rounded-lg bg-background border border-border px-2 py-2 text-[10px] font-bold hover:bg-muted transition" data-testid={`btn-goto-products-${business.id}`}>Productos</button>
+                      <button onClick={() => handleBusinessAccess(business.id, 'categories')} className="rounded-lg bg-background border border-border px-2 py-2 text-[10px] font-bold hover:bg-muted transition" data-testid={`btn-goto-categories-${business.id}`}>Categorías</button>
+                      <button onClick={() => handleBusinessAccess(business.id, 'orders')} className="rounded-lg bg-background border border-border px-2 py-2 text-[10px] font-bold hover:bg-muted transition" data-testid={`btn-goto-orders-${business.id}`}>Pedidos</button>
+                      <button onClick={() => handleBusinessAccess(business.id, 'payments')} className="rounded-lg bg-background border border-border px-2 py-2 text-[10px] font-bold hover:bg-muted transition" data-testid={`btn-goto-payments-${business.id}`}>Pagos</button>
+                    </div>
+                    <button onClick={() => toggleBusinessActive(business.id)} className="mt-2 w-full rounded-xl bg-muted px-3 py-2.5 text-xs font-bold transition hover:bg-accent/10 hover:text-accent">
                       {business.active ? 'Pausar temporalmente' : 'Reactivar negocio'}
                     </button>
-                  </>
+                  </div>
                 )}
               </article>
             ))}
           </div>
         </section>}
 
-        {tab === 'products' && <section className="mt-7 overflow-x-auto rounded-2xl bg-card ring-1 ring-border">
-          <table className="w-full min-w-[780px] text-left text-sm">
-            <thead className="border-b border-border bg-muted/50 text-[10px] uppercase tracking-wide text-muted-foreground">
-              <tr><th className="px-5 py-4">Producto</th><th className="px-5 py-4">Negocio</th><th className="px-5 py-4">Categoría</th><th className="px-5 py-4">Precio</th><th className="px-5 py-4">Stock</th><th className="px-5 py-4 text-right">Estado</th></tr>
-            </thead>
-            <tbody>
-              {products.map((product) => (
-                <tr key={product.id} className="border-b border-border/70 last:border-0" data-testid={`row-admin-product-${product.id}`}>
-                  <td className="px-5 py-4 font-bold">{product.name}</td>
-                  <td className="px-5 py-4 text-xs font-semibold">{product.business}</td>
-                  <td className="px-5 py-4 text-xs text-muted-foreground">{product.category}</td>
-                  <td className="px-5 py-4 font-mono-app text-xs">S/ {product.price.toFixed(2)}</td>
-                  <td className="px-5 py-4">
-                    <span className={product.stock === 0 ? 'font-bold text-red-700' : ''}>{product.stock > 0 ? product.stock : 'Agotado'}</span>
-                  </td>
-                  <td className="px-5 py-4 text-right">
-                    <button onClick={() => toggleProductActive(product.id)} className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${product.active ? 'bg-emerald-100 text-emerald-800' : 'bg-muted text-muted-foreground'}`}>
-                      {product.active ? 'Activo' : 'Desactivado'}
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </section>}
-
-        {tab === 'categories' && <section className="mt-7 rounded-2xl bg-card p-6 ring-1 ring-border">
-          <div className="flex gap-2">
-            <input value={newCategory} onChange={(event) => setNewCategory(event.target.value)} placeholder="Nueva categoría general" className="h-11 flex-1 rounded-xl border border-input bg-background px-3 text-sm" data-testid="input-admin-category" />
-            <button onClick={addCategory} className="flex items-center gap-2 rounded-xl bg-primary px-4 text-xs font-bold text-white" data-testid="button-admin-add-category">
-              <Plus className="h-4 w-4 text-secondary" /> Crear
-            </button>
-          </div>
-          <div className="mt-6 grid gap-3 sm:grid-cols-2">
-            {categories.map((category) => (
-              <div key={category.id} className="flex items-center justify-between rounded-xl bg-muted/50 px-4 py-3">
-                {editingCategoryId === category.id ? (
-                  <input value={editingCategoryName} onChange={(e) => setEditingCategoryName(e.target.value)} className="h-8 flex-1 rounded-lg border border-input bg-background px-2 text-xs font-bold" />
-                ) : (
-                  <span className="flex items-center gap-2 text-sm font-bold">
-                    <Tag className="h-4 w-4 text-accent" />{category.name}
-                  </span>
-                )}
-                
-                <div className="flex items-center gap-3 ml-4">
-                  <span className="rounded-full bg-background px-2 py-0.5 text-[10px] font-bold text-muted-foreground border border-border">
-                    {products.filter(p => p.category === category.name).length} prod.
-                  </span>
-                  <button onClick={() => toggleCategoryActive(category.id)} className={`rounded-full px-2 py-1 text-[10px] font-bold ${category.active ? 'bg-emerald-100 text-emerald-800' : 'bg-muted text-muted-foreground'}`}>
-                    {category.active ? 'Activa' : 'Desactivada'}
-                  </button>
-                  {editingCategoryId === category.id ? (
-                    <button onClick={() => saveCategory(category.id)} className="rounded-lg bg-secondary p-1.5 text-primary"><Check className="h-3.5 w-3.5" /></button>
-                  ) : (
-                    <button onClick={() => { setEditingCategoryId(category.id); setEditingCategoryName(category.name); }} className="rounded-lg bg-background p-1.5 text-muted-foreground border border-border hover:bg-muted"><Pencil className="h-3.5 w-3.5" /></button>
-                  )}
+        {tab === 'products' && (
+          !selectedBusiness ? <EmptyBusinessSelector title="productos" /> : (
+            <section className="overflow-x-auto rounded-2xl bg-card ring-1 ring-border">
+              {filteredProducts.length === 0 ? (
+                <div className="p-12 text-center">
+                  <PackageCheck className="mx-auto h-8 w-8 text-muted-foreground opacity-50" />
+                  <p className="mt-4 text-sm font-bold text-muted-foreground">No hay productos registrados para este negocio.</p>
                 </div>
+              ) : (
+                <table className="w-full min-w-[780px] text-left text-sm">
+                  <thead className="border-b border-border bg-muted/50 text-[10px] uppercase tracking-wide text-muted-foreground">
+                    <tr><th className="px-5 py-4">Producto</th><th className="px-5 py-4">Categoría</th><th className="px-5 py-4">Precio</th><th className="px-5 py-4">Stock</th><th className="px-5 py-4 text-right">Estado</th></tr>
+                  </thead>
+                  <tbody>
+                    {filteredProducts.map((product) => (
+                      <tr key={product.id} className="border-b border-border/70 last:border-0" data-testid={`row-admin-product-${product.id}`}>
+                        <td className="px-5 py-4 font-bold">{product.name}</td>
+                        <td className="px-5 py-4 text-xs text-muted-foreground">{product.category}</td>
+                        <td className="px-5 py-4 font-mono-app text-xs">S/ {product.price.toFixed(2)}</td>
+                        <td className="px-5 py-4">
+                          <span className={product.stock === 0 ? 'font-bold text-red-700' : ''}>{product.stock > 0 ? product.stock : 'Agotado'}</span>
+                        </td>
+                        <td className="px-5 py-4 text-right">
+                          <button onClick={() => toggleProductActive(product.id)} className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${product.active ? 'bg-emerald-100 text-emerald-800' : 'bg-muted text-muted-foreground'}`}>
+                            {product.active ? 'Activo' : 'Desactivado'}
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </section>
+          )
+        )}
+
+        {tab === 'categories' && (
+          !selectedBusiness ? <EmptyBusinessSelector title="categorías" /> : (
+            <section className="rounded-2xl bg-card p-6 ring-1 ring-border">
+              <div className="flex gap-2">
+                <input value={newCategory} onChange={(event) => setNewCategory(event.target.value)} placeholder="Nueva categoría" className="h-11 flex-1 rounded-xl border border-input bg-background px-3 text-sm" data-testid="input-admin-category" />
+                <button onClick={addCategory} className="flex items-center gap-2 rounded-xl bg-primary px-4 text-xs font-bold text-white" data-testid="button-admin-add-category">
+                  <Plus className="h-4 w-4 text-secondary" /> Crear
+                </button>
               </div>
-            ))}
-          </div>
-        </section>}
+              
+              {filteredCategories.length === 0 ? (
+                <div className="mt-8 p-8 text-center">
+                  <Tag className="mx-auto h-8 w-8 text-muted-foreground opacity-50" />
+                  <p className="mt-4 text-sm font-bold text-muted-foreground">No hay categorías registradas para este negocio.</p>
+                </div>
+              ) : (
+                <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                  {filteredCategories.map((category) => (
+                    <div key={category.id} className="flex items-center justify-between rounded-xl bg-muted/50 px-4 py-3">
+                      {editingCategoryId === category.id ? (
+                        <input value={editingCategoryName} onChange={(e) => setEditingCategoryName(e.target.value)} className="h-8 flex-1 rounded-lg border border-input bg-background px-2 text-xs font-bold" />
+                      ) : (
+                        <span className="flex items-center gap-2 text-sm font-bold">
+                          <Tag className="h-4 w-4 text-accent" />{category.name}
+                        </span>
+                      )}
+                      
+                      <div className="flex items-center gap-3 ml-4 shrink-0">
+                        <span className="rounded-full bg-background px-2 py-0.5 text-[10px] font-bold text-muted-foreground border border-border">
+                          {filteredProducts.filter(p => p.category === category.name).length} prod.
+                        </span>
+                        <button onClick={() => toggleCategoryActive(category.id)} className={`rounded-full px-2 py-1 text-[10px] font-bold ${category.active ? 'bg-emerald-100 text-emerald-800' : 'bg-muted text-muted-foreground'}`}>
+                          {category.active ? 'Activa' : 'Desactivada'}
+                        </button>
+                        {editingCategoryId === category.id ? (
+                          <button onClick={() => saveCategory(category.id)} className="rounded-lg bg-secondary p-1.5 text-primary"><Check className="h-3.5 w-3.5" /></button>
+                        ) : (
+                          <button onClick={() => { setEditingCategoryId(category.id); setEditingCategoryName(category.name); }} className="rounded-lg bg-background p-1.5 text-muted-foreground border border-border hover:bg-muted"><Pencil className="h-3.5 w-3.5" /></button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
+          )
+        )}
 
-        {tab === 'orders' && <section className="mt-7 overflow-x-auto rounded-2xl bg-card ring-1 ring-border">
-          <table className="w-full min-w-[1000px] text-left text-sm">
-            <thead className="border-b border-border bg-muted/50 text-[10px] uppercase tracking-wide text-muted-foreground">
-              <tr><th className="px-5 py-4">N° Pedido</th><th className="px-5 py-4">Fecha</th><th className="px-5 py-4">Cliente</th><th className="px-5 py-4">Negocio</th><th className="px-5 py-4">Resumen</th><th className="px-5 py-4">Monto</th><th className="px-5 py-4">Pago</th><th className="px-5 py-4">Estado</th><th className="px-5 py-4">Repartidor</th></tr>
-            </thead>
-            <tbody>
-              {orders.map((order) => (
-                <tr key={order.id} className="border-b border-border/70 last:border-0">
-                  <td className="px-5 py-4 font-mono-app font-bold">{order.id}</td>
-                  <td className="px-5 py-4 text-xs text-muted-foreground">{order.date}</td>
-                  <td className="px-5 py-4 font-bold">{order.customer}</td>
-                  <td className="px-5 py-4 text-xs font-semibold text-primary">{order.business}</td>
-                  <td className="px-5 py-4 text-xs text-muted-foreground max-w-[150px] truncate" title={order.summary}>{order.summary}</td>
-                  <td className="px-5 py-4 font-mono-app text-xs">S/ {order.total.toFixed(2)}</td>
-                  <td className="px-5 py-4 text-xs">{order.payment}</td>
-                  <td className="px-5 py-4">
-                    <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${order.status === 'Entregado' ? 'bg-emerald-100 text-emerald-800' : order.status === 'Cancelado' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}`}>{order.status}</span>
-                  </td>
-                  <td className="px-5 py-4 text-xs text-muted-foreground">{order.assigned}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </section>}
+        {tab === 'orders' && (
+          !selectedBusiness ? <EmptyBusinessSelector title="pedidos" /> : (
+            <section className="overflow-x-auto rounded-2xl bg-card ring-1 ring-border">
+              {filteredOrders.length === 0 ? (
+                <div className="p-12 text-center">
+                  <ClipboardList className="mx-auto h-8 w-8 text-muted-foreground opacity-50" />
+                  <p className="mt-4 text-sm font-bold text-muted-foreground">No hay pedidos registrados para este negocio.</p>
+                </div>
+              ) : (
+                <table className="w-full min-w-[1000px] text-left text-sm">
+                  <thead className="border-b border-border bg-muted/50 text-[10px] uppercase tracking-wide text-muted-foreground">
+                    <tr><th className="px-5 py-4">N° Pedido</th><th className="px-5 py-4">Fecha</th><th className="px-5 py-4">Cliente</th><th className="px-5 py-4">Resumen</th><th className="px-5 py-4">Monto</th><th className="px-5 py-4">Pago</th><th className="px-5 py-4">Estado</th><th className="px-5 py-4">Repartidor</th></tr>
+                  </thead>
+                  <tbody>
+                    {filteredOrders.map((order) => (
+                      <tr key={order.id} className="border-b border-border/70 last:border-0">
+                        <td className="px-5 py-4 font-mono-app font-bold">{order.id}</td>
+                        <td className="px-5 py-4 text-xs text-muted-foreground">{order.date}</td>
+                        <td className="px-5 py-4 font-bold">{order.customer}</td>
+                        <td className="px-5 py-4 text-xs text-muted-foreground max-w-[150px] truncate" title={order.summary}>{order.summary}</td>
+                        <td className="px-5 py-4 font-mono-app text-xs">S/ {order.total.toFixed(2)}</td>
+                        <td className="px-5 py-4 text-xs">{order.payment}</td>
+                        <td className="px-5 py-4">
+                          <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${order.status === 'Entregado' ? 'bg-emerald-100 text-emerald-800' : order.status === 'Cancelado' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}`}>{order.status}</span>
+                        </td>
+                        <td className="px-5 py-4 text-xs text-muted-foreground">{order.assigned}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </section>
+          )
+        )}
 
-        {tab === 'payments' && <section className="mt-7 overflow-x-auto rounded-2xl bg-card ring-1 ring-border">
-          <table className="w-full min-w-[720px] text-left text-sm">
-            <thead className="border-b border-border bg-muted/50 text-[10px] uppercase tracking-wide text-muted-foreground">
-              <tr><th className="px-5 py-4">ID Pago</th><th className="px-5 py-4">Pedido asociado</th><th className="px-5 py-4">Fecha</th><th className="px-5 py-4">Método</th><th className="px-5 py-4">Monto</th><th className="px-5 py-4 text-right">Estado</th></tr>
-            </thead>
-            <tbody>
-              {payments.map((payment) => (
-                <tr key={payment.id} className="border-b border-border/70 last:border-0">
-                  <td className="px-5 py-4 font-mono-app font-bold text-muted-foreground">{payment.id}</td>
-                  <td className="px-5 py-4 font-mono-app font-bold">{payment.orderId}</td>
-                  <td className="px-5 py-4 text-xs text-muted-foreground">{payment.date}</td>
-                  <td className="px-5 py-4 text-xs font-semibold">{payment.method}</td>
-                  <td className="px-5 py-4 font-mono-app text-xs">S/ {payment.amount.toFixed(2)}</td>
-                  <td className="px-5 py-4 text-right">
-                    <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold inline-block ${payment.status === 'Confirmado' ? 'bg-emerald-100 text-emerald-800' : payment.status === 'Rechazado' || payment.status === 'Cancelado' ? 'bg-red-100 text-red-800' : 'bg-amber-100 text-amber-800'}`}>
-                      {payment.status}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </section>}
+        {tab === 'payments' && (
+          !selectedBusiness ? <EmptyBusinessSelector title="pagos" /> : (
+            <section className="overflow-x-auto rounded-2xl bg-card ring-1 ring-border">
+              {filteredPayments.length === 0 ? (
+                <div className="p-12 text-center">
+                  <CircleDollarSign className="mx-auto h-8 w-8 text-muted-foreground opacity-50" />
+                  <p className="mt-4 text-sm font-bold text-muted-foreground">No hay pagos registrados para este negocio.</p>
+                </div>
+              ) : (
+                <table className="w-full min-w-[720px] text-left text-sm">
+                  <thead className="border-b border-border bg-muted/50 text-[10px] uppercase tracking-wide text-muted-foreground">
+                    <tr><th className="px-5 py-4">ID Pago</th><th className="px-5 py-4">Pedido asociado</th><th className="px-5 py-4">Fecha</th><th className="px-5 py-4">Método</th><th className="px-5 py-4">Monto</th><th className="px-5 py-4 text-right">Estado</th></tr>
+                  </thead>
+                  <tbody>
+                    {filteredPayments.map((payment) => (
+                      <tr key={payment.id} className="border-b border-border/70 last:border-0">
+                        <td className="px-5 py-4 font-mono-app font-bold text-muted-foreground">{payment.id}</td>
+                        <td className="px-5 py-4 font-mono-app font-bold">{payment.orderId}</td>
+                        <td className="px-5 py-4 text-xs text-muted-foreground">{payment.date}</td>
+                        <td className="px-5 py-4 text-xs font-semibold">{payment.method}</td>
+                        <td className="px-5 py-4 font-mono-app text-xs">S/ {payment.amount.toFixed(2)}</td>
+                        <td className="px-5 py-4 text-right">
+                          <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold inline-block ${payment.status === 'Confirmado' ? 'bg-emerald-100 text-emerald-800' : payment.status === 'Rechazado' || payment.status === 'Cancelado' ? 'bg-red-100 text-red-800' : 'bg-amber-100 text-amber-800'}`}>
+                            {payment.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </section>
+          )
+        )}
 
         {tab === 'couriers' && <section className="mt-7 overflow-x-auto rounded-2xl bg-card ring-1 ring-border">
           <table className="w-full min-w-[800px] text-left text-sm">

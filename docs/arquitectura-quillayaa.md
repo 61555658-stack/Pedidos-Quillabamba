@@ -48,6 +48,7 @@ negocios, repartidores y administradores del sistema.
 - Supervisar administradores del negocio y sus asociaciones
 - Gestionar y aprobar negocios
 - Supervisar productos, categorías y disponibilidad
+- Entrar al contexto de cada negocio para consultar sus productos, categorías, pedidos y pagos sin mezclar establecimientos
 - Consultar pedidos con cliente, negocio, pago, repartidor y fecha
 - Gestionar repartidores, disponibilidad, asignaciones y delivery
 - Revisar métodos, montos y estados de pago
