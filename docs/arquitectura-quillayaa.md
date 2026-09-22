@@ -17,6 +17,7 @@ negocios, repartidores y administradores del sistema.
 - Seleccionar efectivo, Yape o tarjeta
 - Visualizar el total del pedido
 - Consultar el estado de sus pedidos
+- Calificar el servicio recibido
 - Gestionar sus datos personales
 
 ### Administrador del negocio
@@ -24,13 +25,17 @@ negocios, repartidores y administradores del sistema.
 - Gestionar productos
 - Gestionar categorías
 - Administrar precios, stock y disponibilidad
+- Gestionar imágenes de productos
 - Registrar información comercial, dirección, teléfono y RUC
 - Recibir pedidos
 - Actualizar pedidos hasta dejarlos listos para entrega
+- Consultar ventas del día, semana y mes con porcentajes
+- Visualizar estadísticas básicas del establecimiento
 
 ### Repartidor
 
 - Ver entregas asignadas
+- Gestionar su disponibilidad
 - Ver cliente, detalle del pedido y método de pago
 - Consultar la dirección del cliente
 - Actualizar: pendiente de recoger, en camino y entregado

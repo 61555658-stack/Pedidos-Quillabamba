@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { PackageCheck, Store, LogOut, Plus, Pencil, Trash2, Save, Store as StoreIcon, Settings } from 'lucide-react';
+import { PackageCheck, Store, LogOut, Plus, Pencil, Trash2, Save, Store as StoreIcon, Settings, BarChart3, Tag, TrendingUp, Image as ImageIcon } from 'lucide-react';
 import { useLocation } from 'wouter';
 import { clearSession } from '@/pages/role-access';
 
 type BusinessProfile = { name: string; ruc: string; address: string; phone: string };
-type BusinessProduct = { id: number; name: string; category: string; price: number; stock: number; available: boolean };
+type BusinessProduct = { id: number; name: string; category: string; price: number; stock: number; available: boolean; image?: string };
 type BusinessOrder = { id: string; customer: string; total: number; status: string };
-type BusinessTab = 'orders' | 'products' | 'profile';
+type BusinessTab = 'orders' | 'sales' | 'products' | 'categories' | 'profile';
 
 const initialProfile: BusinessProfile = {
   name: 'Sazón de la Plaza',
@@ -16,8 +16,8 @@ const initialProfile: BusinessProfile = {
 };
 
 const initialProducts: BusinessProduct[] = [
-  { id: 1, name: 'Tacacho con cecina', category: 'Favoritos', price: 26, stock: 15, available: true },
-  { id: 2, name: 'Juane de la casa', category: 'Favoritos', price: 22, stock: 20, available: true },
+  { id: 1, name: 'Tacacho con cecina', category: 'Favoritos', price: 26, stock: 15, available: true, image: '/restaurant-selva.jpg' },
+  { id: 2, name: 'Juane de la casa', category: 'Favoritos', price: 22, stock: 20, available: true, image: '/restaurant-selva.jpg' },
   { id: 3, name: 'Chapo de plátano', category: 'Bebidas', price: 9, stock: 10, available: true },
 ];
 
@@ -28,7 +28,9 @@ const initialOrders: BusinessOrder[] = [
 
 const menu: Array<{ id: BusinessTab; label: string; icon: any }> = [
   { id: 'orders', label: 'Pedidos activos', icon: PackageCheck },
+  { id: 'sales', label: 'Resumen de ventas', icon: BarChart3 },
   { id: 'products', label: 'Carta y productos', icon: StoreIcon },
+  { id: 'categories', label: 'Categorías', icon: Tag },
   { id: 'profile', label: 'Perfil del negocio', icon: Settings },
 ];
 
@@ -37,11 +39,13 @@ export default function BusinessPortalPage() {
   const [tab, setTab] = useState<BusinessTab>('orders');
   
   const [profile, setProfile] = useState<BusinessProfile>(initialProfile);
+  const [categories, setCategories] = useState(['Favoritos', 'Platos principales', 'Sopas', 'Bebidas', 'Postres']);
   const [products, setProducts] = useState<BusinessProduct[]>(initialProducts);
   const [orders, setOrders] = useState<BusinessOrder[]>(initialOrders);
   
   const [notice, setNotice] = useState('');
-  const [newProduct, setNewProduct] = useState({ name: '', category: 'Favoritos', price: '', stock: '' });
+  const [newCategory, setNewCategory] = useState('');
+  const [newProduct, setNewProduct] = useState({ name: '', category: categories[0] || '', image: '', price: '', stock: '' });
   const [editingId, setEditingId] = useState<number | null>(null);
 
   const announce = (message: string) => {
@@ -51,9 +55,27 @@ export default function BusinessPortalPage() {
 
   const logout = () => { clearSession(); setLocation('/login'); };
 
+  const addCategory = () => {
+    const trimmed = newCategory.trim();
+    if (!trimmed) return;
+    if (categories.includes(trimmed)) {
+      announce('La categoría ya existe.');
+      return;
+    }
+    setCategories([...categories, trimmed]);
+    setNewCategory('');
+    announce('Categoría creada.');
+    if (!newProduct.category) setNewProduct({ ...newProduct, category: trimmed });
+  };
+
+  const removeCategory = (cat: string) => {
+    setCategories(categories.filter((c) => c !== cat));
+    announce('Categoría eliminada.');
+  };
+
   const addProduct = () => {
-    if (!newProduct.name.trim() || !newProduct.price || !newProduct.stock) {
-      announce('Completa nombre, precio y stock.');
+    if (!newProduct.name.trim() || !newProduct.price || !newProduct.stock || !newProduct.category) {
+      announce('Completa nombre, categoría, precio y stock.');
       return;
     }
     setProducts((current) => [...current, { 
@@ -62,9 +84,10 @@ export default function BusinessPortalPage() {
       category: newProduct.category, 
       price: Number(newProduct.price), 
       stock: Number(newProduct.stock), 
-      available: true 
+      available: true,
+      image: newProduct.image.trim() || undefined
     }]);
-    setNewProduct({ name: '', category: 'Favoritos', price: '', stock: '' });
+    setNewProduct({ name: '', category: categories[0] || '', image: '', price: '', stock: '' });
     announce('Producto agregado a la carta.');
   };
 
@@ -81,8 +104,6 @@ export default function BusinessPortalPage() {
     setOrders((current) => current.map((o) => o.id === id ? { ...o, status } : o));
     announce(`Estado del pedido actualizado.`);
   };
-
-  const categories = ['Favoritos', 'Platos principales', 'Sopas', 'Bebidas', 'Postres'];
 
   return (
     <main className="min-h-[100dvh] bg-[#f1efe7] text-primary">
@@ -135,7 +156,7 @@ export default function BusinessPortalPage() {
             </span>
           </div>
 
-          {notice && <p className="mt-5 rounded-xl bg-emerald-50 px-4 py-3 text-xs font-bold text-emerald-700" data-testid="status-business-feedback">{notice}</p>}
+          {notice && <p className="mt-5 rounded-xl bg-emerald-50 px-4 py-3 text-xs font-bold text-emerald-700 animate-rise" data-testid="status-business-feedback">{notice}</p>}
 
           {tab === 'orders' && (
             <section className="mt-7 space-y-4">
@@ -148,7 +169,7 @@ export default function BusinessPortalPage() {
                       <p className="mt-1 text-xs font-mono-app text-muted-foreground">S/ {order.total.toFixed(2)}</p>
                     </div>
                     <div className="flex items-center gap-3">
-                      <p className="text-xs font-semibold text-muted-foreground">Estado actual:</p>
+                      <p className="hidden text-xs font-semibold text-muted-foreground sm:block">Estado actual:</p>
                       <select 
                         value={order.status} 
                         onChange={(event) => updateOrderStatus(order.id, event.target.value)} 
@@ -173,18 +194,81 @@ export default function BusinessPortalPage() {
             </section>
           )}
 
+          {tab === 'sales' && (
+            <section className="mt-7 space-y-6">
+              <div className="grid gap-4 sm:grid-cols-3">
+                <div className="rounded-2xl bg-card p-5 ring-1 ring-border">
+                  <p className="text-xs text-muted-foreground">Ventas de hoy</p>
+                  <p className="mt-2 font-mono-app text-2xl font-bold">S/ 245.50</p>
+                  <p className="mt-2 flex items-center gap-1 text-xs font-bold text-emerald-600"><TrendingUp className="h-3 w-3" /> +12.5% vs ayer</p>
+                </div>
+                <div className="rounded-2xl bg-card p-5 ring-1 ring-border">
+                  <p className="text-xs text-muted-foreground">Esta semana</p>
+                  <p className="mt-2 font-mono-app text-2xl font-bold">S/ 1,840.00</p>
+                  <p className="mt-2 flex items-center gap-1 text-xs font-bold text-emerald-600"><TrendingUp className="h-3 w-3" /> +5.2% vs sem. ant.</p>
+                </div>
+                <div className="rounded-2xl bg-card p-5 ring-1 ring-border">
+                  <p className="text-xs text-muted-foreground">Este mes</p>
+                  <p className="mt-2 font-mono-app text-2xl font-bold">S/ 6,230.00</p>
+                  <p className="mt-2 flex items-center gap-1 text-xs font-bold text-red-600"><TrendingUp className="h-3 w-3 rotate-180" /> -2.1% vs mes ant.</p>
+                </div>
+              </div>
+              <div className="rounded-2xl bg-card p-6 ring-1 ring-border">
+                <div className="flex items-center gap-2">
+                  <BarChart3 className="h-5 w-5 text-accent" />
+                  <h2 className="font-display text-xl font-bold">Ventas de la semana</h2>
+                </div>
+                <div className="mt-8 flex h-44 items-end gap-3">
+                  {[45, 60, 40, 85, 95, 110, 80].map((height, index) => (
+                    <div key={index} className="flex flex-1 flex-col items-center gap-2">
+                      <div className={`w-full max-w-[54px] rounded-t-xl ${index === 3 ? 'bg-accent' : 'bg-secondary'}`} style={{ height: `${Math.max(12, height)}px` }} />
+                      <span className="font-mono-app text-[10px] text-muted-foreground">
+                        {['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'][index]}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
+          )}
+
+          {tab === 'categories' && (
+            <section className="mt-7 rounded-2xl bg-card p-6 ring-1 ring-border">
+              <div className="flex gap-2">
+                <input value={newCategory} onChange={(event) => setNewCategory(event.target.value)} onKeyDown={(e) => e.key === 'Enter' && addCategory()} placeholder="Nueva categoría" className="h-11 flex-1 rounded-xl border border-input bg-background px-3 text-sm outline-none focus:border-accent" data-testid="input-business-category" />
+                <button onClick={addCategory} className="flex items-center gap-2 rounded-xl bg-primary px-4 text-xs font-bold text-white" data-testid="button-business-add-category">
+                  <Plus className="h-4 w-4 text-secondary" /> Crear
+                </button>
+              </div>
+              <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                {categories.map((category) => (
+                  <div key={category} className="flex items-center justify-between rounded-xl bg-muted/50 px-4 py-3">
+                    <span className="flex items-center gap-2 text-sm font-bold"><Tag className="h-4 w-4 text-accent" />{category}</span>
+                    <button onClick={() => removeCategory(category)} className="rounded-lg p-2 text-red-700 hover:bg-red-50" aria-label={`Eliminar ${category}`}>
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                ))}
+                {categories.length === 0 && (
+                  <p className="col-span-full py-4 text-center text-sm text-muted-foreground">Aún no tienes categorías. Agrega una para organizar tu menú.</p>
+                )}
+              </div>
+            </section>
+          )}
+
           {tab === 'products' && (
             <section className="mt-7 space-y-5">
               <div className="rounded-2xl bg-card p-5 ring-1 ring-border">
                 <div className="flex items-center gap-2"><Plus className="h-4 w-4 text-accent" /><h2 className="font-display text-xl font-bold">Agregar a la carta</h2></div>
-                <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-[1.5fr_1fr_100px_100px_auto]">
-                  <input value={newProduct.name} onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })} placeholder="Nombre del plato" className="h-10 rounded-xl border border-input bg-background px-3 text-xs outline-none focus:border-accent" data-testid="input-business-product-name" />
-                  <select value={newProduct.category} onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })} className="h-10 rounded-xl border border-input bg-background px-3 text-xs outline-none focus:border-accent" data-testid="select-business-product-category">
-                    {categories.map((cat) => <option key={cat}>{cat}</option>)}
+                <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
+                  <input value={newProduct.name} onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })} placeholder="Nombre del plato" className="h-10 w-full rounded-xl border border-input bg-background px-3 text-xs outline-none focus:border-accent lg:col-span-2" data-testid="input-business-product-name" />
+                  <select value={newProduct.category} onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })} className="h-10 w-full rounded-xl border border-input bg-background px-3 text-xs outline-none focus:border-accent lg:col-span-1" data-testid="select-business-product-category">
+                    {categories.length ? categories.map((cat) => <option key={cat}>{cat}</option>) : <option value="">Sin categoría</option>}
                   </select>
-                  <input type="number" value={newProduct.price} onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })} placeholder="Precio" className="h-10 rounded-xl border border-input bg-background px-3 text-xs outline-none focus:border-accent" data-testid="input-business-product-price" />
-                  <input type="number" value={newProduct.stock} onChange={(e) => setNewProduct({ ...newProduct, stock: e.target.value })} placeholder="Stock" className="h-10 rounded-xl border border-input bg-background px-3 text-xs outline-none focus:border-accent" data-testid="input-business-product-stock" />
-                  <button onClick={addProduct} className="flex h-10 items-center justify-center gap-2 rounded-xl bg-primary px-4 text-xs font-bold text-white" data-testid="button-business-add-product">
+                  <input value={newProduct.image} onChange={(e) => setNewProduct({ ...newProduct, image: e.target.value })} placeholder="URL de imagen (opcional)" className="h-10 w-full rounded-xl border border-input bg-background px-3 text-xs outline-none focus:border-accent lg:col-span-3" data-testid="input-business-product-image" />
+                  <input type="number" value={newProduct.price} onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })} placeholder="Precio (S/)" className="h-10 w-full rounded-xl border border-input bg-background px-3 text-xs outline-none focus:border-accent lg:col-span-2" data-testid="input-business-product-price" />
+                  <input type="number" value={newProduct.stock} onChange={(e) => setNewProduct({ ...newProduct, stock: e.target.value })} placeholder="Stock" className="h-10 w-full rounded-xl border border-input bg-background px-3 text-xs outline-none focus:border-accent lg:col-span-2" data-testid="input-business-product-stock" />
+                  <button onClick={addProduct} className="flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 text-xs font-bold text-white lg:col-span-2" data-testid="button-business-add-product">
                     <Plus className="h-4 w-4 text-secondary" /> Guardar
                   </button>
                 </div>
@@ -194,7 +278,7 @@ export default function BusinessPortalPage() {
                 <table className="w-full min-w-[780px] text-left text-sm">
                   <thead className="border-b border-border bg-muted/50 text-[10px] uppercase tracking-wide text-muted-foreground">
                     <tr>
-                      <th className="px-5 py-4">Plato / Producto</th>
+                      <th className="px-5 py-4 w-[280px]">Plato / Producto</th>
                       <th className="px-5 py-4">Categoría</th>
                       <th className="px-5 py-4">Precio</th>
                       <th className="px-5 py-4">Stock</th>
@@ -205,19 +289,39 @@ export default function BusinessPortalPage() {
                   <tbody>
                     {products.map((product) => (
                       <tr key={product.id} className="border-b border-border/70 last:border-0" data-testid={`row-business-product-${product.id}`}>
-                        <td className="px-5 py-4 font-bold">
-                          {editingId === product.id ? <input value={product.name} onChange={(e) => updateProduct(product.id, { name: e.target.value })} className="h-8 rounded-lg border border-input bg-background px-2 text-xs outline-none focus:border-accent" /> : product.name}
+                        <td className="px-5 py-4">
+                          <div className="flex items-center gap-3">
+                            {product.image ? (
+                              <img src={product.image} alt="" className="h-10 w-10 shrink-0 rounded-lg object-cover ring-1 ring-border" />
+                            ) : (
+                              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground ring-1 ring-border">
+                                <ImageIcon className="h-4 w-4 opacity-50" />
+                              </div>
+                            )}
+                            <div className="min-w-0 flex-1">
+                              {editingId === product.id ? (
+                                <div className="flex flex-col gap-1">
+                                  <input value={product.name} onChange={(e) => updateProduct(product.id, { name: e.target.value })} placeholder="Nombre del plato" className="h-8 w-full rounded-lg border border-input bg-background px-2 text-xs outline-none focus:border-accent" />
+                                  <input value={product.image || ''} onChange={(e) => updateProduct(product.id, { image: e.target.value })} placeholder="URL de imagen" className="h-8 w-full rounded-lg border border-input bg-background px-2 text-[10px] outline-none focus:border-accent" />
+                                </div>
+                              ) : (
+                                <span className="block truncate font-bold">{product.name}</span>
+                              )}
+                            </div>
+                          </div>
                         </td>
                         <td className="px-5 py-4 text-xs text-muted-foreground">
-                          {editingId === product.id ? <select value={product.category} onChange={(e) => updateProduct(product.id, { category: e.target.value })} className="h-8 rounded-lg border border-input bg-background px-2 text-xs outline-none focus:border-accent">
-                            {categories.map((cat) => <option key={cat}>{cat}</option>)}
-                          </select> : product.category}
+                          {editingId === product.id ? (
+                            <select value={product.category} onChange={(e) => updateProduct(product.id, { category: e.target.value })} className="h-8 w-full rounded-lg border border-input bg-background px-2 text-xs outline-none focus:border-accent">
+                              {categories.length ? categories.map((cat) => <option key={cat}>{cat}</option>) : <option value={product.category}>{product.category}</option>}
+                            </select>
+                          ) : product.category}
                         </td>
                         <td className="px-5 py-4 font-mono-app text-xs">
-                          {editingId === product.id ? <input type="number" value={product.price} onChange={(e) => updateProduct(product.id, { price: Number(e.target.value) })} className="h-8 w-20 rounded-lg border border-input bg-background px-2 text-xs outline-none focus:border-accent" /> : `S/ ${product.price.toFixed(2)}`}
+                          {editingId === product.id ? <input type="number" value={product.price} onChange={(e) => updateProduct(product.id, { price: Number(e.target.value) })} className="h-8 w-16 rounded-lg border border-input bg-background px-2 text-xs outline-none focus:border-accent" /> : `S/ ${product.price.toFixed(2)}`}
                         </td>
                         <td className="px-5 py-4">
-                          {editingId === product.id ? <input type="number" value={product.stock} onChange={(e) => updateProduct(product.id, { stock: Number(e.target.value) })} className="h-8 w-16 rounded-lg border border-input bg-background px-2 text-xs outline-none focus:border-accent" /> : <span className={product.stock === 0 ? 'font-bold text-red-700' : ''}>{product.stock}</span>}
+                          {editingId === product.id ? <input type="number" value={product.stock} onChange={(e) => updateProduct(product.id, { stock: Number(e.target.value) })} className="h-8 w-14 rounded-lg border border-input bg-background px-2 text-xs outline-none focus:border-accent" /> : <span className={product.stock === 0 ? 'font-bold text-red-700' : ''}>{product.stock}</span>}
                         </td>
                         <td className="px-5 py-4">
                           <button onClick={() => updateProduct(product.id, { available: !product.available })} className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${product.available ? 'bg-emerald-100 text-emerald-800' : 'bg-muted text-muted-foreground'}`}>
@@ -227,21 +331,28 @@ export default function BusinessPortalPage() {
                         <td className="px-5 py-4 text-right">
                           <div className="flex justify-end gap-2">
                             {editingId === product.id ? (
-                              <button onClick={() => { setEditingId(null); announce('Plato guardado.'); }} className="rounded-lg bg-secondary p-2 text-primary" aria-label="Guardar">
+                              <button onClick={() => { setEditingId(null); announce('Plato guardado.'); }} className="rounded-lg bg-secondary p-2 text-primary hover:bg-accent hover:text-white transition" aria-label="Guardar">
                                 <Save className="h-3.5 w-3.5" />
                               </button>
                             ) : (
-                              <button onClick={() => setEditingId(product.id)} className="rounded-lg bg-muted p-2 text-primary" aria-label="Editar">
+                              <button onClick={() => setEditingId(product.id)} className="rounded-lg bg-muted p-2 text-primary hover:bg-secondary transition" aria-label="Editar">
                                 <Pencil className="h-3.5 w-3.5" />
                               </button>
                             )}
-                            <button onClick={() => removeProduct(product.id)} className="rounded-lg bg-red-50 p-2 text-red-700" aria-label="Eliminar">
+                            <button onClick={() => removeProduct(product.id)} className="rounded-lg bg-red-50 p-2 text-red-700 hover:bg-red-100 transition" aria-label="Eliminar">
                               <Trash2 className="h-3.5 w-3.5" />
                             </button>
                           </div>
                         </td>
                       </tr>
                     ))}
+                    {products.length === 0 && (
+                      <tr>
+                        <td colSpan={6} className="px-5 py-8 text-center text-sm text-muted-foreground">
+                          No tienes productos en tu carta.
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>
