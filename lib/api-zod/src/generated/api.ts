@@ -180,3 +180,43 @@ export const GetDashboardSummaryResponse = zod.object({
 })
 
 
+/**
+ * @summary Send a one-time registration code by email
+ */
+export const sendRegistrationCodeBodyEmailMax = 254;
+
+
+export const sendRegistrationCodeBodyEmailRegExp = new RegExp('^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$');
+
+
+export const SendRegistrationCodeBody = zod.object({
+  "email": zod.string().max(sendRegistrationCodeBodyEmailMax).regex(sendRegistrationCodeBodyEmailRegExp),
+  "role": zod.enum(['cliente', 'administrador_negocio', 'repartidor', 'administrador_sistema'])
+})
+
+export const SendRegistrationCodeResponse = zod.object({
+  "sent": zod.boolean()
+})
+
+
+/**
+ * @summary Confirm a one-time registration code
+ */
+export const confirmRegistrationCodeBodyEmailMax = 254;
+
+
+export const confirmRegistrationCodeBodyEmailRegExp = new RegExp('^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$');
+export const confirmRegistrationCodeBodyCodeRegExp = new RegExp('^[0-9]{6}$');
+
+
+export const ConfirmRegistrationCodeBody = zod.object({
+  "email": zod.string().max(confirmRegistrationCodeBodyEmailMax).regex(confirmRegistrationCodeBodyEmailRegExp),
+  "role": zod.enum(['cliente', 'administrador_negocio', 'repartidor', 'administrador_sistema']),
+  "code": zod.string().regex(confirmRegistrationCodeBodyCodeRegExp)
+})
+
+export const ConfirmRegistrationCodeResponse = zod.object({
+  "verified": zod.boolean()
+})
+
+

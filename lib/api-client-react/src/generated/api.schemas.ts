@@ -5,6 +5,54 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+export type RegistrationCodeRequestRole = typeof RegistrationCodeRequestRole[keyof typeof RegistrationCodeRequestRole];
+
+
+export const RegistrationCodeRequestRole = {
+  cliente: 'cliente',
+  administrador_negocio: 'administrador_negocio',
+  repartidor: 'repartidor',
+  administrador_sistema: 'administrador_sistema',
+} as const;
+
+export interface RegistrationCodeRequest {
+  /**
+     * @maxLength 254
+     * @pattern ^[^@\s]+@[^@\s]+\.[^@\s]+$
+     */
+  email: string;
+  role: RegistrationCodeRequestRole;
+}
+
+export type RegistrationCodeConfirmationRole = typeof RegistrationCodeConfirmationRole[keyof typeof RegistrationCodeConfirmationRole];
+
+
+export const RegistrationCodeConfirmationRole = {
+  cliente: 'cliente',
+  administrador_negocio: 'administrador_negocio',
+  repartidor: 'repartidor',
+  administrador_sistema: 'administrador_sistema',
+} as const;
+
+export interface RegistrationCodeConfirmation {
+  /**
+     * @maxLength 254
+     * @pattern ^[^@\s]+@[^@\s]+\.[^@\s]+$
+     */
+  email: string;
+  role: RegistrationCodeConfirmationRole;
+  /** @pattern ^[0-9]{6}$ */
+  code: string;
+}
+
+export interface RegistrationCodeSent {
+  sent: boolean;
+}
+
+export interface RegistrationCodeVerified {
+  verified: boolean;
+}
+
 export interface HealthStatus {
   status: string;
 }

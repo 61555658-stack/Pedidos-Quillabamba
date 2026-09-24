@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { ArrowRight, Bike, Building2, Check, ClipboardList, LogOut, MapPin, PackageCheck, ShieldCheck, Store, Users, Utensils } from 'lucide-react';
 import { Link, useLocation } from 'wouter';
+import { confirmRegistrationCode, sendRegistrationCode } from '@workspace/api-client-react';
 
 export type UserRole = 'cliente' | 'administrador_negocio' | 'repartidor' | 'administrador_sistema';
 
@@ -110,8 +111,13 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
   const [password, setPassword] = useState('');
   const [role, setRole] = useState<UserRole>('cliente');
   const [notice, setNotice] = useState('');
+  const [verificationCode, setVerificationCode] = useState('');
+  const [pendingRegistration, setPendingRegistration] = useState<StoredAccount | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
-  const submit = () => {
+  const submit = async () => {
+    if (submitting) return;
+    setNotice('');
     const normalizedEmail = email.trim().toLowerCase();
     if (!normalizedEmail.includes('@') || !password.trim() || (mode === 'register' && !name.trim())) {
       setNotice('Completa nombre, correo y contraseña para continuar.');
@@ -125,9 +131,16 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
         return;
       }
       const account: StoredAccount = { name: name.trim(), email: normalizedEmail, password, role };
-      writeAccounts([...accounts, account]);
-      saveSession({ name: account.name, email: account.email, role: account.role });
-      setLocation(roleHome[account.role]);
+      setSubmitting(true);
+      try {
+        await sendRegistrationCode({ email: normalizedEmail, role });
+        setPendingRegistration(account);
+        setVerificationCode('');
+      } catch (error) {
+        setNotice(apiErrorMessage(error, 'No pudimos enviar el código. Inténtalo más tarde.'));
+      } finally {
+        setSubmitting(false);
+      }
       return;
     }
 
@@ -138,6 +151,36 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
     }
     saveSession({ name: account.name, email: account.email, role: account.role });
     setLocation(roleHome[account.role]);
+  };
+
+  const verifyRegistration = async () => {
+    if (!pendingRegistration || submitting) return;
+    setNotice('');
+    if (!/^\d{6}$/.test(verificationCode)) {
+      setNotice('Ingresa el código de seis dígitos recibido por correo.');
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const result = await confirmRegistrationCode({
+        email: pendingRegistration.email,
+        role: pendingRegistration.role,
+        code: verificationCode,
+      });
+      if (!result.verified) throw new Error('No se pudo verificar el correo.');
+      if (readAccounts().some((account) => account.email === pendingRegistration.email)) {
+        setPendingRegistration(null);
+        setNotice('Ese correo ya está registrado. Inicia sesión para continuar.');
+        return;
+      }
+      writeAccounts([...readAccounts(), pendingRegistration]);
+      saveSession({ name: pendingRegistration.name, email: pendingRegistration.email, role: pendingRegistration.role });
+      setLocation(roleHome[pendingRegistration.role]);
+    } catch (error) {
+      setNotice(apiErrorMessage(error, 'No se pudo verificar el código. Inténtalo de nuevo.'));
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const roleOptions: Array<{ value: UserRole; icon: typeof Users }> = [
@@ -169,14 +212,14 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
           <h2 className="mt-3 font-display text-3xl font-bold tracking-[-.04em] text-primary">{mode === 'login' ? 'Ingresa a tu plataforma' : 'Regístrate según tu cargo'}</h2>
           <p className="mt-2 text-sm leading-6 text-muted-foreground">Selecciona tu rol para abrir únicamente las herramientas que necesitas.</p>
 
-          {mode === 'register' && <label className="mt-7 block"><span className="mb-1.5 block text-xs font-bold text-primary">Nombre completo</span><input value={name} onChange={(event) => setName(event.target.value)} className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none focus:border-accent" placeholder="María Quispe" data-testid="input-role-name" /></label>}
-          <label className="mt-5 block"><span className="mb-1.5 block text-xs font-bold text-primary">Correo electrónico</span><input type="email" value={email} onChange={(event) => setEmail(event.target.value)} className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none focus:border-accent" placeholder="tu@correo.com" data-testid="input-role-email" /></label>
-          <label className="mt-5 block"><span className="mb-1.5 block text-xs font-bold text-primary">Contraseña</span><input type="password" value={password} onChange={(event) => setPassword(event.target.value)} className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none focus:border-accent" placeholder="••••••••" data-testid="input-role-password" /></label>
+          {mode === 'register' && <label className="mt-7 block"><span className="mb-1.5 block text-xs font-bold text-primary">Nombre completo</span><input value={name} disabled={!!pendingRegistration} onChange={(event) => setName(event.target.value)} className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none focus:border-accent disabled:opacity-60" placeholder="María Quispe" data-testid="input-role-name" /></label>}
+          <label className="mt-5 block"><span className="mb-1.5 block text-xs font-bold text-primary">Correo electrónico</span><input type="email" value={email} disabled={!!pendingRegistration} onChange={(event) => setEmail(event.target.value)} className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none focus:border-accent disabled:opacity-60" placeholder="tu@correo.com" data-testid="input-role-email" /></label>
+          <label className="mt-5 block"><span className="mb-1.5 block text-xs font-bold text-primary">Contraseña</span><input type="password" value={password} disabled={!!pendingRegistration} onChange={(event) => setPassword(event.target.value)} className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none focus:border-accent disabled:opacity-60" placeholder="••••••••" data-testid="input-role-password" /></label>
 
           <div className="mt-7">
             <p className="mb-3 text-xs font-bold text-primary">¿Cómo ingresarás?</p>
             <div className="grid gap-2 sm:grid-cols-2">
-              {roleOptions.map(({ value, icon: Icon }) => <button type="button" key={value} onClick={() => setRole(value)} className={`rounded-xl p-3 text-left ring-1 transition ${role === value ? 'bg-secondary/35 text-primary ring-accent' : 'bg-background text-muted-foreground ring-border hover:ring-secondary'}`} data-testid={`button-role-${value}`}>
+              {roleOptions.map(({ value, icon: Icon }) => <button type="button" key={value} disabled={!!pendingRegistration} onClick={() => setRole(value)} className={`rounded-xl p-3 text-left ring-1 transition disabled:cursor-not-allowed ${role === value ? 'bg-secondary/35 text-primary ring-accent' : 'bg-background text-muted-foreground ring-border hover:ring-secondary'}`} data-testid={`button-role-${value}`}>
                 <Icon className="h-4 w-4" />
                 <span className="mt-2 block text-xs font-extrabold">{roleLabels[value]}</span>
                 <span className="mt-1 block text-[10px] leading-4">{roleDescriptions[value]}</span>
@@ -184,13 +227,27 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
             </div>
           </div>
 
-          {notice && <p className="mt-4 rounded-xl bg-red-50 px-3 py-2.5 text-xs font-bold text-red-700" data-testid="status-role-auth-feedback">{notice}</p>}
-          <button onClick={submit} className="mt-7 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-primary text-sm font-extrabold text-white" data-testid="button-role-auth-submit">{mode === 'login' ? 'Entrar a mi plataforma' : 'Crear cuenta y continuar'} <ArrowRight className="h-4 w-4 text-secondary" /></button>
+          {pendingRegistration && mode === 'register' && <div className="mt-6 rounded-2xl bg-secondary/20 p-4 ring-1 ring-secondary">
+            <p className="text-sm font-bold text-primary">Revisa tu correo</p>
+            <p className="mt-1 text-xs leading-5 text-muted-foreground">Enviamos un código de seis dígitos a {pendingRegistration.email}. Caduca en 10 minutos. La cuenta se creará cuando lo confirmes.</p>
+            <label className="mt-4 block"><span className="text-xs font-bold text-primary">Código de verificación</span><input autoComplete="one-time-code" inputMode="numeric" maxLength={6} value={verificationCode} onChange={event => setVerificationCode(event.target.value.replace(/\D/g, '').slice(0, 6))} className="mt-1.5 h-11 w-full rounded-xl border border-input bg-background px-3 text-center text-lg font-bold tracking-[.3em]" placeholder="000000" data-testid="input-role-verification-code" /></label>
+            <button type="button" disabled={submitting} onClick={() => { setPendingRegistration(null); setVerificationCode(''); setNotice(''); }} className="mt-3 text-xs font-bold text-accent underline">Cambiar correo o solicitar otro código</button>
+          </div>}
+          {notice && <p role="alert" className="mt-4 rounded-xl bg-red-50 px-3 py-2.5 text-xs font-bold text-red-700" data-testid="status-role-auth-feedback">{notice}</p>}
+          <button disabled={submitting} onClick={pendingRegistration && mode === 'register' ? verifyRegistration : submit} className="mt-7 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-primary text-sm font-extrabold text-white disabled:opacity-60" data-testid="button-role-auth-submit">{submitting ? 'Procesando...' : mode === 'login' ? 'Entrar a mi plataforma' : pendingRegistration ? 'Verificar y crear cuenta' : 'Enviar código a mi correo'} <ArrowRight className="h-4 w-4 text-secondary" /></button>
           <p className="mt-6 text-center text-xs text-muted-foreground">{mode === 'login' ? '¿Aún no tienes cuenta? ' : '¿Ya tienes cuenta? '}<Link href={mode === 'login' ? '/register' : '/login'} className="font-bold text-accent" data-testid="link-role-auth-switch">{mode === 'login' ? 'Regístrate' : 'Inicia sesión'}</Link></p>
         </div>
       </div>
     </div>
   );
+}
+
+function apiErrorMessage(error: unknown, fallback: string) {
+  if (error && typeof error === 'object' && 'data' in error) {
+    const data = (error as { data?: { error?: string } }).data;
+    if (typeof data?.error === 'string') return data.error;
+  }
+  return fallback;
 }
 
 export function RoleGate({ allowed, children }: { allowed: UserRole[]; children: ReactNode }) {

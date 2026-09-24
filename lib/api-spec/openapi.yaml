@@ -18,6 +18,8 @@ tags:
     description: Customer orders
   - name: dashboard
     description: Operational summaries
+  - name: verification
+    description: Email verification during registration
 paths:
   # Comprobación simple para saber si el API está disponible.
   /healthz:
@@ -158,8 +160,75 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DashboardSummary"
+  /auth/verification/send:
+    post:
+      operationId: sendRegistrationCode
+      tags: [verification]
+      summary: Send a one-time registration code by email
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegistrationCodeRequest"
+      responses:
+        "200":
+          description: Code sent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegistrationCodeSent"
+        "429":
+          description: Too many requests
+        "502":
+          description: Mail provider unavailable
+  /auth/verification/confirm:
+    post:
+      operationId: confirmRegistrationCode
+      tags: [verification]
+      summary: Confirm a one-time registration code
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegistrationCodeConfirmation"
+      responses:
+        "200":
+          description: Code verified
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegistrationCodeVerified"
+        "400":
+          description: Incorrect or expired code
+        "429":
+          description: Too many attempts
 components:
   schemas:
+    RegistrationCodeRequest:
+      type: object
+      required: [email, role]
+      properties:
+        email: { type: string, pattern: '^[^@\s]+@[^@\s]+\.[^@\s]+$', maxLength: 254 }
+        role: { type: string, enum: [cliente, administrador_negocio, repartidor, administrador_sistema] }
+    RegistrationCodeConfirmation:
+      type: object
+      required: [email, role, code]
+      properties:
+        email: { type: string, pattern: '^[^@\s]+@[^@\s]+\.[^@\s]+$', maxLength: 254 }
+        role: { type: string, enum: [cliente, administrador_negocio, repartidor, administrador_sistema] }
+        code: { type: string, pattern: '^[0-9]{6}$' }
+    RegistrationCodeSent:
+      type: object
+      required: [sent]
+      properties:
+        sent: { type: boolean }
+    RegistrationCodeVerified:
+      type: object
+      required: [verified]
+      properties:
+        verified: { type: boolean }
     HealthStatus:
       type: object
       properties:

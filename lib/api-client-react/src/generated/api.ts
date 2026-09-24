@@ -26,6 +26,10 @@ import type {
   OrderInput,
   OrderStatusInput,
   Product,
+  RegistrationCodeConfirmation,
+  RegistrationCodeRequest,
+  RegistrationCodeSent,
+  RegistrationCodeVerified,
   Restaurant
 } from './api.schemas';
 
@@ -661,4 +665,146 @@ export function useGetDashboardSummary<TData = Awaited<ReturnType<typeof getDash
 
 
 
+
+export const getSendRegistrationCodeUrl = () => {
+
+
+
+
+  return `/api/auth/verification/send`
+}
+
+/**
+ * @summary Send a one-time registration code by email
+ */
+export const sendRegistrationCode = async (registrationCodeRequest: RegistrationCodeRequest, options?: Parameters<typeof customFetch>[1]): Promise<RegistrationCodeSent> => {
+
+  return customFetch<RegistrationCodeSent>(getSendRegistrationCodeUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(registrationCodeRequest)
+  }
+);}
+
+
+
+
+
+export const getSendRegistrationCodeMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sendRegistrationCode>>, TError,{data: BodyType<RegistrationCodeRequest>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof sendRegistrationCode>>, TError,{data: BodyType<RegistrationCodeRequest>}, TContext> => {
+
+const mutationKey = ['sendRegistrationCode'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof sendRegistrationCode>>, {data: BodyType<RegistrationCodeRequest>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  sendRegistrationCode(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SendRegistrationCodeMutationResult = NonNullable<Awaited<ReturnType<typeof sendRegistrationCode>>>
+    export type SendRegistrationCodeMutationBody = BodyType<RegistrationCodeRequest>
+    export type SendRegistrationCodeMutationError = ErrorType<void>
+
+    /**
+ * @summary Send a one-time registration code by email
+ */
+export const useSendRegistrationCode = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sendRegistrationCode>>, TError,{data: BodyType<RegistrationCodeRequest>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof sendRegistrationCode>>,
+        TError,
+        {data: BodyType<RegistrationCodeRequest>},
+        TContext
+      > => {
+      return useMutation(getSendRegistrationCodeMutationOptions(options));
+    }
+
+export const getConfirmRegistrationCodeUrl = () => {
+
+
+
+
+  return `/api/auth/verification/confirm`
+}
+
+/**
+ * @summary Confirm a one-time registration code
+ */
+export const confirmRegistrationCode = async (registrationCodeConfirmation: RegistrationCodeConfirmation, options?: Parameters<typeof customFetch>[1]): Promise<RegistrationCodeVerified> => {
+
+  return customFetch<RegistrationCodeVerified>(getConfirmRegistrationCodeUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(registrationCodeConfirmation)
+  }
+);}
+
+
+
+
+
+export const getConfirmRegistrationCodeMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof confirmRegistrationCode>>, TError,{data: BodyType<RegistrationCodeConfirmation>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof confirmRegistrationCode>>, TError,{data: BodyType<RegistrationCodeConfirmation>}, TContext> => {
+
+const mutationKey = ['confirmRegistrationCode'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof confirmRegistrationCode>>, {data: BodyType<RegistrationCodeConfirmation>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  confirmRegistrationCode(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ConfirmRegistrationCodeMutationResult = NonNullable<Awaited<ReturnType<typeof confirmRegistrationCode>>>
+    export type ConfirmRegistrationCodeMutationBody = BodyType<RegistrationCodeConfirmation>
+    export type ConfirmRegistrationCodeMutationError = ErrorType<void>
+
+    /**
+ * @summary Confirm a one-time registration code
+ */
+export const useConfirmRegistrationCode = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof confirmRegistrationCode>>, TError,{data: BodyType<RegistrationCodeConfirmation>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof confirmRegistrationCode>>,
+        TError,
+        {data: BodyType<RegistrationCodeConfirmation>},
+        TContext
+      > => {
+      return useMutation(getConfirmRegistrationCodeMutationOptions(options));
+    }
 
