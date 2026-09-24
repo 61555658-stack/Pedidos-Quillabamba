@@ -675,7 +675,7 @@ export const getSendRegistrationCodeUrl = () => {
 }
 
 /**
- * @summary Send a one-time registration code by email
+ * @summary Send a one-time registration or sign-in code by email
  */
 export const sendRegistrationCode = async (registrationCodeRequest: RegistrationCodeRequest, options?: Parameters<typeof customFetch>[1]): Promise<RegistrationCodeSent> => {
 
@@ -724,7 +724,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type SendRegistrationCodeMutationError = ErrorType<void>
 
     /**
- * @summary Send a one-time registration code by email
+ * @summary Send a one-time registration or sign-in code by email
  */
 export const useSendRegistrationCode = <TError = ErrorType<void>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sendRegistrationCode>>, TError,{data: BodyType<RegistrationCodeRequest>}, TContext>, request?: SecondParameter<typeof customFetch>}
@@ -746,7 +746,7 @@ export const getConfirmRegistrationCodeUrl = () => {
 }
 
 /**
- * @summary Confirm a one-time registration code
+ * @summary Confirm a one-time registration or sign-in code
  */
 export const confirmRegistrationCode = async (registrationCodeConfirmation: RegistrationCodeConfirmation, options?: Parameters<typeof customFetch>[1]): Promise<RegistrationCodeVerified> => {
 
@@ -795,7 +795,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type ConfirmRegistrationCodeMutationError = ErrorType<void>
 
     /**
- * @summary Confirm a one-time registration code
+ * @summary Confirm a one-time registration or sign-in code
  */
 export const useConfirmRegistrationCode = <TError = ErrorType<void>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof confirmRegistrationCode>>, TError,{data: BodyType<RegistrationCodeConfirmation>}, TContext>, request?: SecondParameter<typeof customFetch>}

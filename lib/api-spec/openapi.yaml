@@ -19,7 +19,7 @@ tags:
   - name: dashboard
     description: Operational summaries
   - name: verification
-    description: Email verification during registration
+    description: Email verification during registration and sign-in
 paths:
   # Comprobación simple para saber si el API está disponible.
   /healthz:
@@ -164,7 +164,7 @@ paths:
     post:
       operationId: sendRegistrationCode
       tags: [verification]
-      summary: Send a one-time registration code by email
+      summary: Send a one-time registration or sign-in code by email
       requestBody:
         required: true
         content:
@@ -186,7 +186,7 @@ paths:
     post:
       operationId: confirmRegistrationCode
       tags: [verification]
-      summary: Confirm a one-time registration code
+      summary: Confirm a one-time registration or sign-in code
       requestBody:
         required: true
         content:

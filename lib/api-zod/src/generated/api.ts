@@ -181,7 +181,7 @@ export const GetDashboardSummaryResponse = zod.object({
 
 
 /**
- * @summary Send a one-time registration code by email
+ * @summary Send a one-time registration or sign-in code by email
  */
 export const sendRegistrationCodeBodyEmailMax = 254;
 
@@ -200,7 +200,7 @@ export const SendRegistrationCodeResponse = zod.object({
 
 
 /**
- * @summary Confirm a one-time registration code
+ * @summary Confirm a one-time registration or sign-in code
  */
 export const confirmRegistrationCodeBodyEmailMax = 254;
 
