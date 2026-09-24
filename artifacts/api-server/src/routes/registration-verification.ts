@@ -1,6 +1,5 @@
 import { createHash, randomInt, randomBytes, timingSafeEqual } from "node:crypto";
 import { Router, type IRouter } from "express";
-import { ReplitConnectors } from "@replit/connectors-sdk";
 import {
   SendRegistrationCodeBody,
   SendRegistrationCodeResponse,
@@ -9,7 +8,6 @@ import {
 } from "@workspace/api-zod";
 
 const router: IRouter = Router();
-const connectors = new ReplitConnectors();
 const lifetimeMs = 10 * 60 * 1000;
 const cooldownMs = 60 * 1000;
 const maxAttempts = 5;
@@ -59,12 +57,21 @@ router.post("/auth/verification/send", async (req, res): Promise<void> => {
     res.status(503).json({ error: "El envío de correos aún no está disponible." });
     return;
   }
+  const apiKey = process.env.SENDGRID_API_KEY;
+  if (!apiKey) {
+    req.log.error("SENDGRID_API_KEY is not configured");
+    res.status(503).json({ error: "El envío de correos aún no está disponible." });
+    return;
+  }
 
   const code = String(randomInt(0, 1_000_000)).padStart(6, "0");
   try {
-    const response = await connectors.proxy("sendgrid", "/v3/mail/send", {
+    const response = await fetch("https://api.sendgrid.com/v3/mail/send", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
       body: JSON.stringify({
         personalizations: [{ to: [{ email }] }],
         from: { email: from, name: "QUILLAYAA" },

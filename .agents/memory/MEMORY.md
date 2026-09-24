@@ -1,1 +1,2 @@
 - [OpenAPI and Zod compatibility](zod-openapi-compatibility.md) — avoid generator output unsupported by the installed Zod runtime for numeric and email schemas.
+- [SendGrid connection replacement](sendgrid-connection-replacement.md) — a Repl accepts one SendGrid connector assignment; an additional authorized connection cannot replace it via addIntegration.
