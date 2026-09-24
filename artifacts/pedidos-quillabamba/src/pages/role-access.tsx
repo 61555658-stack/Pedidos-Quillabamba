@@ -120,6 +120,7 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
     setPendingVerification(null);
     setVerificationCode('');
     setNotice('');
+    setRole('cliente');
   }, [mode]);
 
   const submit = async () => {
@@ -133,6 +134,10 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
 
     const accounts = readAccounts();
     if (mode === 'register') {
+      if (role === 'administrador_sistema') {
+        setNotice('El administrador del sistema no puede registrarse. Inicia sesión con tu cuenta.');
+        return;
+      }
       if (accounts.some((account) => account.email === normalizedEmail)) {
         setNotice('Ese correo ya está registrado. Inicia sesión para continuar.');
         return;
@@ -204,6 +209,11 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
         setLocation(roleHome[account.role]);
         return;
       }
+      if (pendingVerification.account.role === 'administrador_sistema') {
+        setPendingVerification(null);
+        setNotice('El administrador del sistema no puede registrarse.');
+        return;
+      }
       if (accounts.some((account) => account.email === pendingVerification.account.email)) {
         setPendingVerification(null);
         setNotice('Ese correo ya está registrado. Inicia sesión para continuar.');
@@ -255,7 +265,7 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
           <div className="mt-7">
             <p className="mb-3 text-xs font-bold text-primary">¿Cómo ingresarás?</p>
             <div className="grid gap-2 sm:grid-cols-2">
-              {roleOptions.map(({ value, icon: Icon }) => <button type="button" key={value} disabled={!!pendingVerification} onClick={() => setRole(value)} className={`rounded-xl p-3 text-left ring-1 transition disabled:cursor-not-allowed ${role === value ? 'bg-secondary/35 text-primary ring-accent' : 'bg-background text-muted-foreground ring-border hover:ring-secondary'}`} data-testid={`button-role-${value}`}>
+              {roleOptions.filter(({ value }) => mode === 'login' || value !== 'administrador_sistema').map(({ value, icon: Icon }) => <button type="button" key={value} disabled={!!pendingVerification} onClick={() => setRole(value)} className={`rounded-xl p-3 text-left ring-1 transition disabled:cursor-not-allowed ${role === value ? 'bg-secondary/35 text-primary ring-accent' : 'bg-background text-muted-foreground ring-border hover:ring-secondary'}`} data-testid={`button-role-${value}`}>
                 <Icon className="h-4 w-4" />
                 <span className="mt-2 block text-xs font-extrabold">{roleLabels[value]}</span>
                 <span className="mt-1 block text-[10px] leading-4">{roleDescriptions[value]}</span>
