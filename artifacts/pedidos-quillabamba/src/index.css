@@ -67,6 +67,33 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
+@media (max-width: 639px) {
+  /* Keep cart details readable while placing quantity and total on their own row. */
+  [data-testid^='row-cart-'] {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  [data-testid^='row-cart-'] > img {
+    width: 56px;
+    height: 56px;
+  }
+
+  [data-testid^='row-cart-'] > div:nth-child(2) {
+    flex: 1 1 calc(100% - 68px);
+    min-width: 0;
+  }
+
+  [data-testid^='row-cart-'] > div:nth-child(3) {
+    margin-left: auto;
+  }
+
+  [data-testid^='row-cart-'] > div:nth-child(3) button {
+    width: 36px;
+    height: 36px;
+  }
+}
+
 /* LIGHT MODE */
 :root {
   --button-outline: rgba(0, 0, 0, 0.1);

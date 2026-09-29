@@ -135,7 +135,7 @@ export default function BusinessPortalPage() {
   return (
     <main className="min-h-[100dvh] bg-[#f1efe7] text-primary">
       <header className="border-b border-border/70 bg-[#f7f5ee]">
-        <div className="mx-auto flex h-16 max-w-[1400px] items-center gap-3 px-5 md:px-8">
+        <div className="mx-auto flex h-16 max-w-[1400px] items-center gap-3 px-4 md:px-8">
           <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-secondary">
             <Store className="h-4 w-4" />
           </span>
@@ -145,25 +145,25 @@ export default function BusinessPortalPage() {
           </div>
           <div className="ml-auto flex items-center gap-3">
             <span className="hidden text-xs font-semibold text-muted-foreground sm:block">{profile.name}</span>
-            <button onClick={logout} className="flex items-center gap-2 rounded-full bg-primary px-3.5 py-2 text-xs font-bold text-white" data-testid="button-business-logout">
+            <button onClick={logout} className="flex min-h-11 items-center gap-2 rounded-full bg-primary px-3.5 py-2 text-xs font-bold text-white" data-testid="button-business-logout">
               <LogOut className="h-3.5 w-3.5" /> Salir
             </button>
           </div>
         </div>
       </header>
 
-      <div className="mx-auto grid max-w-[1400px] gap-6 px-5 py-7 md:grid-cols-[220px_1fr] md:px-8">
-        <aside className="h-fit rounded-2xl bg-primary p-3 text-white">
+      <div className="mx-auto grid min-w-0 max-w-[1400px] gap-5 px-4 py-5 md:grid-cols-[220px_minmax(0,1fr)] md:gap-6 md:px-8 md:py-7">
+        <aside className="h-fit min-w-0 rounded-2xl bg-primary p-2 text-white md:p-3">
           <p className="px-3 pb-3 pt-2 font-mono-app text-[10px] uppercase tracking-[.16em] text-white/45">Establecimiento</p>
-          <nav className="space-y-1">
+          <nav aria-label="Secciones del negocio" className="flex gap-1 overflow-x-auto overscroll-x-contain pb-1 md:block md:space-y-1 md:overflow-visible md:pb-0">
             {menu.map(({ id, label, icon: Icon }) => (
               <button 
                 key={id} 
                 onClick={() => setTab(id)} 
-                className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-xs font-bold transition ${tab === id ? 'bg-secondary text-primary' : 'text-white/65 hover:bg-white/10 hover:text-white'}`} 
+                className={`flex min-h-11 shrink-0 items-center gap-3 whitespace-nowrap rounded-xl px-3 py-3 text-left text-xs font-bold transition md:w-full ${tab === id ? 'bg-secondary text-primary' : 'text-white/65 hover:bg-white/10 hover:text-white'}`}
                 data-testid={`button-business-tab-${id}`}
               >
-                <Icon className="h-4 w-4" />{label}
+                <Icon className="h-4 w-4 shrink-0" />{label}
               </button>
             ))}
           </nav>
@@ -200,7 +200,7 @@ export default function BusinessPortalPage() {
                       <select 
                         value={order.status} 
                         onChange={(event) => updateOrderStatus(order.id, event.target.value)} 
-                        className="h-10 rounded-xl border border-input bg-background px-3 text-xs font-bold outline-none focus:border-accent" 
+                        className="h-11 w-full max-w-full rounded-xl border border-input bg-background px-3 text-xs font-bold outline-none focus:border-accent sm:h-10 sm:w-auto"
                         data-testid={`select-business-order-status-${order.id}`}
                       >
                         <option>Recibido</option>
@@ -260,18 +260,18 @@ export default function BusinessPortalPage() {
           )}
 
           {tab === 'categories' && (
-            <section className="mt-7 rounded-2xl bg-card p-6 ring-1 ring-border">
-              <div className="flex gap-2">
-                <input value={newCategory} onChange={(event) => setNewCategory(event.target.value)} onKeyDown={(e) => e.key === 'Enter' && addCategory()} placeholder="Nueva categoría" className="h-11 flex-1 rounded-xl border border-input bg-background px-3 text-sm outline-none focus:border-accent" data-testid="input-business-category" />
-                <button onClick={addCategory} className="flex items-center gap-2 rounded-xl bg-primary px-4 text-xs font-bold text-white" data-testid="button-business-add-category">
+             <section className="mt-7 min-w-0 rounded-2xl bg-card p-4 ring-1 ring-border sm:p-6">
+               <div className="flex flex-col gap-2 sm:flex-row">
+                 <input value={newCategory} onChange={(event) => setNewCategory(event.target.value)} onKeyDown={(e) => e.key === 'Enter' && addCategory()} placeholder="Nueva categoría" className="h-11 min-w-0 flex-1 rounded-xl border border-input bg-background px-3 text-sm outline-none focus:border-accent" data-testid="input-business-category" />
+                 <button onClick={addCategory} className="flex min-h-11 items-center justify-center gap-2 rounded-xl bg-primary px-4 text-xs font-bold text-white" data-testid="button-business-add-category">
                   <Plus className="h-4 w-4 text-secondary" /> Crear
                 </button>
               </div>
               <div className="mt-6 grid gap-3 sm:grid-cols-2">
                 {categories.map((category) => (
-                  <div key={category} className="flex items-center justify-between rounded-xl bg-muted/50 px-4 py-3">
-                    <span className="flex items-center gap-2 text-sm font-bold"><Tag className="h-4 w-4 text-accent" />{category}</span>
-                    <button onClick={() => removeCategory(category)} className="rounded-lg p-2 text-red-700 hover:bg-red-50" aria-label={`Eliminar ${category}`}>
+                   <div key={category} className="flex min-w-0 items-center justify-between gap-2 rounded-xl bg-muted/50 px-4 py-3">
+                     <span className="flex min-w-0 items-center gap-2 break-words text-sm font-bold"><Tag className="h-4 w-4 shrink-0 text-accent" />{category}</span>
+                     <button onClick={() => removeCategory(category)} className="flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-lg p-2 text-red-700 hover:bg-red-50" aria-label={`Eliminar ${category}`}>
                       <Trash2 className="h-4 w-4" />
                     </button>
                   </div>
@@ -294,37 +294,37 @@ export default function BusinessPortalPage() {
                   </div>
                   <span className="font-mono-app text-[10px] font-bold uppercase tracking-wide text-muted-foreground">{visibleProducts.length} productos visibles</span>
                 </div>
-                <div className="mt-5 flex gap-2 overflow-x-auto pb-1">
+                 <div className="mt-5 flex max-w-full gap-2 overflow-x-auto overscroll-x-contain pb-2">
                   {['Todas', ...categories].map((category) => {
                     const count = category === 'Todas' ? products.length : products.filter((product) => product.category === category).length;
-                    return <button key={category} onClick={() => setProductCategoryFilter(category)} className={`whitespace-nowrap rounded-full px-4 py-2 text-xs font-bold transition ${productCategoryFilter === category ? 'bg-primary text-white' : 'bg-muted text-muted-foreground hover:bg-secondary/60 hover:text-primary'}`} data-testid={`button-business-category-filter-${category.toLowerCase().replace(/\s+/g, '-')}`}>{category} <span className={`ml-1 rounded-full px-1.5 py-0.5 font-mono-app text-[9px] ${productCategoryFilter === category ? 'bg-white/15' : 'bg-card'}`}>{count}</span></button>;
+                     return <button key={category} onClick={() => setProductCategoryFilter(category)} className={`min-h-11 shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-xs font-bold transition ${productCategoryFilter === category ? 'bg-primary text-white' : 'bg-muted text-muted-foreground hover:bg-secondary/60 hover:text-primary'}`} data-testid={`button-business-category-filter-${category.toLowerCase().replace(/\s+/g, '-')}`}>{category} <span className={`ml-1 rounded-full px-1.5 py-0.5 font-mono-app text-[9px] ${productCategoryFilter === category ? 'bg-white/15' : 'bg-card'}`}>{count}</span></button>;
                   })}
                 </div>
               </div>
               <div className="rounded-2xl bg-card p-5 ring-1 ring-border">
                 <div className="flex items-center gap-2"><Plus className="h-4 w-4 text-accent" /><h2 className="font-display text-xl font-bold">Agregar a la carta</h2></div>
-                <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
-                  <input value={newProduct.name} onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })} placeholder="Nombre del plato" className="h-10 w-full rounded-xl border border-input bg-background px-3 text-xs outline-none focus:border-accent lg:col-span-2" data-testid="input-business-product-name" />
-                  <select value={newProduct.category} onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })} className="h-10 w-full rounded-xl border border-input bg-background px-3 text-xs outline-none focus:border-accent lg:col-span-1" data-testid="select-business-product-category">
+                <div className="mt-4 grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-6">
+                   <input value={newProduct.name} onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })} placeholder="Nombre del plato" className="h-11 min-w-0 w-full rounded-xl border border-input bg-background px-3 text-xs outline-none focus:border-accent sm:h-10 lg:col-span-2" data-testid="input-business-product-name" />
+                   <select value={newProduct.category} onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })} className="h-11 min-w-0 w-full rounded-xl border border-input bg-background px-3 text-xs outline-none focus:border-accent sm:h-10 lg:col-span-1" data-testid="select-business-product-category">
                     {categories.length ? categories.map((cat) => <option key={cat}>{cat}</option>) : <option value="">Sin categoría</option>}
                   </select>
-                  <div className="grid gap-2 sm:grid-cols-[1fr_auto] lg:col-span-3">
-                    <input value={newProduct.image.startsWith('data:') ? '' : newProduct.image} onChange={(e) => setNewProduct({ ...newProduct, image: e.target.value })} placeholder={newProduct.image.startsWith('data:') ? 'Imagen cargada desde archivo' : 'URL de imagen (opcional)'} className="h-10 w-full rounded-xl border border-input bg-background px-3 text-xs outline-none focus:border-accent" data-testid="input-business-product-image" />
-                    <label className="flex h-10 cursor-pointer items-center justify-center gap-2 rounded-xl border border-accent/35 bg-secondary/30 px-4 text-xs font-bold text-primary transition hover:bg-secondary/55">
+                   <div className="grid min-w-0 gap-2 sm:grid-cols-[minmax(0,1fr)_auto] lg:col-span-3">
+                     <input value={newProduct.image.startsWith('data:') ? '' : newProduct.image} onChange={(e) => setNewProduct({ ...newProduct, image: e.target.value })} placeholder={newProduct.image.startsWith('data:') ? 'Imagen cargada desde archivo' : 'URL de imagen (opcional)'} className="h-11 min-w-0 w-full rounded-xl border border-input bg-background px-3 text-xs outline-none focus:border-accent sm:h-10" data-testid="input-business-product-image" />
+                     <label className="flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-xl border border-accent/35 bg-secondary/30 px-4 text-xs font-bold text-primary transition hover:bg-secondary/55 sm:min-h-10">
                       <Upload className="h-4 w-4" /> Subir archivo
                       <input type="file" accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp" className="sr-only" onChange={(event) => { readImageFile(event.target.files?.[0], (image) => setNewProduct((current) => ({ ...current, image }))); event.target.value = ''; }} data-testid="input-business-product-image-file" />
                     </label>
                     {newProduct.image && <div className="flex items-center gap-3 rounded-xl bg-muted/50 p-2 sm:col-span-2"><img src={newProduct.image} alt="Vista previa del producto" className="h-14 w-14 rounded-lg object-cover ring-1 ring-border" /><div><p className="text-xs font-bold">Vista previa</p><button type="button" onClick={() => setNewProduct({ ...newProduct, image: '' })} className="mt-1 text-[10px] font-bold text-red-700">Quitar imagen</button></div></div>}
                   </div>
-                  <input type="number" value={newProduct.price} onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })} placeholder="Precio (S/)" className="h-10 w-full rounded-xl border border-input bg-background px-3 text-xs outline-none focus:border-accent lg:col-span-2" data-testid="input-business-product-price" />
-                  <input type="number" value={newProduct.stock} onChange={(e) => setNewProduct({ ...newProduct, stock: e.target.value })} placeholder="Stock" className="h-10 w-full rounded-xl border border-input bg-background px-3 text-xs outline-none focus:border-accent lg:col-span-2" data-testid="input-business-product-stock" />
-                  <button onClick={addProduct} className="flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 text-xs font-bold text-white lg:col-span-2" data-testid="button-business-add-product">
+                   <input type="number" value={newProduct.price} onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })} placeholder="Precio (S/)" className="h-11 min-w-0 w-full rounded-xl border border-input bg-background px-3 text-xs outline-none focus:border-accent sm:h-10 lg:col-span-2" data-testid="input-business-product-price" />
+                   <input type="number" value={newProduct.stock} onChange={(e) => setNewProduct({ ...newProduct, stock: e.target.value })} placeholder="Stock" className="h-11 min-w-0 w-full rounded-xl border border-input bg-background px-3 text-xs outline-none focus:border-accent sm:h-10 lg:col-span-2" data-testid="input-business-product-stock" />
+                   <button onClick={addProduct} className="flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 text-xs font-bold text-white sm:h-10 lg:col-span-2" data-testid="button-business-add-product">
                     <Plus className="h-4 w-4 text-secondary" /> Guardar
                   </button>
                 </div>
               </div>
               
-              <div className="overflow-x-auto rounded-2xl bg-card ring-1 ring-border">
+               <div role="region" aria-label="Tabla de productos, desplázate horizontalmente para ver todas las columnas" tabIndex={0} className="max-w-full min-w-0 overflow-x-auto overscroll-x-contain rounded-2xl bg-card ring-1 ring-border">
                 <table className="w-full min-w-[780px] text-left text-sm">
                   <thead className="border-b border-border bg-muted/50 text-[10px] uppercase tracking-wide text-muted-foreground">
                     <tr>
@@ -378,22 +378,22 @@ export default function BusinessPortalPage() {
                           {editingId === product.id ? <input type="number" value={product.stock} onChange={(e) => updateProduct(product.id, { stock: Number(e.target.value) })} className="h-8 w-14 rounded-lg border border-input bg-background px-2 text-xs outline-none focus:border-accent" /> : <span className={product.stock === 0 ? 'font-bold text-red-700' : ''}>{product.stock}</span>}
                         </td>
                         <td className="px-5 py-4">
-                          <button onClick={() => updateProduct(product.id, { available: !product.available })} className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${product.available ? 'bg-emerald-100 text-emerald-800' : 'bg-muted text-muted-foreground'}`}>
+                           <button onClick={() => updateProduct(product.id, { available: !product.available })} className={`min-h-11 rounded-full px-2.5 py-1 text-[10px] font-bold sm:min-h-0 ${product.available ? 'bg-emerald-100 text-emerald-800' : 'bg-muted text-muted-foreground'}`}>
                             {product.available ? 'Disponible' : 'Agotado'}
                           </button>
                         </td>
                         <td className="px-5 py-4 text-right">
                           <div className="flex justify-end gap-2">
                             {editingId === product.id ? (
-                              <button onClick={() => { setEditingId(null); announce('Plato guardado.'); }} className="rounded-lg bg-secondary p-2 text-primary hover:bg-accent hover:text-white transition" aria-label="Guardar">
+                               <button onClick={() => { setEditingId(null); announce('Plato guardado.'); }} className="flex min-h-11 min-w-11 items-center justify-center rounded-lg bg-secondary p-2 text-primary hover:bg-accent hover:text-white transition sm:min-h-0 sm:min-w-0" aria-label="Guardar">
                                 <Save className="h-3.5 w-3.5" />
                               </button>
                             ) : (
-                              <button onClick={() => setEditingId(product.id)} className="rounded-lg bg-muted p-2 text-primary hover:bg-secondary transition" aria-label="Editar">
+                               <button onClick={() => setEditingId(product.id)} className="flex min-h-11 min-w-11 items-center justify-center rounded-lg bg-muted p-2 text-primary hover:bg-secondary transition sm:min-h-0 sm:min-w-0" aria-label="Editar">
                                 <Pencil className="h-3.5 w-3.5" />
                               </button>
                             )}
-                            <button onClick={() => removeProduct(product.id)} className="rounded-lg bg-red-50 p-2 text-red-700 hover:bg-red-100 transition" aria-label="Eliminar">
+                             <button onClick={() => removeProduct(product.id)} className="flex min-h-11 min-w-11 items-center justify-center rounded-lg bg-red-50 p-2 text-red-700 hover:bg-red-100 transition sm:min-h-0 sm:min-w-0" aria-label="Eliminar">
                               <Trash2 className="h-3.5 w-3.5" />
                             </button>
                           </div>
@@ -434,9 +434,9 @@ export default function BusinessPortalPage() {
                   <input value={profile.phone} onChange={(e) => setProfile({ ...profile, phone: e.target.value })} className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none focus:border-accent" data-testid="input-business-profile-phone" />
                 </label>
                 
-                <div className="flex items-center justify-between border-t border-border pt-5">
+                <div className="flex flex-col gap-3 border-t border-border pt-5 sm:flex-row sm:items-center sm:justify-between">
                   <p className="text-xs text-muted-foreground">Muestra esta información a tus clientes.</p>
-                  <button onClick={() => announce('Perfil del negocio actualizado.')} className="flex items-center gap-2 rounded-full bg-primary px-4 py-2.5 text-xs font-bold text-white" data-testid="button-business-save-profile">
+                  <button onClick={() => announce('Perfil del negocio actualizado.')} className="flex min-h-11 items-center justify-center gap-2 rounded-full bg-primary px-4 py-2.5 text-xs font-bold text-white" data-testid="button-business-save-profile">
                     <Save className="h-3.5 w-3.5 text-secondary" /> Guardar cambios
                   </button>
                 </div>

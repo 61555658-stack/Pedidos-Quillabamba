@@ -237,12 +237,12 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
   ];
 
   return (
-    <div className="paper-grid min-h-[100dvh] bg-background px-5 py-6">
+    <div className="paper-grid min-h-[100dvh] bg-background px-4 py-5 sm:px-5 sm:py-6">
       <Link href="/" className="mx-auto flex max-w-[1100px] items-center gap-3" data-testid="link-role-auth-brand">
         <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-secondary text-primary"><Utensils className="h-4 w-4" /></span>
         <span className="font-display text-lg font-bold text-primary">QUILLAYAA<span className="text-accent">.</span></span>
       </Link>
-      <div className="mx-auto mt-10 max-w-[1080px] overflow-hidden rounded-3xl bg-card ring-1 ring-border warm-shadow md:grid md:grid-cols-[.8fr_1.2fr]">
+      <div className="mx-auto mt-6 max-w-[1080px] overflow-hidden rounded-3xl bg-card ring-1 ring-border warm-shadow sm:mt-10 md:grid md:grid-cols-[.8fr_1.2fr]">
         <div className="relative hidden min-h-[650px] overflow-hidden bg-primary p-10 md:block">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,hsl(39_93%_59%/.35),transparent_45%)]" />
           <div className="relative flex h-full flex-col justify-between">
@@ -253,18 +253,18 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
             </div>
           </div>
         </div>
-        <div className="p-7 sm:p-12">
+        <div className="p-5 min-[360px]:p-6 sm:p-12">
           <p className="font-mono-app text-[10px] font-bold uppercase tracking-[.18em] text-accent">{mode === 'login' ? 'Bienvenido de vuelta' : 'Crea tu acceso'}</p>
           <h2 className="mt-3 font-display text-3xl font-bold tracking-[-.04em] text-primary">{mode === 'login' ? 'Ingresa a tu plataforma' : 'Regístrate según tu cargo'}</h2>
           <p className="mt-2 text-sm leading-6 text-muted-foreground">Selecciona tu rol para abrir únicamente las herramientas que necesitas.</p>
 
-          {mode === 'register' && <label className="mt-7 block"><span className="mb-1.5 block text-xs font-bold text-primary">Nombre completo</span><input value={name} disabled={!!pendingVerification} onChange={(event) => setName(event.target.value)} className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none focus:border-accent disabled:opacity-60" placeholder="María Quispe" data-testid="input-role-name" /></label>}
-          <label className="mt-5 block"><span className="mb-1.5 block text-xs font-bold text-primary">Correo electrónico</span><input type="email" value={email} disabled={!!pendingVerification} onChange={(event) => setEmail(event.target.value)} className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none focus:border-accent disabled:opacity-60" placeholder="tu@correo.com" data-testid="input-role-email" /></label>
-          <label className="mt-5 block"><span className="mb-1.5 block text-xs font-bold text-primary">Contraseña</span><input type="password" value={password} disabled={!!pendingVerification} onChange={(event) => setPassword(event.target.value)} className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none focus:border-accent disabled:opacity-60" placeholder="••••••••" data-testid="input-role-password" /></label>
+          {mode === 'register' && <label className="mt-7 block"><span className="mb-1.5 block text-xs font-bold text-primary">Nombre completo</span><input value={name} disabled={!!pendingVerification} onChange={(event) => setName(event.target.value)} autoComplete="name" className="h-11 w-full rounded-xl border border-input bg-background px-3 text-base outline-none focus:border-accent disabled:opacity-60 sm:text-sm" placeholder="María Quispe" data-testid="input-role-name" /></label>}
+          <label className="mt-5 block"><span className="mb-1.5 block text-xs font-bold text-primary">Correo electrónico</span><input type="email" value={email} disabled={!!pendingVerification} onChange={(event) => setEmail(event.target.value)} autoComplete="email" className="h-11 w-full rounded-xl border border-input bg-background px-3 text-base outline-none focus:border-accent disabled:opacity-60 sm:text-sm" placeholder="tu@correo.com" data-testid="input-role-email" /></label>
+          <label className="mt-5 block"><span className="mb-1.5 block text-xs font-bold text-primary">Contraseña</span><input type="password" value={password} disabled={!!pendingVerification} onChange={(event) => setPassword(event.target.value)} autoComplete={mode === 'register' ? 'new-password' : 'current-password'} className="h-11 w-full rounded-xl border border-input bg-background px-3 text-base outline-none focus:border-accent disabled:opacity-60 sm:text-sm" placeholder="••••••••" data-testid="input-role-password" /></label>
 
           <div className="mt-7">
             <p className="mb-3 text-xs font-bold text-primary">¿Cómo ingresarás?</p>
-            <div className="grid gap-2 sm:grid-cols-2">
+            <div className="grid gap-2 min-[360px]:grid-cols-2">
               {roleOptions.filter(({ value }) => mode === 'login' || value !== 'administrador_sistema').map(({ value, icon: Icon }) => <button type="button" key={value} disabled={!!pendingVerification} onClick={() => setRole(value)} className={`rounded-xl p-3 text-left ring-1 transition disabled:cursor-not-allowed ${role === value ? 'bg-secondary/35 text-primary ring-accent' : 'bg-background text-muted-foreground ring-border hover:ring-secondary'}`} data-testid={`button-role-${value}`}>
                 <Icon className="h-4 w-4" />
                 <span className="mt-2 block text-xs font-extrabold">{roleLabels[value]}</span>
@@ -276,8 +276,8 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
           {pendingVerification?.mode === mode && <div className="mt-6 rounded-2xl bg-secondary/20 p-4 ring-1 ring-secondary">
             <p className="text-sm font-bold text-primary">Revisa tu correo</p>
             <p className="mt-1 text-xs leading-5 text-muted-foreground">Enviamos un código de seis dígitos a {pendingVerification.account.email}. Caduca en 10 minutos. {mode === 'register' ? 'La cuenta se creará cuando lo confirmes.' : 'Entrarás a tu plataforma cuando lo confirmes.'}</p>
-            <label className="mt-4 block"><span className="text-xs font-bold text-primary">Código de verificación</span><input autoComplete="one-time-code" inputMode="numeric" maxLength={6} value={verificationCode} onChange={event => setVerificationCode(event.target.value.replace(/\D/g, '').slice(0, 6))} className="mt-1.5 h-11 w-full rounded-xl border border-input bg-background px-3 text-center text-lg font-bold tracking-[.3em]" placeholder="000000" data-testid="input-role-verification-code" /></label>
-            <button type="button" disabled={submitting} onClick={() => { setPendingVerification(null); setVerificationCode(''); setNotice(''); }} className="mt-3 text-xs font-bold text-accent underline">Cambiar correo o solicitar otro código</button>
+            <label className="mt-4 block"><span className="text-xs font-bold text-primary">Código de verificación</span><input autoComplete="one-time-code" inputMode="numeric" pattern="[0-9]*" maxLength={6} value={verificationCode} onChange={event => setVerificationCode(event.target.value.replace(/\D/g, '').slice(0, 6))} className="mt-1.5 h-11 w-full rounded-xl border border-input bg-background px-3 text-center text-lg font-bold tracking-[.3em]" placeholder="000000" data-testid="input-role-verification-code" /></label>
+            <button type="button" disabled={submitting} onClick={() => { setPendingVerification(null); setVerificationCode(''); setNotice(''); }} className="mt-3 min-h-11 text-left text-xs font-bold text-accent underline">Cambiar correo o solicitar otro código</button>
           </div>}
           {notice && <p role="alert" className="mt-4 rounded-xl bg-red-50 px-3 py-2.5 text-xs font-bold text-red-700" data-testid="status-role-auth-feedback">{notice}</p>}
           <button disabled={submitting} onClick={pendingVerification?.mode === mode ? verifyCode : submit} className="mt-7 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-primary text-sm font-extrabold text-white disabled:opacity-60" data-testid="button-role-auth-submit">{submitting ? 'Procesando...' : pendingVerification?.mode === mode ? mode === 'register' ? 'Verificar y crear cuenta' : 'Verificar e ingresar' : mode === 'login' && role === 'administrador_sistema' ? 'Entrar a mi plataforma' : 'Enviar código a mi correo'} <ArrowRight className="h-4 w-4 text-secondary" /></button>

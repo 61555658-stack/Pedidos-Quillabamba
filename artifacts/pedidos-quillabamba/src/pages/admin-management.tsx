@@ -342,32 +342,32 @@ export default function AdminManagementPage() {
 
   return <main className="min-h-[100dvh] bg-[#f1efe7] text-primary">
     <header className="border-b border-border/70 bg-[#f7f5ee]">
-      <div className="mx-auto flex h-16 max-w-[1400px] items-center gap-3 px-5 md:px-8">
-        <Link href="/admin" className="flex items-center gap-3">
+       <div className="mx-auto flex min-h-16 max-w-[1400px] items-center gap-2 px-4 py-2 md:h-16 md:gap-3 md:px-8 md:py-0">
+         <Link href="/admin" className="flex min-w-0 items-center gap-2 md:gap-3">
           <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-secondary">
             <LayoutDashboard className="h-4 w-4" />
           </span>
-          <div>
+           <div className="min-w-0">
             <p className="font-display font-bold">QUILLAYAA</p>
-            <p className="font-mono-app text-[9px] uppercase tracking-[.14em] text-muted-foreground">Administrador del sistema</p>
+             <p className="font-mono-app text-[9px] uppercase leading-tight tracking-[.08em] text-muted-foreground sm:tracking-[.14em]">Administrador del sistema</p>
           </div>
         </Link>
-        <div className="ml-auto flex items-center gap-2">
-          <Link href="/admin" className="hidden rounded-full px-3 py-2 text-xs font-bold text-muted-foreground hover:bg-muted sm:block">Dashboard</Link>
-          <button onClick={logout} className="flex items-center gap-2 rounded-full bg-primary px-3.5 py-2 text-xs font-bold text-white" data-testid="button-admin-logout">
+         <div className="ml-auto flex shrink-0 items-center gap-2">
+           <Link href="/admin" aria-label="Ir al dashboard" className="flex min-h-11 min-w-11 items-center justify-center rounded-full px-2 py-2 text-xs font-bold text-muted-foreground hover:bg-muted sm:px-3"><LayoutDashboard className="h-4 w-4 sm:hidden" /><span className="sr-only sm:not-sr-only">Dashboard</span></Link>
+           <button onClick={logout} className="flex min-h-11 items-center gap-2 rounded-full bg-primary px-3 py-2 text-xs font-bold text-white sm:px-3.5" data-testid="button-admin-logout">
             <LogOut className="h-3.5 w-3.5" /> Salir
           </button>
         </div>
       </div>
     </header>
     
-    <div className="mx-auto grid max-w-[1400px] gap-6 px-5 py-7 md:grid-cols-[220px_1fr] md:px-8">
-      <aside className="h-fit rounded-2xl bg-primary p-3 text-white">
+     <div className="mx-auto grid min-w-0 max-w-[1400px] gap-5 px-4 py-5 md:grid-cols-[220px_minmax(0,1fr)] md:gap-6 md:px-8 md:py-7">
+       <aside className="h-fit min-w-0 rounded-2xl bg-primary p-2 text-white md:p-3">
         <p className="px-3 pb-3 pt-2 font-mono-app text-[10px] uppercase tracking-[.16em] text-white/45">Módulos</p>
-        <nav className="space-y-1">
+         <nav aria-label="Módulos de administración" className="flex gap-1 overflow-x-auto overscroll-x-contain pb-1 md:block md:space-y-1 md:overflow-visible md:pb-0">
           {menu.map(({ id, label, icon: Icon }) => (
-            <button key={id} onClick={() => setTab(id)} className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-xs font-bold transition ${tab === id ? 'bg-secondary text-primary' : 'text-white/65 hover:bg-white/10 hover:text-white'}`} data-testid={`button-admin-module-${id}`}>
-              <Icon className="h-4 w-4" />{label}
+             <button key={id} onClick={() => setTab(id)} className={`flex min-h-11 shrink-0 items-center gap-3 whitespace-nowrap rounded-xl px-3 py-3 text-left text-xs font-bold transition md:w-full ${tab === id ? 'bg-secondary text-primary' : 'text-white/65 hover:bg-white/10 hover:text-white'}`} data-testid={`button-admin-module-${id}`}>
+               <Icon className="h-4 w-4 shrink-0" />{label}
             </button>
           ))}
         </nav>
@@ -389,12 +389,12 @@ export default function AdminManagementPage() {
         
         {isScopedTab && (
           <div className="mt-7 mb-6 rounded-2xl bg-card p-5 ring-1 ring-border flex flex-col lg:flex-row lg:items-center justify-between gap-5">
-            <div className="w-full lg:max-w-xs">
+           <div className="min-w-0 w-full lg:max-w-xs">
               <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">Contexto de negocio</p>
               <select
                 value={selectedBusinessId || ''}
                 onChange={e => setSelectedBusinessId(Number(e.target.value) || null)}
-                className="h-10 w-full rounded-xl border border-input bg-background px-3 text-sm font-bold text-primary focus:border-accent outline-none"
+                 className="h-11 w-full min-w-0 rounded-xl border border-input bg-background px-3 text-sm font-bold text-primary focus:border-accent outline-none sm:h-10"
                 data-testid="select-business-context"
               >
                 <option value="">Seleccionar negocio...</option>
@@ -402,7 +402,7 @@ export default function AdminManagementPage() {
               </select>
             </div>
             {selectedBusiness && (
-              <div className="flex flex-wrap gap-x-8 gap-y-4 text-xs bg-muted/50 rounded-xl px-5 py-3 lg:bg-transparent lg:px-0 lg:py-0">
+               <div className="flex min-w-0 flex-wrap gap-x-8 gap-y-4 break-words text-xs bg-muted/50 rounded-xl px-4 py-3 lg:bg-transparent lg:px-0 lg:py-0">
                 <div><p className="text-muted-foreground mb-1 text-[10px] uppercase tracking-wider">RUC</p><p className="font-mono-app font-bold text-sm">{selectedBusiness.ruc}</p></div>
                 <div><p className="text-muted-foreground mb-1 text-[10px] uppercase tracking-wider">Admin Responsable</p><p className="font-bold text-sm">{selectedBusiness.administrator}</p></div>
                 <div>
@@ -417,22 +417,22 @@ export default function AdminManagementPage() {
         {tab === 'users' && <section className="mt-7 space-y-5">
           <div className="rounded-2xl bg-card p-5 ring-1 ring-border">
             <h2 className="font-display text-lg font-bold mb-4">Crear usuario</h2>
-            <div className="flex flex-wrap items-center gap-3">
-              <input value={newUser.name} onChange={e => setNewUser({ ...newUser, name: e.target.value })} placeholder="Nombre completo" className="h-10 flex-1 min-w-[200px] rounded-xl border border-input bg-background px-3 text-sm" />
-              <input value={newUser.email} onChange={e => setNewUser({ ...newUser, email: e.target.value })} placeholder="Correo electrónico" className="h-10 flex-1 min-w-[200px] rounded-xl border border-input bg-background px-3 text-sm" />
-              <select value={newUser.role} onChange={e => setNewUser({ ...newUser, role: e.target.value })} className="h-10 rounded-xl border border-input bg-background px-3 text-sm font-semibold">
+             <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+               <input value={newUser.name} onChange={e => setNewUser({ ...newUser, name: e.target.value })} placeholder="Nombre completo" className="h-11 min-w-0 w-full rounded-xl border border-input bg-background px-3 text-sm sm:h-10 sm:min-w-[200px] sm:flex-1 sm:w-auto" />
+               <input value={newUser.email} onChange={e => setNewUser({ ...newUser, email: e.target.value })} placeholder="Correo electrónico" className="h-11 min-w-0 w-full rounded-xl border border-input bg-background px-3 text-sm sm:h-10 sm:min-w-[200px] sm:flex-1 sm:w-auto" />
+               <select value={newUser.role} onChange={e => setNewUser({ ...newUser, role: e.target.value })} className="h-11 min-w-0 w-full rounded-xl border border-input bg-background px-3 text-sm font-semibold sm:h-10 sm:w-auto">
                 <option>Cliente</option>
                 <option>Administrador del negocio</option>
                 <option>Repartidor</option>
                 <option>Administrador del sistema</option>
               </select>
-              <button onClick={handleCreateUser} className="flex h-10 items-center gap-2 rounded-xl bg-primary px-4 text-xs font-bold text-white">
+               <button onClick={handleCreateUser} className="flex h-11 items-center justify-center gap-2 rounded-xl bg-primary px-4 text-xs font-bold text-white sm:h-10">
                 <Plus className="h-4 w-4 text-secondary" /> Agregar
               </button>
             </div>
           </div>
           
-          <div className="overflow-x-auto rounded-2xl bg-card ring-1 ring-border">
+           <div role="region" aria-label="Tabla de usuarios" tabIndex={0} className="max-w-full min-w-0 overflow-x-auto overscroll-x-contain rounded-2xl bg-card ring-1 ring-border">
             <table className="w-full min-w-[900px] text-left text-sm">
               <thead className="border-b border-border bg-muted/50 text-[10px] uppercase tracking-wide text-muted-foreground">
                 <tr><th className="px-5 py-4">Usuario</th><th className="px-5 py-4">Correo</th><th className="px-5 py-4">Rol</th><th className="px-5 py-4">Estado</th><th className="px-5 py-4 text-right">Acción</th></tr>
@@ -466,11 +466,11 @@ export default function AdminManagementPage() {
                     <td className="px-5 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
                         {editingUserId === user.id ? (
-                          <button onClick={() => handleSaveUser(user.id)} className="rounded-lg bg-secondary p-2 text-primary" data-testid="button-save-user"><Save className="h-3.5 w-3.5" /></button>
+                           <button onClick={() => handleSaveUser(user.id)} className="flex min-h-11 min-w-11 items-center justify-center rounded-lg bg-secondary p-2 text-primary sm:min-h-0 sm:min-w-0" aria-label={`Guardar ${user.name}`} data-testid="button-save-user"><Save className="h-3.5 w-3.5" /></button>
                         ) : (
-                          <button onClick={() => { setEditingUserId(user.id); setEditingUserData({ name: user.name, email: user.email, role: user.role }); }} className="rounded-lg bg-muted p-2 text-primary" data-testid="button-edit-user"><Pencil className="h-3.5 w-3.5" /></button>
+                           <button onClick={() => { setEditingUserId(user.id); setEditingUserData({ name: user.name, email: user.email, role: user.role }); }} className="flex min-h-11 min-w-11 items-center justify-center rounded-lg bg-muted p-2 text-primary sm:min-h-0 sm:min-w-0" aria-label={`Editar ${user.name}`} data-testid="button-edit-user"><Pencil className="h-3.5 w-3.5" /></button>
                         )}
-                        <button onClick={() => toggleUserActive(user.id)} className="rounded-lg bg-muted px-3 py-2 text-[10px] font-bold">{user.active ? 'Bloquear' : 'Habilitar'}</button>
+                         <button onClick={() => toggleUserActive(user.id)} className="min-h-11 rounded-lg bg-muted px-3 py-2 text-[10px] font-bold sm:min-h-0">{user.active ? 'Bloquear' : 'Habilitar'}</button>
                       </div>
                     </td>
                   </tr>
@@ -480,7 +480,7 @@ export default function AdminManagementPage() {
           </div>
         </section>}
 
-        {tab === 'business-admins' && <section className="mt-7 overflow-x-auto rounded-2xl bg-card ring-1 ring-border">
+        {tab === 'business-admins' && <section role="region" aria-label="Tabla de administradores de negocio" tabIndex={0} className="mt-7 max-w-full min-w-0 overflow-x-auto overscroll-x-contain rounded-2xl bg-card ring-1 ring-border">
           <table className="w-full min-w-[1000px] text-left text-sm">
             <thead className="border-b border-border bg-muted/50 text-[10px] uppercase tracking-wide text-muted-foreground">
               <tr><th className="px-5 py-4">Administrador</th><th className="px-5 py-4">Correo</th><th className="px-5 py-4">Negocio asociado</th><th className="px-5 py-4">Cuenta</th><th className="px-5 py-4">Permisos</th><th className="px-5 py-4 text-right">Acciones</th></tr>
@@ -503,16 +503,16 @@ export default function AdminManagementPage() {
                     ) : admin.businessName}
                   </td>
                   <td className="px-5 py-4">
-                    <button onClick={() => toggleAdminAccount(admin.id)} className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${admin.accountActive ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-700'}`}>{admin.accountActive ? 'Activa' : 'Bloqueada'}</button>
+                    <button onClick={() => toggleAdminAccount(admin.id)} className={`min-h-11 rounded-full px-2.5 py-1 text-[10px] font-bold sm:min-h-0 ${admin.accountActive ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-700'}`}>{admin.accountActive ? 'Activa' : 'Bloqueada'}</button>
                   </td>
                   <td className="px-5 py-4">
-                    <button onClick={() => toggleAdminPerms(admin.id)} className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${admin.permissionsActive ? 'bg-blue-100 text-blue-800' : 'bg-amber-100 text-amber-800'}`}>{admin.permissionsActive ? 'Completos' : 'Restringidos'}</button>
+                    <button onClick={() => toggleAdminPerms(admin.id)} className={`min-h-11 rounded-full px-2.5 py-1 text-[10px] font-bold sm:min-h-0 ${admin.permissionsActive ? 'bg-blue-100 text-blue-800' : 'bg-amber-100 text-amber-800'}`}>{admin.permissionsActive ? 'Completos' : 'Restringidos'}</button>
                   </td>
                   <td className="px-5 py-4 text-right">
                     {editingAdminId === admin.id ? (
-                      <button onClick={() => handleSaveAdmin(admin.id)} className="rounded-lg bg-secondary p-2 text-primary"><Save className="h-3.5 w-3.5" /></button>
+                      <button onClick={() => handleSaveAdmin(admin.id)} className="flex min-h-11 min-w-11 items-center justify-center rounded-lg bg-secondary p-2 text-primary sm:min-h-0 sm:min-w-0" aria-label={`Guardar ${admin.name}`}><Save className="h-3.5 w-3.5" /></button>
                     ) : (
-                      <button onClick={() => { setEditingAdminId(admin.id); setEditingAdminData({ name: admin.name, email: admin.email, businessName: admin.businessName }); }} className="rounded-lg bg-muted p-2 text-primary"><Pencil className="h-3.5 w-3.5" /></button>
+                      <button onClick={() => { setEditingAdminId(admin.id); setEditingAdminData({ name: admin.name, email: admin.email, businessName: admin.businessName }); }} className="flex min-h-11 min-w-11 items-center justify-center rounded-lg bg-muted p-2 text-primary sm:min-h-0 sm:min-w-0" aria-label={`Editar ${admin.name}`}><Pencil className="h-3.5 w-3.5" /></button>
                     )}
                   </td>
                 </tr>
@@ -525,12 +525,12 @@ export default function AdminManagementPage() {
           <div className="rounded-2xl bg-card p-5 ring-1 ring-border">
             <h2 className="font-display text-lg font-bold mb-4">Registrar negocio</h2>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[1fr_150px_1fr_150px_1fr_auto]">
-              <input value={newBusiness.name} onChange={e => setNewBusiness({ ...newBusiness, name: e.target.value })} placeholder="Nombre comercial" className="h-10 rounded-xl border border-input bg-background px-3 text-xs" />
+              <input value={newBusiness.name} onChange={e => setNewBusiness({ ...newBusiness, name: e.target.value })} placeholder="Nombre comercial" className="h-11 min-w-0 rounded-xl border border-input bg-background px-3 text-xs sm:h-10" />
               <input value={newBusiness.ruc} onChange={e => setNewBusiness({ ...newBusiness, ruc: e.target.value })} placeholder="RUC" className="h-10 rounded-xl border border-input bg-background px-3 text-xs" />
               <input value={newBusiness.address} onChange={e => setNewBusiness({ ...newBusiness, address: e.target.value })} placeholder="Dirección" className="h-10 rounded-xl border border-input bg-background px-3 text-xs" />
               <input value={newBusiness.phone} onChange={e => setNewBusiness({ ...newBusiness, phone: e.target.value })} placeholder="Teléfono" className="h-10 rounded-xl border border-input bg-background px-3 text-xs" />
               <input value={newBusiness.administrator} onChange={e => setNewBusiness({ ...newBusiness, administrator: e.target.value })} placeholder="Admin responsable" className="h-10 rounded-xl border border-input bg-background px-3 text-xs" />
-              <button onClick={handleCreateBusiness} className="flex h-10 items-center justify-center gap-2 rounded-xl bg-primary px-4 text-xs font-bold text-white">
+              <button onClick={handleCreateBusiness} className="flex h-11 items-center justify-center gap-2 rounded-xl bg-primary px-4 text-xs font-bold text-white sm:h-10">
                 <Plus className="h-4 w-4 text-secondary" /> Registrar
               </button>
             </div>
@@ -548,8 +548,8 @@ export default function AdminManagementPage() {
                     <input value={editingBusinessData.administrator} onChange={e => setEditingBusinessData({ ...editingBusinessData, administrator: e.target.value })} placeholder="Admin responsable" className="h-9 w-full rounded-lg border border-input px-2 text-xs" />
                     
                     <div className="flex gap-2 pt-2">
-                      <button onClick={() => handleSaveBusiness(business.id)} className="flex-1 rounded-xl bg-primary px-3 py-2 text-xs font-bold text-white">Guardar</button>
-                      <button onClick={() => setEditingBusinessId(null)} className="flex-1 rounded-xl bg-muted px-3 py-2 text-xs font-bold">Cancelar</button>
+                      <button onClick={() => handleSaveBusiness(business.id)} className="min-h-11 flex-1 rounded-xl bg-primary px-3 py-2 text-xs font-bold text-white">Guardar</button>
+                      <button onClick={() => setEditingBusinessId(null)} className="min-h-11 flex-1 rounded-xl bg-muted px-3 py-2 text-xs font-bold">Cancelar</button>
                     </div>
                   </div>
                 ) : (
@@ -559,7 +559,7 @@ export default function AdminManagementPage() {
                         <Store className="h-4 w-4" />
                       </div>
                       <div className="flex items-center gap-2">
-                        <button onClick={() => { setEditingBusinessId(business.id); setEditingBusinessData({ ...business }); }} className="rounded-lg bg-muted p-1.5 text-primary hover:bg-border"><Pencil className="h-3.5 w-3.5" /></button>
+                        <button onClick={() => { setEditingBusinessId(business.id); setEditingBusinessData({ ...business }); }} className="flex min-h-11 min-w-11 items-center justify-center rounded-lg bg-muted p-1.5 text-primary hover:bg-border sm:min-h-0 sm:min-w-0" aria-label={`Editar ${business.name}`}><Pencil className="h-3.5 w-3.5" /></button>
                         <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${business.active ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>{business.active ? 'Activo' : 'Pausado'}</span>
                       </div>
                     </div>
@@ -572,10 +572,10 @@ export default function AdminManagementPage() {
                     </div>
 
                     <div className="grid grid-cols-2 gap-2 border-t border-border pt-4 mt-auto">
-                      <button onClick={() => handleBusinessAccess(business.id, 'products')} className="rounded-lg bg-background border border-border px-2 py-2 text-[10px] font-bold hover:bg-muted transition" data-testid={`btn-goto-products-${business.id}`}>Productos</button>
-                      <button onClick={() => handleBusinessAccess(business.id, 'categories')} className="rounded-lg bg-background border border-border px-2 py-2 text-[10px] font-bold hover:bg-muted transition" data-testid={`btn-goto-categories-${business.id}`}>Categorías</button>
-                      <button onClick={() => handleBusinessAccess(business.id, 'orders')} className="rounded-lg bg-background border border-border px-2 py-2 text-[10px] font-bold hover:bg-muted transition" data-testid={`btn-goto-orders-${business.id}`}>Pedidos</button>
-                      <button onClick={() => handleBusinessAccess(business.id, 'payments')} className="rounded-lg bg-background border border-border px-2 py-2 text-[10px] font-bold hover:bg-muted transition" data-testid={`btn-goto-payments-${business.id}`}>Pagos</button>
+                      <button onClick={() => handleBusinessAccess(business.id, 'products')} className="min-h-11 rounded-lg bg-background border border-border px-2 py-2 text-[10px] font-bold hover:bg-muted transition sm:min-h-0" data-testid={`btn-goto-products-${business.id}`}>Productos</button>
+                      <button onClick={() => handleBusinessAccess(business.id, 'categories')} className="min-h-11 rounded-lg bg-background border border-border px-2 py-2 text-[10px] font-bold hover:bg-muted transition sm:min-h-0" data-testid={`btn-goto-categories-${business.id}`}>Categorías</button>
+                      <button onClick={() => handleBusinessAccess(business.id, 'orders')} className="min-h-11 rounded-lg bg-background border border-border px-2 py-2 text-[10px] font-bold hover:bg-muted transition sm:min-h-0" data-testid={`btn-goto-orders-${business.id}`}>Pedidos</button>
+                      <button onClick={() => handleBusinessAccess(business.id, 'payments')} className="min-h-11 rounded-lg bg-background border border-border px-2 py-2 text-[10px] font-bold hover:bg-muted transition sm:min-h-0" data-testid={`btn-goto-payments-${business.id}`}>Pagos</button>
                     </div>
                     <button onClick={() => toggleBusinessActive(business.id)} className="mt-2 w-full rounded-xl bg-muted px-3 py-2.5 text-xs font-bold transition hover:bg-accent/10 hover:text-accent">
                       {business.active ? 'Pausar temporalmente' : 'Reactivar negocio'}
@@ -589,7 +589,7 @@ export default function AdminManagementPage() {
 
         {tab === 'products' && (
           !selectedBusiness ? <EmptyBusinessSelector title="productos" /> : (
-            <section className="overflow-x-auto rounded-2xl bg-card ring-1 ring-border">
+            <section role="region" aria-label="Tabla de productos" tabIndex={0} className="max-w-full min-w-0 overflow-x-auto overscroll-x-contain rounded-2xl bg-card ring-1 ring-border">
               {filteredProducts.length === 0 ? (
                 <div className="p-12 text-center">
                   <PackageCheck className="mx-auto h-8 w-8 text-muted-foreground opacity-50" />
@@ -610,7 +610,7 @@ export default function AdminManagementPage() {
                           <span className={product.stock === 0 ? 'font-bold text-red-700' : ''}>{product.stock > 0 ? product.stock : 'Agotado'}</span>
                         </td>
                         <td className="px-5 py-4 text-right">
-                          <button onClick={() => toggleProductActive(product.id)} className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${product.active ? 'bg-emerald-100 text-emerald-800' : 'bg-muted text-muted-foreground'}`}>
+                          <button onClick={() => toggleProductActive(product.id)} className={`min-h-11 rounded-full px-2.5 py-1 text-[10px] font-bold sm:min-h-0 ${product.active ? 'bg-emerald-100 text-emerald-800' : 'bg-muted text-muted-foreground'}`}>
                             {product.active ? 'Activo' : 'Desactivado'}
                           </button>
                         </td>
@@ -625,10 +625,10 @@ export default function AdminManagementPage() {
 
         {tab === 'categories' && (
           !selectedBusiness ? <EmptyBusinessSelector title="categorías" /> : (
-            <section className="rounded-2xl bg-card p-6 ring-1 ring-border">
-              <div className="flex gap-2">
-                <input value={newCategory} onChange={(event) => setNewCategory(event.target.value)} placeholder="Nueva categoría" className="h-11 flex-1 rounded-xl border border-input bg-background px-3 text-sm" data-testid="input-admin-category" />
-                <button onClick={addCategory} className="flex items-center gap-2 rounded-xl bg-primary px-4 text-xs font-bold text-white" data-testid="button-admin-add-category">
+            <section className="min-w-0 rounded-2xl bg-card p-4 ring-1 ring-border sm:p-6">
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <input value={newCategory} onChange={(event) => setNewCategory(event.target.value)} placeholder="Nueva categoría" className="h-11 min-w-0 flex-1 rounded-xl border border-input bg-background px-3 text-sm" data-testid="input-admin-category" />
+                <button onClick={addCategory} className="flex min-h-11 items-center justify-center gap-2 rounded-xl bg-primary px-4 text-xs font-bold text-white" data-testid="button-admin-add-category">
                   <Plus className="h-4 w-4 text-secondary" /> Crear
                 </button>
               </div>
@@ -641,26 +641,26 @@ export default function AdminManagementPage() {
               ) : (
                 <div className="mt-6 grid gap-3 sm:grid-cols-2">
                   {filteredCategories.map((category) => (
-                    <div key={category.id} className="flex items-center justify-between rounded-xl bg-muted/50 px-4 py-3">
+                    <div key={category.id} className="flex min-w-0 flex-col gap-3 rounded-xl bg-muted/50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
                       {editingCategoryId === category.id ? (
-                        <input value={editingCategoryName} onChange={(e) => setEditingCategoryName(e.target.value)} className="h-8 flex-1 rounded-lg border border-input bg-background px-2 text-xs font-bold" />
+                        <input value={editingCategoryName} onChange={(e) => setEditingCategoryName(e.target.value)} className="h-11 min-w-0 w-full flex-1 rounded-lg border border-input bg-background px-2 text-xs font-bold sm:h-8" />
                       ) : (
-                        <span className="flex items-center gap-2 text-sm font-bold">
-                          <Tag className="h-4 w-4 text-accent" />{category.name}
+                        <span className="flex min-w-0 items-center gap-2 break-words text-sm font-bold">
+                          <Tag className="h-4 w-4 shrink-0 text-accent" />{category.name}
                         </span>
                       )}
                       
-                      <div className="flex items-center gap-3 ml-4 shrink-0">
+                      <div className="flex flex-wrap items-center gap-2 sm:ml-4 sm:shrink-0 sm:gap-3">
                         <span className="rounded-full bg-background px-2 py-0.5 text-[10px] font-bold text-muted-foreground border border-border">
                           {filteredProducts.filter(p => p.category === category.name).length} prod.
                         </span>
-                        <button onClick={() => toggleCategoryActive(category.id)} className={`rounded-full px-2 py-1 text-[10px] font-bold ${category.active ? 'bg-emerald-100 text-emerald-800' : 'bg-muted text-muted-foreground'}`}>
+                        <button onClick={() => toggleCategoryActive(category.id)} className={`min-h-11 rounded-full px-2 py-1 text-[10px] font-bold sm:min-h-0 ${category.active ? 'bg-emerald-100 text-emerald-800' : 'bg-muted text-muted-foreground'}`}>
                           {category.active ? 'Activa' : 'Desactivada'}
                         </button>
                         {editingCategoryId === category.id ? (
-                          <button onClick={() => saveCategory(category.id)} className="rounded-lg bg-secondary p-1.5 text-primary"><Check className="h-3.5 w-3.5" /></button>
+                          <button onClick={() => saveCategory(category.id)} className="flex min-h-11 min-w-11 items-center justify-center rounded-lg bg-secondary p-1.5 text-primary sm:min-h-0 sm:min-w-0" aria-label={`Guardar ${category.name}`}><Check className="h-3.5 w-3.5" /></button>
                         ) : (
-                          <button onClick={() => { setEditingCategoryId(category.id); setEditingCategoryName(category.name); }} className="rounded-lg bg-background p-1.5 text-muted-foreground border border-border hover:bg-muted"><Pencil className="h-3.5 w-3.5" /></button>
+                          <button onClick={() => { setEditingCategoryId(category.id); setEditingCategoryName(category.name); }} className="flex min-h-11 min-w-11 items-center justify-center rounded-lg bg-background p-1.5 text-muted-foreground border border-border hover:bg-muted sm:min-h-0 sm:min-w-0" aria-label={`Editar ${category.name}`}><Pencil className="h-3.5 w-3.5" /></button>
                         )}
                       </div>
                     </div>
@@ -673,7 +673,7 @@ export default function AdminManagementPage() {
 
         {tab === 'orders' && (
           !selectedBusiness ? <EmptyBusinessSelector title="pedidos" /> : (
-            <section className="overflow-x-auto rounded-2xl bg-card ring-1 ring-border">
+            <section role="region" aria-label="Tabla de pedidos" tabIndex={0} className="max-w-full min-w-0 overflow-x-auto overscroll-x-contain rounded-2xl bg-card ring-1 ring-border">
               {filteredOrders.length === 0 ? (
                 <div className="p-12 text-center">
                   <ClipboardList className="mx-auto h-8 w-8 text-muted-foreground opacity-50" />
@@ -708,7 +708,7 @@ export default function AdminManagementPage() {
 
         {tab === 'payments' && (
           !selectedBusiness ? <EmptyBusinessSelector title="pagos" /> : (
-            <section className="overflow-x-auto rounded-2xl bg-card ring-1 ring-border">
+            <section role="region" aria-label="Tabla de pagos" tabIndex={0} className="max-w-full min-w-0 overflow-x-auto overscroll-x-contain rounded-2xl bg-card ring-1 ring-border">
               {filteredPayments.length === 0 ? (
                 <div className="p-12 text-center">
                   <CircleDollarSign className="mx-auto h-8 w-8 text-muted-foreground opacity-50" />
@@ -741,7 +741,7 @@ export default function AdminManagementPage() {
           )
         )}
 
-        {tab === 'couriers' && <section className="mt-7 overflow-x-auto rounded-2xl bg-card ring-1 ring-border">
+        {tab === 'couriers' && <section role="region" aria-label="Tabla de repartidores" tabIndex={0} className="mt-7 max-w-full min-w-0 overflow-x-auto overscroll-x-contain rounded-2xl bg-card ring-1 ring-border">
           <table className="w-full min-w-[800px] text-left text-sm">
             <thead className="border-b border-border bg-muted/50 text-[10px] uppercase tracking-wide text-muted-foreground">
               <tr><th className="px-5 py-4">Repartidor</th><th className="px-5 py-4">Contacto</th><th className="px-5 py-4">Estado actual</th><th className="px-5 py-4">Disponibilidad</th><th className="px-5 py-4">Entregas asig.</th><th className="px-5 py-4 text-right">Acciones</th></tr>
@@ -755,7 +755,7 @@ export default function AdminManagementPage() {
                   <td className="px-5 py-4"><span className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${courier.availability === 'Disponible' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>{courier.availability}</span></td>
                   <td className="px-5 py-4 font-mono-app text-xs font-bold text-primary">{courier.deliveries}</td>
                   <td className="px-5 py-4 text-right">
-                    <button onClick={() => toggleCourierActive(courier.id)} className={`rounded-lg px-3 py-2 text-[10px] font-bold ${courier.active ? 'bg-red-50 text-red-700 hover:bg-red-100' : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'}`}>
+                    <button onClick={() => toggleCourierActive(courier.id)} className={`min-h-11 rounded-lg px-3 py-2 text-[10px] font-bold sm:min-h-0 ${courier.active ? 'bg-red-50 text-red-700 hover:bg-red-100' : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'}`}>
                       {courier.active ? 'Desactivar' : 'Activar'}
                     </button>
                   </td>
@@ -775,14 +775,14 @@ export default function AdminManagementPage() {
                   <p className="mt-1 text-xs text-muted-foreground"><span className="font-semibold text-primary">{order.business}</span> · {order.date}</p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <select value={order.status} onChange={(e) => updateOrderStatus(order.id, e.target.value)} className="h-10 rounded-xl border border-input bg-background px-3 text-xs font-bold">
+                  <select value={order.status} onChange={(e) => updateOrderStatus(order.id, e.target.value)} className="h-11 min-w-0 w-full rounded-xl border border-input bg-background px-3 text-xs font-bold sm:h-10 sm:w-auto">
                     <option>Pendiente</option>
                     <option>En cocina</option>
                     <option>En camino</option>
                     <option>Entregado</option>
                     <option>Cancelado</option>
                   </select>
-                  <select value={order.assigned} onChange={(e) => updateOrderAssigned(order.id, e.target.value)} className="h-10 rounded-xl border border-input bg-background px-3 text-xs font-bold text-primary" data-testid={`select-assignment-${order.id}`}>
+                  <select value={order.assigned} onChange={(e) => updateOrderAssigned(order.id, e.target.value)} className="h-11 min-w-0 w-full rounded-xl border border-input bg-background px-3 text-xs font-bold text-primary sm:h-10 sm:w-auto" data-testid={`select-assignment-${order.id}`}>
                     <option>Sin asignar</option>
                     {couriers.filter(c => c.active || c.name === order.assigned).map(c => (
                       <option key={c.id} value={c.name}>{c.name}{!c.active ? ' (Inactivo)' : ''}</option>
@@ -798,9 +798,9 @@ export default function AdminManagementPage() {
         </section>}
 
         {tab === 'reports' && <section className="mt-7 space-y-6">
-          <div className="flex justify-between items-center bg-card p-5 rounded-2xl ring-1 ring-border">
+          <div className="flex flex-col gap-3 bg-card p-5 rounded-2xl ring-1 ring-border sm:flex-row sm:items-center sm:justify-between">
             <h2 className="font-display text-lg font-bold">Resumen de operaciones</h2>
-            <select value={reportPeriod} onChange={e => setReportPeriod(e.target.value)} className="h-10 rounded-xl border border-input bg-background px-3 text-xs font-semibold">
+            <select value={reportPeriod} onChange={e => setReportPeriod(e.target.value)} className="h-11 w-full rounded-xl border border-input bg-background px-3 text-xs font-semibold sm:h-10 sm:w-auto">
               <option>Hoy</option>
               <option>Esta semana</option>
               <option>Este mes</option>
@@ -894,9 +894,9 @@ export default function AdminManagementPage() {
               <span className="mb-1.5 block text-xs font-bold">Pedido mínimo general (S/)</span>
               <input type="number" value={minimumOrder} onChange={(event) => setMinimumOrder(event.target.value)} className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm" />
             </label>
-            <div className="flex items-center justify-between border-t border-border pt-5">
+            <div className="flex flex-col gap-3 border-t border-border pt-5 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-xs text-muted-foreground">Los cambios se aplican a la configuración global.</p>
-              <button onClick={() => announce('Configuración guardada.')} className="flex items-center gap-2 rounded-full bg-primary px-4 py-2.5 text-xs font-bold text-white" data-testid="button-save-admin-settings">
+              <button onClick={() => announce('Configuración guardada.')} className="flex min-h-11 items-center justify-center gap-2 rounded-full bg-primary px-4 py-2.5 text-xs font-bold text-white" data-testid="button-save-admin-settings">
                 <Save className="h-3.5 w-3.5 text-secondary" /> Guardar
               </button>
             </div>
