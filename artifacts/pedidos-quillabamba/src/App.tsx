@@ -4,7 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Link, Route, Router as WouterRouter, Switch, useLocation, useParams } from 'wouter';
 import {
   ArrowLeft, ArrowRight, Banknote, BarChart3, Bike, Check, ChevronDown, CircleUserRound, Clock3, CreditCard, LogOut,
-  Flame, MapPin, Minus, MoreHorizontal, PackageCheck, Plus, Search,
+  Flame, MapPin, Menu, Minus, MoreHorizontal, PackageCheck, Plus, Search,
   ShoppingBag, SlidersHorizontal, Star, Store, Tag, TrendingUp, UserRound, Users, Utensils, Wallet,
 } from 'lucide-react';
 import {
@@ -19,6 +19,7 @@ import type {
 import { ErrorBoundary } from '@/components/error-boundary';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import NotFound from '@/pages/not-found';
 import SystemMapPage from '@/pages/system-map';
 import { clearSession, RoleAuthPage, RoleGate, roleHome, readSession } from '@/pages/role-access';
@@ -114,6 +115,7 @@ function CustomerHeader({ cartCount }: { cartCount: number }) {
 // Contenedor común para las pantallas internas de administración.
 function AdminShell({ children }: { children: ReactNode }) {
   const [location, setLocation] = useLocation();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const session = readSession();
   const health = useHealthCheck();
   void health;
@@ -129,14 +131,31 @@ function AdminShell({ children }: { children: ReactNode }) {
     { href: '/admin/system', label: 'Mapa del sistema', icon: TrendingUp },
     { href: '/admin/manage', label: 'Gestión integral', icon: SlidersHorizontal },
   ];
-  return <div className="min-h-[100dvh] bg-[#f1efe7] md:flex">
-    <aside className="hidden w-[244px] shrink-0 flex-col bg-sidebar px-4 py-6 text-sidebar-foreground md:flex">
-      <Link href="/admin" className="mb-12 flex items-center gap-3 px-3" data-testid="link-admin-brand"><Mark /><span className="font-display text-lg font-bold">QUILLAYAA<span className="text-secondary">.</span></span></Link>
+  const sidebarContent = <>
+      <Link href="/admin" onClick={() => setMobileMenuOpen(false)} className="mb-12 flex items-center gap-3 px-3" data-testid="link-admin-brand"><Mark /><span className="font-display text-lg font-bold">QUILLAYAA<span className="text-secondary">.</span></span></Link>
       <p className="px-3 pb-3 font-mono-app text-[10px] uppercase tracking-[.16em] text-sidebar-foreground/45">Operaciones</p>
-      <nav className="space-y-1">{nav.map(({ href, label, icon: Icon }) => <Link key={href} href={href} data-testid={`link-admin-${label.toLowerCase()}`} className={`flex items-center gap-3 rounded-xl px-3 py-3 text-[13px] font-bold transition ${location === href ? 'bg-secondary text-primary' : 'text-sidebar-foreground/65 hover:bg-sidebar-accent hover:text-sidebar-foreground'}`}><Icon className="h-[17px] w-[17px]" />{label}</Link>)}</nav>
-      <div className="mt-auto rounded-2xl bg-sidebar-accent p-4"><div className="mb-3 flex h-8 w-8 items-center justify-center rounded-lg bg-accent text-sm font-bold text-white">{session?.name?.slice(0, 2).toUpperCase() || 'AS'}</div><p className="text-xs font-bold">{session?.name || 'Administrador'}</p><p className="mt-1 text-[11px] text-sidebar-foreground/50">Administrador del sistema</p><Link href="/admin/manage" className="mt-4 block text-[11px] font-bold text-secondary" data-testid="link-admin-settings">Configuración →</Link></div>
-    </aside>
-    <div className="min-w-0 flex-1"><div className="flex h-16 items-center justify-between border-b border-border/60 bg-[#f7f5ee] px-5 md:px-8"><div className="flex items-center gap-3"><Link href="/admin" className="md:hidden" data-testid="link-admin-home"><Mark /></Link><div><p className="font-mono-app text-[10px] uppercase tracking-[.14em] text-muted-foreground">Administrador del sistema</p><p className="text-sm font-extrabold text-primary">{nav.find((n) => n.href === location)?.label || 'Operaciones'}</p></div></div><div className="flex items-center gap-3"><span className="hidden items-center gap-1.5 text-xs font-semibold text-muted-foreground sm:flex"><span className="h-2 w-2 rounded-full bg-lime-500" /> Sistema operativo</span><button onClick={logout} className="flex h-11 items-center gap-2 rounded-full bg-primary px-3 text-xs font-bold text-white sm:h-9" data-testid="button-system-admin-logout"><LogOut className="h-3.5 w-3.5" /><span className="hidden sm:inline">Salir</span></button></div></div><nav className="flex gap-2 overflow-x-auto border-b border-border bg-[#f7f5ee] px-4 py-2 md:hidden" aria-label="Secciones de administración">{nav.map(({ href, label }) => <Link key={href} href={href} className={`flex min-h-11 shrink-0 items-center rounded-full px-4 text-xs font-bold ${location === href ? 'bg-primary text-white' : 'bg-card text-muted-foreground ring-1 ring-border'}`}>{label}</Link>)}</nav><main className="mx-auto max-w-[1400px] p-5 md:p-8">{children}</main></div>
+      <nav aria-label="Operaciones de administración" className="space-y-1">{nav.map(({ href, label, icon: Icon }) => <Link key={href} href={href} onClick={() => setMobileMenuOpen(false)} aria-current={location === href ? 'page' : undefined} data-testid={`link-admin-${label.toLowerCase()}`} className={`flex min-h-11 items-center gap-3 rounded-xl px-3 py-3 text-[13px] font-bold transition ${location === href ? 'bg-secondary text-primary' : 'text-sidebar-foreground/65 hover:bg-sidebar-accent hover:text-sidebar-foreground'}`}><Icon className="h-[17px] w-[17px]" />{label}</Link>)}</nav>
+      <div className="mt-auto pt-6"><div className="rounded-2xl bg-sidebar-accent p-4"><div className="mb-3 flex h-8 w-8 items-center justify-center rounded-lg bg-accent text-sm font-bold text-white">{session?.name?.slice(0, 2).toUpperCase() || 'AS'}</div><p className="text-xs font-bold">{session?.name || 'Administrador'}</p><p className="mt-1 text-[11px] text-sidebar-foreground/50">Administrador del sistema</p><Link href="/admin/manage" onClick={() => setMobileMenuOpen(false)} className="mt-2 flex min-h-11 items-center text-[11px] font-bold text-secondary" data-testid="link-admin-settings">Configuración →</Link></div></div>
+  </>;
+  return <div className="min-h-[100dvh] bg-[#f1efe7] md:flex">
+    <aside className="hidden w-[244px] shrink-0 flex-col bg-sidebar px-4 py-6 text-sidebar-foreground md:flex">{sidebarContent}</aside>
+    <div className="min-w-0 flex-1">
+      <div className="flex h-16 items-center justify-between gap-2 border-b border-border/60 bg-[#f7f5ee] px-4 md:px-8">
+        <div className="flex min-w-0 items-center gap-3">
+          <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+            <SheetTrigger asChild><button className="flex h-11 shrink-0 items-center gap-1.5 rounded-xl bg-primary px-3 text-xs font-bold text-white md:hidden" aria-label="Abrir menú de administración" data-testid="button-admin-mobile-menu"><Menu className="h-5 w-5" /><span>Menú</span></button></SheetTrigger>
+            <SheetContent side="left" className="flex h-[100dvh] w-[min(300px,88vw)] flex-col overflow-y-auto border-none bg-sidebar px-4 py-6 text-sidebar-foreground [&>button]:flex [&>button]:h-11 [&>button]:w-11 [&>button]:items-center [&>button]:justify-center">
+              <SheetTitle className="sr-only">Menú de administración</SheetTitle>
+              <SheetDescription className="sr-only">Operaciones y configuración del administrador del sistema.</SheetDescription>
+              {sidebarContent}
+            </SheetContent>
+          </Sheet>
+          <div className="min-w-0"><p className="font-mono-app text-[9px] uppercase tracking-[.08em] text-muted-foreground sm:text-[10px] sm:tracking-[.14em]">Administrador del sistema</p><p className="truncate text-sm font-extrabold text-primary">{nav.find((n) => n.href === location)?.label || 'Operaciones'}</p></div>
+        </div>
+        <div className="flex shrink-0 items-center gap-3"><span className="hidden items-center gap-1.5 text-xs font-semibold text-muted-foreground sm:flex"><span className="h-2 w-2 rounded-full bg-lime-500" /> Sistema operativo</span><button onClick={logout} aria-label="Cerrar sesión" className="flex h-11 items-center gap-2 rounded-full bg-primary px-3 text-xs font-bold text-white sm:h-9" data-testid="button-system-admin-logout"><LogOut className="h-3.5 w-3.5" /><span className="hidden sm:inline">Salir</span></button></div>
+      </div>
+      <main className="mx-auto max-w-[1400px] p-5 md:p-8">{children}</main>
+    </div>
   </div>;
 }
 
