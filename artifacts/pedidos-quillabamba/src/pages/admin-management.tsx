@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { BarChart3, Bike, Check, CircleDollarSign, ClipboardList, LayoutDashboard, LogOut, MapPin, PackageCheck, Pencil, Plus, Save, Settings2, Store, Tag, Trash2, UserCheck, Users, FileText, TrendingUp } from 'lucide-react';
 import { Link, useLocation } from 'wouter';
 import { clearSession } from '@/pages/role-access';
+import { useBrowserState } from '@/lib/use-browser-state';
 
 type ManagementTab = 'users' | 'business-admins' | 'businesses' | 'products' | 'categories' | 'orders' | 'payments' | 'couriers' | 'delivery' | 'reports' | 'stats' | 'settings';
 
@@ -13,6 +14,18 @@ type CategoryRow = { id: number; name: string; business: string; active: boolean
 type OrderRow = { id: string; customer: string; business: string; summary: string; total: number; payment: string; status: string; assigned: string; date: string };
 type PaymentRow = { id: string; orderId: string; method: string; amount: number; status: string; date: string };
 type CourierRow = { id: number; userId: number; name: string; contact: string; status: string; availability: string; deliveries: number; active: boolean };
+type AdminSettings = { platformName: string; minimumOrder: string };
+type AdminPanelState = {
+  users: PlatformUser[];
+  businessAdmins: BusinessAdmin[];
+  businesses: BusinessAccount[];
+  products: ProductRow[];
+  categories: CategoryRow[];
+  orders: OrderRow[];
+  payments: PaymentRow[];
+  couriers: CourierRow[];
+  settings: AdminSettings;
+};
 
 const initialUsers: PlatformUser[] = [
   { id: 1, name: 'María Fernanda', email: 'maria@correo.com', role: 'Cliente', active: true },
@@ -82,19 +95,58 @@ const menu: Array<{ id: ManagementTab; label: string; icon: any }> = [
   { id: 'settings', label: 'Configuración', icon: Settings2 },
 ];
 
+function parseManagementDate(value: string): Date | null {
+  const match = /^(\d{2})\/(\d{2})\/(\d{4})(?:\s+(\d{2}):(\d{2}))?/.exec(value);
+  if (!match) return null;
+  const date = new Date(Number(match[3]), Number(match[2]) - 1, Number(match[1]), Number(match[4] || 0), Number(match[5] || 0));
+  if (date.getFullYear() !== Number(match[3]) || date.getMonth() !== Number(match[2]) - 1 || date.getDate() !== Number(match[1])) return null;
+  return date;
+}
+
+const normalizeEmail = (email: string) => email.trim().toLowerCase();
+const normalizeRuc = (ruc: string) => ruc.trim();
+
 export default function AdminManagementPage() {
   const [, setLocation] = useLocation();
-  const [tab, setTab] = useState<ManagementTab>('users');
-  const [selectedBusinessId, setSelectedBusinessId] = useState<number | null>(null);
-  
-  const [users, setUsers] = useState(initialUsers);
-  const [businessAdmins, setBusinessAdmins] = useState(initialBusinessAdmins);
-  const [businesses, setBusinesses] = useState(initialBusinesses);
-  const [products, setProducts] = useState(initialProducts);
-  const [categories, setCategories] = useState(initialCategories);
-  const [orders, setOrders] = useState(initialOrders);
-  const [payments, setPayments] = useState(initialPayments);
-  const [couriers, setCouriers] = useState(initialCouriers);
+  const [panelData, savePanelData, storageError] = useBrowserState<AdminPanelState>('quillayaa-admin-panel-v1', {
+    users: initialUsers,
+    businessAdmins: initialBusinessAdmins,
+    businesses: initialBusinesses,
+    products: initialProducts,
+    categories: initialCategories,
+    orders: initialOrders,
+    payments: initialPayments,
+    couriers: initialCouriers,
+    settings: { platformName: 'QUILLAYAA', minimumOrder: '15' },
+  });
+  const { users, businessAdmins, businesses, products, categories, orders, payments, couriers } = panelData;
+  function setPanelField<K extends keyof AdminPanelState>(
+    field: K,
+    next: AdminPanelState[K] | ((current: AdminPanelState[K]) => AdminPanelState[K]),
+  ) {
+    return savePanelData((current) => ({
+      ...current,
+      [field]: typeof next === 'function'
+        ? (next as (value: AdminPanelState[K]) => AdminPanelState[K])(current[field])
+        : next,
+    }));
+  }
+  const setUsers = (next: PlatformUser[] | ((current: PlatformUser[]) => PlatformUser[])) => setPanelField('users', next);
+  const setBusinessAdmins = (next: BusinessAdmin[] | ((current: BusinessAdmin[]) => BusinessAdmin[])) => setPanelField('businessAdmins', next);
+  const setBusinesses = (next: BusinessAccount[] | ((current: BusinessAccount[]) => BusinessAccount[])) => setPanelField('businesses', next);
+  const setProducts = (next: ProductRow[] | ((current: ProductRow[]) => ProductRow[])) => setPanelField('products', next);
+  const setCategories = (next: CategoryRow[] | ((current: CategoryRow[]) => CategoryRow[])) => setPanelField('categories', next);
+  const setOrders = (next: OrderRow[] | ((current: OrderRow[]) => OrderRow[])) => setPanelField('orders', next);
+  const setCouriers = (next: CourierRow[] | ((current: CourierRow[]) => CourierRow[])) => setPanelField('couriers', next);
+  const query = typeof window === 'undefined' ? null : new URLSearchParams(window.location.search);
+  const queryTab = query?.get('tab');
+  const initialTab = menu.some((item) => item.id === queryTab) ? queryTab as ManagementTab : 'users';
+  const businessScope = query?.get('businessId') || query?.get('business');
+  const businessFromQuery = businessScope
+    ? businesses.find((business) => String(business.id) === businessScope || business.name.toLocaleLowerCase() === businessScope.toLocaleLowerCase())
+    : undefined;
+  const [tab, setTab] = useState<ManagementTab>(initialTab);
+  const [selectedBusinessId, setSelectedBusinessId] = useState<number | null>(businessFromQuery?.id ?? null);
 
   // Forms and Inline Edits
   const [newUser, setNewUser] = useState({ name: '', email: '', role: 'Cliente' });
@@ -115,114 +167,178 @@ export default function AdminManagementPage() {
   const [reportPeriod, setReportPeriod] = useState('Esta semana');
 
   const [notice, setNotice] = useState('');
-  const [platformName, setPlatformName] = useState('QUILLAYAA');
-  const [minimumOrder, setMinimumOrder] = useState('15');
+  const [platformName, setPlatformName] = useState(panelData.settings.platformName);
+  const [minimumOrder, setMinimumOrder] = useState(panelData.settings.minimumOrder);
 
   const announce = (message: string) => {
     setNotice(message);
     window.setTimeout(() => setNotice(''), 2400);
   };
+  const announceSaved = (message: string) => announce(`${message} Guardado en este navegador.`);
+  const saveChange = (update: (current: AdminPanelState) => AdminPanelState, message: string) => {
+    if (!savePanelData(update)) return false;
+    announceSaved(message);
+    return true;
+  };
   
   // -- USERS --
   const handleCreateUser = () => {
-    if (!newUser.name.trim() || !newUser.email.trim()) {
+    const name = newUser.name.trim();
+    const email = normalizeEmail(newUser.email);
+    if (!name || !email) {
       announce('Completa el nombre y correo del usuario.');
       return;
     }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      announce('Ingresa un correo electrónico válido.');
+      return;
+    }
+    if (users.some((user) => normalizeEmail(user.email) === email) || businessAdmins.some((admin) => normalizeEmail(admin.email) === email)) {
+      announce('Ya existe un usuario o administrador con ese correo.');
+      return;
+    }
     const id = Date.now();
-    setUsers([{ id, name: newUser.name, email: newUser.email, role: newUser.role, active: true }, ...users]);
-    
-    if (newUser.role === 'Administrador del negocio') {
-      setBusinessAdmins([...businessAdmins, { id: Date.now(), userId: id, name: newUser.name, email: newUser.email, businessName: 'Sin asignar', accountActive: true, permissionsActive: true }]);
-    }
-    if (newUser.role === 'Repartidor') {
-      setCouriers([...couriers, { id: Date.now(), userId: id, name: newUser.name, contact: '', status: 'Libre', availability: 'Disponible', deliveries: 0, active: true }]);
-    }
+    const user: PlatformUser = { id, name, email, role: newUser.role, active: true };
+    const saved = saveChange((current) => ({
+      ...current,
+      users: [user, ...current.users],
+      businessAdmins: newUser.role === 'Administrador del negocio'
+        ? [...current.businessAdmins, { id: Date.now(), userId: id, name, email, businessName: 'Sin asignar', accountActive: true, permissionsActive: true }]
+        : current.businessAdmins,
+      couriers: newUser.role === 'Repartidor'
+        ? [...current.couriers, { id: Date.now(), userId: id, name, contact: '', status: 'Libre', availability: 'Disponible', deliveries: 0, active: true }]
+        : current.couriers,
+    }), 'Usuario creado correctamente.');
+    if (!saved) return;
     setNewUser({ name: '', email: '', role: 'Cliente' });
-    announce('Usuario creado correctamente.');
   };
 
   const handleSaveUser = (id: number) => {
     const oldUser = users.find(u => u.id === id);
     if (!oldUser) return;
-    const patch = editingUserData;
-
-    setUsers(users.map(u => u.id === id ? { ...u, ...patch } : u));
-    
-    if (oldUser.role !== patch.role) {
-      if (patch.role === 'Administrador del negocio') {
-        setBusinessAdmins([...businessAdmins, { id: Date.now(), userId: id, name: patch.name, email: patch.email, businessName: 'Sin asignar', accountActive: true, permissionsActive: true }]);
-      } else if (oldUser.role === 'Administrador del negocio') {
-        setBusinessAdmins(businessAdmins.filter(ba => ba.userId !== id));
-      }
-      if (patch.role === 'Repartidor') {
-        setCouriers([...couriers, { id: Date.now(), userId: id, name: patch.name, contact: '', status: 'Libre', availability: 'Disponible', deliveries: 0, active: true }]);
-      } else if (oldUser.role === 'Repartidor') {
-        setCouriers(couriers.filter(c => c.userId !== id));
-      }
+    const patch = { ...editingUserData, name: editingUserData.name.trim(), email: normalizeEmail(editingUserData.email) };
+    if (!patch.name || !patch.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(patch.email)) {
+      announce('Ingresa un nombre y correo válidos.');
+      return;
     }
-    
+    if (users.some((user) => user.id !== id && normalizeEmail(user.email) === patch.email)
+      || businessAdmins.some((admin) => admin.userId !== id && normalizeEmail(admin.email) === patch.email)) {
+      announce('Ya existe otro usuario o administrador con ese correo.');
+      return;
+    }
+    const saved = saveChange((current) => ({
+      ...current,
+      users: current.users.map((user) => user.id === id ? { ...user, ...patch } : user),
+      businessAdmins: patch.role === 'Administrador del negocio'
+        ? current.businessAdmins.some((admin) => admin.userId === id)
+          ? current.businessAdmins.map((admin) => admin.userId === id ? { ...admin, name: patch.name, email: patch.email } : admin)
+          : [...current.businessAdmins, { id: Date.now(), userId: id, name: patch.name, email: patch.email, businessName: 'Sin asignar', accountActive: true, permissionsActive: true }]
+        : current.businessAdmins.filter((admin) => admin.userId !== id),
+      couriers: patch.role === 'Repartidor'
+        ? current.couriers.some((courier) => courier.userId === id)
+          ? current.couriers.map((courier) => courier.userId === id ? { ...courier, name: patch.name } : courier)
+          : [...current.couriers, { id: Date.now(), userId: id, name: patch.name, contact: '', status: 'Libre', availability: 'Disponible', deliveries: 0, active: true }]
+        : current.couriers.filter((courier) => courier.userId !== id),
+      businesses: current.businesses.map((business) => oldUser.role === 'Administrador del negocio' && business.administrator === oldUser.name ? { ...business, administrator: patch.role === 'Administrador del negocio' ? patch.name : 'Sin asignar' } : business),
+      orders: current.orders.map((order) => oldUser.role === 'Repartidor' && order.assigned === oldUser.name ? { ...order, assigned: patch.role === 'Repartidor' ? patch.name : 'Sin asignar' } : order),
+    }), 'Usuario actualizado.');
+    if (!saved) return;
     setEditingUserId(null);
-    announce('Usuario actualizado.');
   };
 
   const toggleUserActive = (id: number) => {
-    setUsers(users.map(u => u.id === id ? { ...u, active: !u.active } : u));
     const user = users.find(u => u.id === id);
-    announce(user?.active ? 'Usuario bloqueado.' : 'Usuario habilitado.');
+    if (user && setUsers(current => current.map(u => u.id === id ? { ...u, active: !u.active } : u))) announceSaved(user.active ? 'Usuario bloqueado.' : 'Usuario habilitado.');
   };
 
   // -- BUSINESS ADMINS --
   const handleSaveAdmin = (id: number) => {
-    setBusinessAdmins(businessAdmins.map(a => a.id === id ? { ...a, ...editingAdminData } : a));
+    const name = editingAdminData.name.trim();
+    const email = normalizeEmail(editingAdminData.email);
+    if (!name || !email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      announce('Ingresa un nombre y correo válidos.');
+      return;
+    }
+    const admin = businessAdmins.find((item) => item.id === id);
+    if (!admin) return;
+    if (users.some((user) => user.id !== admin.userId && normalizeEmail(user.email) === email)
+      || businessAdmins.some((otherAdmin) => otherAdmin.id !== id && otherAdmin.userId !== admin.userId && normalizeEmail(otherAdmin.email) === email)) {
+      announce('Ya existe otro usuario o administrador con ese correo.');
+      return;
+    }
+    if (!saveChange((current) => ({
+      ...current,
+      businessAdmins: current.businessAdmins.map((item) => item.id === id ? { ...item, ...editingAdminData, name, email } : item),
+      users: current.users.map((user) => user.id === admin.userId ? { ...user, name, email } : user),
+      couriers: current.couriers.map((courier) => courier.userId === admin.userId ? { ...courier, name } : courier),
+      businesses: current.businesses.map((business) => business.administrator === admin.name ? { ...business, administrator: name } : business),
+      orders: current.orders.map((order) => order.assigned === admin.name ? { ...order, assigned: name } : order),
+    }), 'Administrador del negocio actualizado.')) return;
     setEditingAdminId(null);
-    announce('Administrador del negocio actualizado.');
   };
 
   const toggleAdminAccount = (id: number) => {
-    setBusinessAdmins(businessAdmins.map(a => a.id === id ? { ...a, accountActive: !a.accountActive } : a));
-    announce('Estado de cuenta actualizado.');
+    if (setBusinessAdmins(current => current.map(a => a.id === id ? { ...a, accountActive: !a.accountActive } : a))) announceSaved('Estado de cuenta actualizado.');
   };
 
   const toggleAdminPerms = (id: number) => {
-    setBusinessAdmins(businessAdmins.map(a => a.id === id ? { ...a, permissionsActive: !a.permissionsActive } : a));
-    announce('Permisos actualizados.');
+    if (setBusinessAdmins(current => current.map(a => a.id === id ? { ...a, permissionsActive: !a.permissionsActive } : a))) announceSaved('Permisos actualizados.');
   };
   
   // -- BUSINESSES --
   const handleCreateBusiness = () => {
-    if (!newBusiness.name.trim() || !newBusiness.ruc.trim()) {
+    const business = { ...newBusiness, name: newBusiness.name.trim(), ruc: normalizeRuc(newBusiness.ruc), address: newBusiness.address.trim(), phone: newBusiness.phone.trim(), administrator: newBusiness.administrator.trim() };
+    if (!business.name || !business.ruc) {
       announce('Completa nombre y RUC del negocio.');
       return;
     }
-    setBusinesses([{ id: Date.now(), ...newBusiness, active: true }, ...businesses]);
+    if (!/^\d{11}$/.test(business.ruc)) {
+      announce('El RUC debe contener exactamente 11 dígitos.');
+      return;
+    }
+    if (businesses.some((existing) => normalizeRuc(existing.ruc) === business.ruc)) {
+      announce('Ya existe un negocio registrado con ese RUC.');
+      return;
+    }
+    if (!saveChange((current) => ({ ...current, businesses: [{ id: Date.now(), ...business, active: true }, ...current.businesses] }), 'Negocio registrado.')) return;
     setNewBusiness({ name: '', ruc: '', address: '', phone: '', administrator: '' });
-    announce('Negocio registrado.');
   };
 
   const handleSaveBusiness = (id: number) => {
     const oldBiz = businesses.find(b => b.id === id);
     if (!oldBiz) return;
 
-    const newName = editingBusinessData.name;
+    const newName = editingBusinessData.name.trim();
     const oldName = oldBiz.name;
-
-    if (oldName !== newName) {
-      setBusinessAdmins(admins => admins.map(a => a.businessName === oldName ? { ...a, businessName: newName } : a));
-      setProducts(prods => prods.map(p => p.business === oldName ? { ...p, business: newName } : p));
-      setCategories(cats => cats.map(c => c.business === oldName ? { ...c, business: newName } : c));
-      setOrders(ords => ords.map(o => o.business === oldName ? { ...o, business: newName } : o));
+    const ruc = normalizeRuc(editingBusinessData.ruc);
+    if (!newName || !ruc) {
+      announce('Completa nombre y RUC del negocio.');
+      return;
+    }
+    if (!/^\d{11}$/.test(ruc)) {
+      announce('El RUC debe contener exactamente 11 dígitos.');
+      return;
+    }
+    if (businesses.some((business) => business.id !== id && normalizeRuc(business.ruc) === ruc)) {
+      announce('Ya existe otro negocio registrado con ese RUC.');
+      return;
     }
 
-    setBusinesses(businesses.map(b => b.id === id ? { ...b, ...editingBusinessData } : b));
+    const businessEdit = { ...editingBusinessData, name: newName, ruc, address: editingBusinessData.address.trim(), phone: editingBusinessData.phone.trim(), administrator: editingBusinessData.administrator.trim() };
+    if (!saveChange((current) => ({
+      ...current,
+      businesses: current.businesses.map((business) => business.id === id ? { ...business, ...businessEdit } : business),
+      businessAdmins: current.businessAdmins.map((admin) => admin.businessName === oldName ? { ...admin, businessName: newName } : admin),
+      products: current.products.map((product) => product.business === oldName ? { ...product, business: newName } : product),
+      categories: current.categories.map((category) => category.business === oldName ? { ...category, business: newName } : category),
+      orders: current.orders.map((order) => order.business === oldName ? { ...order, business: newName } : order),
+    }), 'Datos del negocio guardados.')) return;
     setEditingBusinessId(null);
-    announce('Datos del negocio guardados.');
   };
 
   const toggleBusinessActive = (id: number) => {
-    setBusinesses(businesses.map(b => b.id === id ? { ...b, active: !b.active } : b));
     const biz = businesses.find(b => b.id === id);
-    announce(biz?.active ? 'Negocio pausado.' : 'Negocio habilitado.');
+    if (biz && setBusinesses(current => current.map(b => b.id === id ? { ...b, active: !b.active } : b))) announceSaved(biz.active ? 'Negocio pausado.' : 'Negocio habilitado.');
   };
   
   const handleBusinessAccess = (businessId: number, targetTab: ManagementTab) => {
@@ -244,53 +360,67 @@ export default function AdminManagementPage() {
 
   // -- PRODUCTS --
   const toggleProductActive = (id: number) => {
-    setProducts(products.map(p => p.id === id ? { ...p, active: !p.active } : p));
-    announce('Estado del producto actualizado.');
+    if (setProducts(current => current.map(p => p.id === id ? { ...p, active: !p.active } : p))) announceSaved('Estado del producto actualizado.');
   };
   
   // -- CATEGORIES --
   const addCategory = () => {
-    if (!newCategory.trim() || !selectedBusiness) return;
-    setCategories([...categories, { id: Date.now(), name: newCategory.trim(), business: selectedBusiness.name, active: true }]);
+    const name = newCategory.trim();
+    if (!selectedBusiness) return;
+    if (!name) {
+      announce('Escribe un nombre para la categoría.');
+      return;
+    }
+    if (categories.some((category) => category.business === selectedBusiness.name && category.name.toLocaleLowerCase() === name.toLocaleLowerCase())) {
+      announce('Ya existe una categoría con ese nombre en este negocio.');
+      return;
+    }
+    if (!setCategories([...categories, { id: Date.now(), name, business: selectedBusiness.name, active: true }])) return;
     setNewCategory('');
-    announce('Categoría creada.');
+    announceSaved('Categoría creada.');
   };
   
   const saveCategory = (id: number) => {
     const cat = categories.find(c => c.id === id);
-    if (cat && cat.name !== editingCategoryName && selectedBusiness) {
-      setProducts(products.map(p => (p.category === cat.name && p.business === selectedBusiness.name) ? { ...p, category: editingCategoryName } : p));
+    const name = editingCategoryName.trim();
+    if (!cat || !selectedBusiness) return;
+    if (!name) {
+      announce('El nombre de la categoría no puede estar vacío.');
+      return;
     }
-    setCategories(categories.map(c => c.id === id ? { ...c, name: editingCategoryName } : c));
+    if (categories.some((category) => category.id !== id && category.business === cat.business && category.name.toLocaleLowerCase() === name.toLocaleLowerCase())) {
+      announce('Ya existe una categoría con ese nombre en este negocio.');
+      return;
+    }
+    if (!saveChange((current) => ({
+      ...current,
+      categories: current.categories.map((category) => category.id === id ? { ...category, name } : category),
+      products: current.products.map((product) => product.category === cat.name && product.business === cat.business ? { ...product, category: name } : product),
+    }), 'Categoría renombrada.')) return;
     setEditingCategoryId(null);
-    announce('Categoría renombrada.');
   };
 
   const toggleCategoryActive = (id: number) => {
-    setCategories(categories.map(c => c.id === id ? { ...c, active: !c.active } : c));
-    announce('Estado de categoría actualizado.');
+    if (setCategories(current => current.map(c => c.id === id ? { ...c, active: !c.active } : c))) announceSaved('Estado de categoría actualizado.');
   };
   
   // -- COURIERS --
   const toggleCourierActive = (id: number) => {
-    setCouriers(couriers.map(c => {
+    if (setCouriers(current => current.map(c => {
       if (c.id === id) {
         const active = !c.active;
         return { ...c, active, availability: active ? 'Disponible' : 'No disponible' };
       }
       return c;
-    }));
-    announce('Estado de repartidor actualizado.');
+    }))) announceSaved('Estado de repartidor actualizado.');
   };
   
   // -- DELIVERY --
   const updateOrderStatus = (id: string, status: string) => {
-    setOrders(orders.map(o => o.id === id ? { ...o, status } : o));
-    announce(`Estado de pedido ${id} actualizado a ${status}.`);
+    if (setOrders(current => current.map(o => o.id === id ? { ...o, status } : o))) announceSaved(`Estado de pedido ${id} actualizado a ${status}.`);
   };
   const updateOrderAssigned = (id: string, assigned: string) => {
-    setOrders(orders.map(o => o.id === id ? { ...o, assigned } : o));
-    announce(`Repartidor asignado al pedido ${id}.`);
+    if (setOrders(current => current.map(o => o.id === id ? { ...o, assigned } : o))) announceSaved(`Repartidor asignado al pedido ${id}.`);
   };
 
   const logout = () => { clearSession(); setLocation('/login'); };
@@ -308,6 +438,39 @@ export default function AdminManagementPage() {
   
   const paymentConfirmations = payments.filter(p => p.status === 'Confirmado').length;
   const paymentPendings = payments.filter(p => p.status === 'Pendiente').length;
+  const reportRange = useMemo(() => {
+    const now = new Date();
+    const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    let end = new Date(start);
+    if (reportPeriod === 'Esta semana') {
+      const dayFromMonday = (start.getDay() + 6) % 7;
+      start.setDate(start.getDate() - dayFromMonday);
+      end = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+    } else if (reportPeriod === 'Este mes') {
+      start.setDate(1);
+      end = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+    } else if (reportPeriod === 'Todo el tiempo') {
+      return null;
+    } else {
+      end = new Date(start);
+      end.setDate(end.getDate() + 1);
+    }
+    return { start, end };
+  }, [reportPeriod]);
+  const reportOrders = useMemo(() => orders.filter((order) => {
+    if (!reportRange) return true;
+    const date = parseManagementDate(order.date);
+    return !!date && date >= reportRange.start && date < reportRange.end;
+  }), [orders, reportRange]);
+  const reportPayments = useMemo(() => payments.filter((payment) => {
+    if (!reportRange) return true;
+    const date = parseManagementDate(payment.date);
+    return !!date && date >= reportRange.start && date < reportRange.end;
+  }), [payments, reportRange]);
+  const reportDelivered = reportOrders.filter((order) => order.status === 'Entregado').length;
+  const reportPending = reportOrders.filter((order) => order.status !== 'Entregado' && order.status !== 'Cancelado').length;
+  const reportConfirmedPayments = reportPayments.filter((payment) => payment.status === 'Confirmado');
+  const reportIncome = reportConfirmedPayments.reduce((sum, payment) => sum + payment.amount, 0);
 
   const chartData = useMemo(() => {
     const dates = orders.reduce((acc, o) => {
@@ -385,6 +548,10 @@ export default function AdminManagementPage() {
           </span>
         </div>
         
+        <p className="mt-4 rounded-xl bg-amber-50 px-4 py-3 text-xs font-semibold leading-relaxed text-amber-900">
+          Datos de demostración: los cambios se guardan solo en este navegador; no se sincronizan con los pedidos del servidor.
+        </p>
+        {storageError && <p role="alert" className="mt-3 rounded-xl bg-red-50 px-4 py-3 text-xs font-bold text-red-700">{storageError}</p>}
         {notice && <p className="mt-5 rounded-xl bg-violet-50 px-4 py-3 text-xs font-bold text-violet-700" data-testid="status-management-feedback">{notice}</p>}
         
         {isScopedTab && (
@@ -810,18 +977,34 @@ export default function AdminManagementPage() {
           <div className="grid gap-4 sm:grid-cols-3">
             <div className="rounded-2xl bg-card p-6 ring-1 ring-border">
               <p className="text-xs font-bold text-muted-foreground">Total Pedidos</p>
-              <p className="mt-3 font-mono-app text-3xl font-bold">{statsOrdersAll}</p>
-              <p className="mt-2 text-[10px] font-bold text-violet-600">{statsOrdersDelivered} entregados</p>
+              <p className="mt-3 font-mono-app text-3xl font-bold">{reportOrders.length}</p>
+              <p className="mt-2 text-[10px] font-bold text-violet-600">{reportDelivered} entregados de {reportOrders.length} pedidos del período</p>
             </div>
             <div className="rounded-2xl bg-primary text-white p-6 ring-1 ring-border">
               <p className="text-xs font-bold text-white/70">Ingresos (Pagados)</p>
-              <p className="mt-3 font-mono-app text-3xl font-bold text-secondary">S/ {totalSales.toFixed(2)}</p>
-              <p className="mt-2 text-[10px] font-bold text-white/50">{paymentConfirmations} pagos procesados</p>
+              <p className="mt-3 font-mono-app text-3xl font-bold text-secondary">S/ {reportIncome.toFixed(2)}</p>
+              <p className="mt-2 text-[10px] font-bold text-white/50">{reportConfirmedPayments.length} pagos confirmados del período</p>
             </div>
             <div className="rounded-2xl bg-card p-6 ring-1 ring-border">
               <p className="text-xs font-bold text-muted-foreground">Delivery</p>
               <p className="mt-3 font-mono-app text-3xl font-bold">{statsCouriers}</p>
-              <p className="mt-2 text-[10px] font-bold text-amber-600">{statsOrdersPending} envíos pendientes</p>
+              <p className="mt-2 text-[10px] font-bold text-amber-600">{reportPending} envíos pendientes en el período</p>
+            </div>
+          </div>
+          <div className="grid gap-4 lg:grid-cols-2">
+            <div className="rounded-2xl bg-card p-5 ring-1 ring-border">
+              <h3 className="font-display text-base font-bold">Pedidos del período ({reportOrders.length})</h3>
+              <div className="mt-3 divide-y divide-border">
+                {reportOrders.map((order) => <div key={order.id} className="flex justify-between gap-3 py-2 text-xs"><span className="min-w-0 truncate"><strong>{order.id}</strong> · {order.date}</span><span className="shrink-0 font-mono-app">S/ {order.total.toFixed(2)}</span></div>)}
+                {!reportOrders.length && <p className="py-3 text-xs text-muted-foreground">No hay pedidos para el período seleccionado.</p>}
+              </div>
+            </div>
+            <div className="rounded-2xl bg-card p-5 ring-1 ring-border">
+              <h3 className="font-display text-base font-bold">Pagos del período ({reportPayments.length})</h3>
+              <div className="mt-3 divide-y divide-border">
+                {reportPayments.map((payment) => <div key={payment.id} className="flex justify-between gap-3 py-2 text-xs"><span className="min-w-0 truncate"><strong>{payment.id}</strong> · {payment.date} · {payment.status}</span><span className="shrink-0 font-mono-app">S/ {payment.amount.toFixed(2)}</span></div>)}
+                {!reportPayments.length && <p className="py-3 text-xs text-muted-foreground">No hay pagos para el período seleccionado.</p>}
+              </div>
             </div>
           </div>
         </section>}
@@ -892,11 +1075,25 @@ export default function AdminManagementPage() {
             </label>
             <label className="block">
               <span className="mb-1.5 block text-xs font-bold">Pedido mínimo general (S/)</span>
-              <input type="number" value={minimumOrder} onChange={(event) => setMinimumOrder(event.target.value)} className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm" />
+              <input type="number" min="0" step="any" value={minimumOrder} onChange={(event) => setMinimumOrder(event.target.value)} className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm" />
             </label>
             <div className="flex flex-col gap-3 border-t border-border pt-5 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-xs text-muted-foreground">Los cambios se aplican a la configuración global.</p>
-              <button onClick={() => announce('Configuración guardada.')} className="flex min-h-11 items-center justify-center gap-2 rounded-full bg-primary px-4 py-2.5 text-xs font-bold text-white" data-testid="button-save-admin-settings">
+              <p className="text-xs text-muted-foreground">Borrador local de demostración; no cambia la configuración global del servidor.</p>
+              <button onClick={() => {
+                const name = platformName.trim();
+                const minimum = Number(minimumOrder);
+                if (!name) {
+                  announce('El nombre de la plataforma no puede estar vacío.');
+                  return;
+                }
+                if (!minimumOrder.trim() || !Number.isFinite(minimum) || minimum < 0) {
+                  announce('El pedido mínimo debe ser un número finito mayor o igual a cero.');
+                  return;
+                }
+                if (!saveChange((current) => ({ ...current, settings: { platformName: name, minimumOrder: String(minimum) } }), 'Configuración guardada.')) return;
+                setPlatformName(name);
+                setMinimumOrder(String(minimum));
+              }} className="flex min-h-11 items-center justify-center gap-2 rounded-full bg-primary px-4 py-2.5 text-xs font-bold text-white" data-testid="button-save-admin-settings">
                 <Save className="h-3.5 w-3.5 text-secondary" /> Guardar
               </button>
             </div>

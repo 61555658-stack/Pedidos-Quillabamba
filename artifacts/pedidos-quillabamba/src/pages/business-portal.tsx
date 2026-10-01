@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { PackageCheck, Store, LogOut, Plus, Pencil, Trash2, Save, Store as StoreIcon, Settings, BarChart3, Tag, TrendingUp, Image as ImageIcon, Upload } from 'lucide-react';
 import { useLocation } from 'wouter';
-import { clearSession } from '@/pages/role-access';
+import { clearSession, readSession } from '@/pages/role-access';
+import { useBrowserState } from '@/lib/use-browser-state';
 
 type BusinessProfile = { name: string; ruc: string; address: string; phone: string };
 type BusinessProduct = { id: number; name: string; category: string; price: number; stock: number; available: boolean; image?: string };
@@ -34,25 +35,39 @@ const menu: Array<{ id: BusinessTab; label: string; icon: any }> = [
   { id: 'profile', label: 'Perfil del negocio', icon: Settings },
 ];
 
+type BusinessPanelState = {
+  profile: BusinessProfile;
+  categories: string[];
+  products: BusinessProduct[];
+  orders: BusinessOrder[];
+};
+
 export default function BusinessPortalPage() {
   const [, setLocation] = useLocation();
   const [tab, setTab] = useState<BusinessTab>('products');
-  
-  const [profile, setProfile] = useState<BusinessProfile>(initialProfile);
-  const [categories, setCategories] = useState(['Favoritos', 'Platos principales', 'Sopas', 'Bebidas', 'Postres']);
-  const [products, setProducts] = useState<BusinessProduct[]>(initialProducts);
-  const [orders, setOrders] = useState<BusinessOrder[]>(initialOrders);
+  const sessionEmail = readSession()?.email?.trim().toLowerCase() || 'unverified';
+  const [panelData, savePanelData, storageError] = useBrowserState<BusinessPanelState>(
+    `quillayaa-business-panel-v1:${encodeURIComponent(sessionEmail)}`,
+    { profile: initialProfile, categories: ['Favoritos', 'Platos principales', 'Sopas', 'Bebidas', 'Postres'], products: initialProducts, orders: initialOrders },
+  );
+  const { profile, categories, products, orders } = panelData;
+  const setCategories = (next: string[] | ((current: string[]) => string[])) => savePanelData((current) => ({ ...current, categories: typeof next === 'function' ? next(current.categories) : next }));
+  const setProducts = (next: BusinessProduct[] | ((current: BusinessProduct[]) => BusinessProduct[])) => savePanelData((current) => ({ ...current, products: typeof next === 'function' ? next(current.products) : next }));
+  const setOrders = (next: BusinessOrder[] | ((current: BusinessOrder[]) => BusinessOrder[])) => savePanelData((current) => ({ ...current, orders: typeof next === 'function' ? next(current.orders) : next }));
   
   const [notice, setNotice] = useState('');
   const [newCategory, setNewCategory] = useState('');
   const [newProduct, setNewProduct] = useState({ name: '', category: categories[0] || '', image: '', price: '', stock: '' });
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingDraft, setEditingDraft] = useState<BusinessProduct | null>(null);
+  const [profileDraft, setProfileDraft] = useState<BusinessProfile>(profile);
   const [productCategoryFilter, setProductCategoryFilter] = useState('Todas');
 
   const announce = (message: string) => {
     setNotice(message);
     window.setTimeout(() => setNotice(''), 2400);
   };
+  const announceSaved = (message: string) => announce(`${message} Guardado en este navegador.`);
 
   const readImageFile = (file: File | undefined, onLoad: (image: string) => void) => {
     if (!file) return;
@@ -79,53 +94,88 @@ export default function BusinessPortalPage() {
 
   const addCategory = () => {
     const trimmed = newCategory.trim();
-    if (!trimmed) return;
-    if (categories.includes(trimmed)) {
+    if (!trimmed) {
+      announce('Escribe un nombre para la categoría.');
+      return;
+    }
+    if (categories.some((category) => category.toLocaleLowerCase() === trimmed.toLocaleLowerCase())) {
       announce('La categoría ya existe.');
       return;
     }
-    setCategories([...categories, trimmed]);
+    if (!setCategories([...categories, trimmed])) return;
     setNewCategory('');
-    announce('Categoría creada.');
-    if (!newProduct.category) setNewProduct({ ...newProduct, category: trimmed });
+    announceSaved('Categoría creada.');
+    if (!newProduct.category || categories.length === 0) setNewProduct({ ...newProduct, category: trimmed });
   };
 
   const removeCategory = (cat: string) => {
-    setCategories(categories.filter((c) => c !== cat));
+    if (products.some((product) => product.category === cat)) {
+      announce('No se puede eliminar una categoría que todavía usan productos.');
+      return;
+    }
+    const remaining = categories.filter((c) => c !== cat);
+    if (!setCategories(remaining)) return;
+    if (newProduct.category === cat) setNewProduct({ ...newProduct, category: remaining[0] || '' });
     if (productCategoryFilter === cat) setProductCategoryFilter('Todas');
-    announce('Categoría eliminada.');
+    announceSaved('Categoría eliminada.');
   };
 
   const addProduct = () => {
-    if (!newProduct.name.trim() || !newProduct.price || !newProduct.stock || !newProduct.category) {
+    const price = Number(newProduct.price);
+    const stock = Number(newProduct.stock);
+    if (!newProduct.name.trim() || !newProduct.price.trim() || !newProduct.stock.trim() || !newProduct.category || !categories.includes(newProduct.category)) {
       announce('Completa nombre, categoría, precio y stock.');
       return;
     }
-    setProducts((current) => [...current, { 
+    if (!Number.isFinite(price) || price < 0) {
+      announce('El precio debe ser un número finito mayor o igual a cero.');
+      return;
+    }
+    if (!Number.isInteger(stock) || stock < 0) {
+      announce('El stock debe ser un número entero mayor o igual a cero.');
+      return;
+    }
+    const saved = setProducts((current) => [...current, {
       id: Date.now(), 
       name: newProduct.name.trim(), 
       category: newProduct.category, 
-      price: Number(newProduct.price), 
-      stock: Number(newProduct.stock), 
+      price,
+      stock,
       available: true,
       image: newProduct.image.trim() || undefined
     }]);
+    if (!saved) return;
     setNewProduct({ name: '', category: categories[0] || '', image: '', price: '', stock: '' });
-    announce('Producto agregado a la carta.');
+    announceSaved('Producto agregado a la carta.');
   };
 
-  const updateProduct = (id: number, patch: Partial<BusinessProduct>) => {
-    setProducts((current) => current.map((p) => p.id === id ? { ...p, ...patch } : p));
+  const saveProductEdit = (id: number) => {
+    if (!editingDraft || editingDraft.id !== id) return;
+    if (!editingDraft.name.trim() || !categories.includes(editingDraft.category)) {
+      announce('Completa el nombre y selecciona una categoría válida.');
+      return;
+    }
+    if (!Number.isFinite(editingDraft.price) || editingDraft.price < 0) {
+      announce('El precio debe ser un número finito mayor o igual a cero.');
+      return;
+    }
+    if (!Number.isInteger(editingDraft.stock) || editingDraft.stock < 0) {
+      announce('El stock debe ser un número entero mayor o igual a cero.');
+      return;
+    }
+    if (!setProducts((current) => current.map((product) => product.id === id ? { ...editingDraft, name: editingDraft.name.trim() } : product))) return;
+    setEditingId(null);
+    setEditingDraft(null);
+    announceSaved('Producto actualizado.');
   };
 
   const removeProduct = (id: number) => {
-    setProducts((current) => current.filter((p) => p.id !== id));
-    announce('Producto eliminado de la carta.');
+    if (!setProducts((current) => current.filter((p) => p.id !== id))) return;
+    announceSaved('Producto eliminado de la carta.');
   };
 
   const updateOrderStatus = (id: string, status: string) => {
-    setOrders((current) => current.map((o) => o.id === id ? { ...o, status } : o));
-    announce(`Estado del pedido actualizado.`);
+    if (setOrders((current) => current.map((o) => o.id === id ? { ...o, status } : o))) announceSaved('Estado del pedido actualizado.');
   };
 
   const visibleProducts = productCategoryFilter === 'Todas'
@@ -183,6 +233,10 @@ export default function BusinessPortalPage() {
             </span>
           </div>
 
+          <p className="mt-4 rounded-xl bg-amber-50 px-4 py-3 text-xs font-semibold leading-relaxed text-amber-900">
+            Datos de demostración: los cambios se guardan solo en este navegador; no se sincronizan con los pedidos del servidor.
+          </p>
+          {storageError && <p role="alert" className="mt-3 rounded-xl bg-red-50 px-4 py-3 text-xs font-bold text-red-700">{storageError}</p>}
           {notice && <p className="mt-5 rounded-xl bg-violet-50 px-4 py-3 text-xs font-bold text-violet-700 animate-rise" data-testid="status-business-feedback">{notice}</p>}
 
           {tab === 'orders' && (
@@ -316,8 +370,8 @@ export default function BusinessPortalPage() {
                     </label>
                     {newProduct.image && <div className="flex items-center gap-3 rounded-xl bg-muted/50 p-2 sm:col-span-2"><img src={newProduct.image} alt="Vista previa del producto" className="h-14 w-14 rounded-lg object-cover ring-1 ring-border" /><div><p className="text-xs font-bold">Vista previa</p><button type="button" onClick={() => setNewProduct({ ...newProduct, image: '' })} className="mt-1 text-[10px] font-bold text-red-700">Quitar imagen</button></div></div>}
                   </div>
-                   <input type="number" value={newProduct.price} onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })} placeholder="Precio (S/)" className="h-11 min-w-0 w-full rounded-xl border border-input bg-background px-3 text-xs outline-none focus:border-accent sm:h-10 lg:col-span-2" data-testid="input-business-product-price" />
-                   <input type="number" value={newProduct.stock} onChange={(e) => setNewProduct({ ...newProduct, stock: e.target.value })} placeholder="Stock" className="h-11 min-w-0 w-full rounded-xl border border-input bg-background px-3 text-xs outline-none focus:border-accent sm:h-10 lg:col-span-2" data-testid="input-business-product-stock" />
+                    <input type="number" min="0" step="any" value={newProduct.price} onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })} placeholder="Precio (S/)" className="h-11 min-w-0 w-full rounded-xl border border-input bg-background px-3 text-xs outline-none focus:border-accent sm:h-10 lg:col-span-2" data-testid="input-business-product-price" />
+                    <input type="number" min="0" step="1" value={newProduct.stock} onChange={(e) => setNewProduct({ ...newProduct, stock: e.target.value })} placeholder="Stock" className="h-11 min-w-0 w-full rounded-xl border border-input bg-background px-3 text-xs outline-none focus:border-accent sm:h-10 lg:col-span-2" data-testid="input-business-product-stock" />
                    <button onClick={addProduct} className="flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 text-xs font-bold text-white sm:h-10 lg:col-span-2" data-testid="button-business-add-product">
                     <Plus className="h-4 w-4 text-secondary" /> Guardar
                   </button>
@@ -351,11 +405,11 @@ export default function BusinessPortalPage() {
                             <div className="min-w-0 flex-1">
                               {editingId === product.id ? (
                                 <div className="flex flex-col gap-1">
-                                  <input value={product.name} onChange={(e) => updateProduct(product.id, { name: e.target.value })} placeholder="Nombre del plato" className="h-8 w-full rounded-lg border border-input bg-background px-2 text-xs outline-none focus:border-accent" />
-                                  <input value={product.image?.startsWith('data:') ? '' : product.image || ''} onChange={(e) => updateProduct(product.id, { image: e.target.value })} placeholder={product.image?.startsWith('data:') ? 'Imagen cargada desde archivo' : 'URL de imagen'} className="h-8 w-full rounded-lg border border-input bg-background px-2 text-[10px] outline-none focus:border-accent" />
+                                   <input value={editingDraft?.name ?? product.name} onChange={(e) => setEditingDraft((current) => current ? { ...current, name: e.target.value } : current)} placeholder="Nombre del plato" className="h-8 w-full rounded-lg border border-input bg-background px-2 text-xs outline-none focus:border-accent" />
+                                   <input value={editingDraft?.image?.startsWith('data:') ? '' : editingDraft?.image || ''} onChange={(e) => setEditingDraft((current) => current ? { ...current, image: e.target.value } : current)} placeholder={editingDraft?.image?.startsWith('data:') ? 'Imagen cargada desde archivo' : 'URL de imagen'} className="h-8 w-full rounded-lg border border-input bg-background px-2 text-[10px] outline-none focus:border-accent" />
                                   <label className="flex h-8 cursor-pointer items-center justify-center gap-1 rounded-lg border border-accent/35 bg-secondary/30 px-2 text-[10px] font-bold text-primary">
                                     <Upload className="h-3 w-3" /> Cambiar archivo
-                                    <input type="file" accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp" className="sr-only" onChange={(event) => { readImageFile(event.target.files?.[0], (image) => updateProduct(product.id, { image })); event.target.value = ''; }} data-testid={`input-business-product-image-file-${product.id}`} />
+                                     <input type="file" accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp" className="sr-only" onChange={(event) => { readImageFile(event.target.files?.[0], (image) => setEditingDraft((current) => current ? { ...current, image } : current)); event.target.value = ''; }} data-testid={`input-business-product-image-file-${product.id}`} />
                                   </label>
                                 </div>
                               ) : (
@@ -365,31 +419,34 @@ export default function BusinessPortalPage() {
                           </div>
                         </td>
                         <td className="px-5 py-4 text-xs text-muted-foreground">
-                          {editingId === product.id ? (
-                            <select value={product.category} onChange={(e) => updateProduct(product.id, { category: e.target.value })} className="h-8 w-full rounded-lg border border-input bg-background px-2 text-xs outline-none focus:border-accent">
+                           {editingId === product.id ? (
+                             <select value={editingDraft?.category ?? product.category} onChange={(e) => setEditingDraft((current) => current ? { ...current, category: e.target.value } : current)} className="h-8 w-full rounded-lg border border-input bg-background px-2 text-xs outline-none focus:border-accent">
                               {categories.length ? categories.map((cat) => <option key={cat}>{cat}</option>) : <option value={product.category}>{product.category}</option>}
                             </select>
                           ) : product.category}
                         </td>
                         <td className="px-5 py-4 font-mono-app text-xs">
-                          {editingId === product.id ? <input type="number" value={product.price} onChange={(e) => updateProduct(product.id, { price: Number(e.target.value) })} className="h-8 w-16 rounded-lg border border-input bg-background px-2 text-xs outline-none focus:border-accent" /> : `S/ ${product.price.toFixed(2)}`}
+                           {editingId === product.id ? <input type="number" min="0" step="any" value={editingDraft?.price ?? product.price} onChange={(e) => setEditingDraft((current) => current ? { ...current, price: e.target.value === '' ? Number.NaN : Number(e.target.value) } : current)} className="h-8 w-16 rounded-lg border border-input bg-background px-2 text-xs outline-none focus:border-accent" /> : `S/ ${product.price.toFixed(2)}`}
                         </td>
                         <td className="px-5 py-4">
-                          {editingId === product.id ? <input type="number" value={product.stock} onChange={(e) => updateProduct(product.id, { stock: Number(e.target.value) })} className="h-8 w-14 rounded-lg border border-input bg-background px-2 text-xs outline-none focus:border-accent" /> : <span className={product.stock === 0 ? 'font-bold text-red-700' : ''}>{product.stock}</span>}
+                           {editingId === product.id ? <input type="number" min="0" step="1" value={editingDraft?.stock ?? product.stock} onChange={(e) => setEditingDraft((current) => current ? { ...current, stock: e.target.value === '' ? Number.NaN : Number(e.target.value) } : current)} className="h-8 w-14 rounded-lg border border-input bg-background px-2 text-xs outline-none focus:border-accent" /> : <span className={product.stock === 0 ? 'font-bold text-red-700' : ''}>{product.stock}</span>}
                         </td>
                         <td className="px-5 py-4">
-                           <button onClick={() => updateProduct(product.id, { available: !product.available })} className={`min-h-11 rounded-full px-2.5 py-1 text-[10px] font-bold sm:min-h-0 ${product.available ? 'bg-violet-100 text-violet-800' : 'bg-muted text-muted-foreground'}`}>
+                            <button onClick={() => { if (setProducts((current) => current.map((item) => item.id === product.id ? { ...item, available: !item.available } : item))) announceSaved('Disponibilidad del producto actualizada.'); }} className={`min-h-11 rounded-full px-2.5 py-1 text-[10px] font-bold sm:min-h-0 ${product.available ? 'bg-violet-100 text-violet-800' : 'bg-muted text-muted-foreground'}`}>
                             {product.available ? 'Disponible' : 'Agotado'}
                           </button>
                         </td>
                         <td className="px-5 py-4 text-right">
                           <div className="flex justify-end gap-2">
                             {editingId === product.id ? (
-                               <button onClick={() => { setEditingId(null); announce('Plato guardado.'); }} className="flex min-h-11 min-w-11 items-center justify-center rounded-lg bg-secondary p-2 text-primary hover:bg-accent hover:text-white transition sm:min-h-0 sm:min-w-0" aria-label="Guardar">
+                              <>
+                               <button onClick={() => saveProductEdit(product.id)} className="flex min-h-11 min-w-11 items-center justify-center rounded-lg bg-secondary p-2 text-primary hover:bg-accent hover:text-white transition sm:min-h-0 sm:min-w-0" aria-label="Guardar">
                                 <Save className="h-3.5 w-3.5" />
                               </button>
+                               <button onClick={() => { setEditingId(null); setEditingDraft(null); }} className="min-h-11 rounded-lg bg-muted px-3 text-[10px] font-bold sm:min-h-0" aria-label="Cancelar edición">Cancelar</button>
+                              </>
                             ) : (
-                               <button onClick={() => setEditingId(product.id)} className="flex min-h-11 min-w-11 items-center justify-center rounded-lg bg-muted p-2 text-primary hover:bg-secondary transition sm:min-h-0 sm:min-w-0" aria-label="Editar">
+                               <button onClick={() => { setEditingId(product.id); setEditingDraft({ ...product }); }} className="flex min-h-11 min-w-11 items-center justify-center rounded-lg bg-muted p-2 text-primary hover:bg-secondary transition sm:min-h-0 sm:min-w-0" aria-label="Editar">
                                 <Pencil className="h-3.5 w-3.5" />
                               </button>
                             )}
@@ -419,24 +476,41 @@ export default function BusinessPortalPage() {
               <div className="space-y-5">
                 <label className="block">
                   <span className="mb-1.5 block text-xs font-bold text-primary">Nombre del establecimiento</span>
-                  <input value={profile.name} onChange={(e) => setProfile({ ...profile, name: e.target.value })} className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none focus:border-accent" data-testid="input-business-profile-name" />
+                  <input value={profileDraft.name} onChange={(e) => setProfileDraft({ ...profileDraft, name: e.target.value })} className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none focus:border-accent" data-testid="input-business-profile-name" />
                 </label>
                 <label className="block">
                   <span className="mb-1.5 block text-xs font-bold text-primary">RUC</span>
-                  <input value={profile.ruc} onChange={(e) => setProfile({ ...profile, ruc: e.target.value })} className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none focus:border-accent" data-testid="input-business-profile-ruc" />
+                  <input value={profileDraft.ruc} onChange={(e) => setProfileDraft({ ...profileDraft, ruc: e.target.value })} className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none focus:border-accent" data-testid="input-business-profile-ruc" />
                 </label>
                 <label className="block">
                   <span className="mb-1.5 block text-xs font-bold text-primary">Dirección</span>
-                  <input value={profile.address} onChange={(e) => setProfile({ ...profile, address: e.target.value })} className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none focus:border-accent" data-testid="input-business-profile-address" />
+                  <input value={profileDraft.address} onChange={(e) => setProfileDraft({ ...profileDraft, address: e.target.value })} className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none focus:border-accent" data-testid="input-business-profile-address" />
                 </label>
                 <label className="block">
                   <span className="mb-1.5 block text-xs font-bold text-primary">Teléfono de contacto</span>
-                  <input value={profile.phone} onChange={(e) => setProfile({ ...profile, phone: e.target.value })} className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none focus:border-accent" data-testid="input-business-profile-phone" />
+                  <input value={profileDraft.phone} onChange={(e) => setProfileDraft({ ...profileDraft, phone: e.target.value })} className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none focus:border-accent" data-testid="input-business-profile-phone" />
                 </label>
                 
                 <div className="flex flex-col gap-3 border-t border-border pt-5 sm:flex-row sm:items-center sm:justify-between">
                   <p className="text-xs text-muted-foreground">Muestra esta información a tus clientes.</p>
-                  <button onClick={() => announce('Perfil del negocio actualizado.')} className="flex min-h-11 items-center justify-center gap-2 rounded-full bg-primary px-4 py-2.5 text-xs font-bold text-white" data-testid="button-business-save-profile">
+                  <button onClick={() => {
+                    const nextProfile = { name: profileDraft.name.trim(), ruc: profileDraft.ruc.trim(), address: profileDraft.address.trim(), phone: profileDraft.phone.trim() };
+                    if (!nextProfile.name || !nextProfile.address || !nextProfile.phone) {
+                      announce('Completa todos los campos del perfil.');
+                      return;
+                    }
+                    if (!/^\d{11}$/.test(nextProfile.ruc)) {
+                      announce('El RUC debe contener exactamente 11 dígitos.');
+                      return;
+                    }
+                    if (!/^\+?[\d\s()-]{6,20}$/.test(nextProfile.phone) || nextProfile.phone.replace(/\D/g, '').length < 6) {
+                      announce('Ingresa un teléfono de contacto válido.');
+                      return;
+                    }
+                    if (!savePanelData((current) => ({ ...current, profile: nextProfile }))) return;
+                    setProfileDraft(nextProfile);
+                    announceSaved('Perfil del negocio actualizado.');
+                  }} className="flex min-h-11 items-center justify-center gap-2 rounded-full bg-primary px-4 py-2.5 text-xs font-bold text-white" data-testid="button-business-save-profile">
                     <Save className="h-3.5 w-3.5 text-secondary" /> Guardar cambios
                   </button>
                 </div>
