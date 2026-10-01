@@ -178,12 +178,12 @@ export default function BusinessPortalPage() {
               </h1>
               <p className="mt-2 text-sm text-muted-foreground">Administra tu disponibilidad y atención al cliente.</p>
             </div>
-            <span className="inline-flex w-fit items-center gap-2 rounded-full bg-emerald-100 px-3 py-2 text-xs font-bold text-emerald-800">
-              <span className="h-2 w-2 rounded-full bg-emerald-500" /> Negocio conectado
+            <span className="inline-flex w-fit items-center gap-2 rounded-full bg-violet-100 px-3 py-2 text-xs font-bold text-violet-800">
+              <span className="h-2 w-2 rounded-full bg-violet-500" /> Negocio conectado
             </span>
           </div>
 
-          {notice && <p className="mt-5 rounded-xl bg-emerald-50 px-4 py-3 text-xs font-bold text-emerald-700 animate-rise" data-testid="status-business-feedback">{notice}</p>}
+          {notice && <p className="mt-5 rounded-xl bg-violet-50 px-4 py-3 text-xs font-bold text-violet-700 animate-rise" data-testid="status-business-feedback">{notice}</p>}
 
           {tab === 'orders' && (
             <section className="mt-7 space-y-4">
@@ -227,12 +227,12 @@ export default function BusinessPortalPage() {
                 <div className="rounded-2xl bg-card p-5 ring-1 ring-border">
                   <p className="text-xs text-muted-foreground">Ventas de hoy</p>
                   <p className="mt-2 font-mono-app text-2xl font-bold">S/ 245.50</p>
-                  <p className="mt-2 flex items-center gap-1 text-xs font-bold text-emerald-600"><TrendingUp className="h-3 w-3" /> +12.5% vs ayer</p>
+                  <p className="mt-2 flex items-center gap-1 text-xs font-bold text-violet-600"><TrendingUp className="h-3 w-3" /> +12.5% vs ayer</p>
                 </div>
                 <div className="rounded-2xl bg-card p-5 ring-1 ring-border">
                   <p className="text-xs text-muted-foreground">Esta semana</p>
                   <p className="mt-2 font-mono-app text-2xl font-bold">S/ 1,840.00</p>
-                  <p className="mt-2 flex items-center gap-1 text-xs font-bold text-emerald-600"><TrendingUp className="h-3 w-3" /> +5.2% vs sem. ant.</p>
+                  <p className="mt-2 flex items-center gap-1 text-xs font-bold text-violet-600"><TrendingUp className="h-3 w-3" /> +5.2% vs sem. ant.</p>
                 </div>
                 <div className="rounded-2xl bg-card p-5 ring-1 ring-border">
                   <p className="text-xs text-muted-foreground">Este mes</p>
@@ -378,7 +378,7 @@ export default function BusinessPortalPage() {
                           {editingId === product.id ? <input type="number" value={product.stock} onChange={(e) => updateProduct(product.id, { stock: Number(e.target.value) })} className="h-8 w-14 rounded-lg border border-input bg-background px-2 text-xs outline-none focus:border-accent" /> : <span className={product.stock === 0 ? 'font-bold text-red-700' : ''}>{product.stock}</span>}
                         </td>
                         <td className="px-5 py-4">
-                           <button onClick={() => updateProduct(product.id, { available: !product.available })} className={`min-h-11 rounded-full px-2.5 py-1 text-[10px] font-bold sm:min-h-0 ${product.available ? 'bg-emerald-100 text-emerald-800' : 'bg-muted text-muted-foreground'}`}>
+                           <button onClick={() => updateProduct(product.id, { available: !product.available })} className={`min-h-11 rounded-full px-2.5 py-1 text-[10px] font-bold sm:min-h-0 ${product.available ? 'bg-violet-100 text-violet-800' : 'bg-muted text-muted-foreground'}`}>
                             {product.available ? 'Disponible' : 'Agotado'}
                           </button>
                         </td>

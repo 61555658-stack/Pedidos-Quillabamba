@@ -23,7 +23,7 @@ const roles: Role[] = [
     title: 'Administrador del negocio',
     eyebrow: 'Operación del establecimiento',
     icon: Building2,
-    tone: 'bg-[#dce9d7]',
+    tone: 'bg-[#ede4ff]',
     items: ['Registrar información y RUC', 'Gestionar productos y categorías', 'Controlar disponibilidad', 'Atender pedidos recibidos'],
   },
   {
@@ -55,7 +55,7 @@ export default function SystemMapPage() {
           <p className="mt-2 text-sm leading-6 text-muted-foreground">Cuatro roles, un pedido y dos procesos conectados: pago y delivery.</p>
         </div>
 
-        <section className="mt-8 rounded-3xl bg-primary p-6 text-white shadow-[0_18px_50px_hsl(163_48%_18%/.15)] sm:p-9">
+        <section className="mt-8 rounded-3xl bg-primary p-6 text-white shadow-[0_18px_50px_hsl(266_76%_25%/.15)] sm:p-9">
           <div className="mx-auto max-w-md text-center">
             <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-secondary text-primary">
               <Utensils className="h-6 w-6" />

@@ -380,12 +380,12 @@ export default function AdminManagementPage() {
             <h1 className="mt-2 font-display text-3xl font-bold tracking-[-.04em]">{menu.find((item) => item.id === tab)?.label}</h1>
             <p className="mt-2 text-sm text-muted-foreground">Administra las operaciones de QUILLAYAA desde un solo lugar.</p>
           </div>
-          <span className="inline-flex w-fit items-center gap-2 rounded-full bg-emerald-100 px-3 py-2 text-xs font-bold text-emerald-800">
-            <span className="h-2 w-2 rounded-full bg-emerald-500" /> Sistema operativo
+          <span className="inline-flex w-fit items-center gap-2 rounded-full bg-violet-100 px-3 py-2 text-xs font-bold text-violet-800">
+            <span className="h-2 w-2 rounded-full bg-violet-500" /> Sistema operativo
           </span>
         </div>
         
-        {notice && <p className="mt-5 rounded-xl bg-emerald-50 px-4 py-3 text-xs font-bold text-emerald-700" data-testid="status-management-feedback">{notice}</p>}
+        {notice && <p className="mt-5 rounded-xl bg-violet-50 px-4 py-3 text-xs font-bold text-violet-700" data-testid="status-management-feedback">{notice}</p>}
         
         {isScopedTab && (
           <div className="mt-7 mb-6 rounded-2xl bg-card p-5 ring-1 ring-border flex flex-col lg:flex-row lg:items-center justify-between gap-5">
@@ -407,7 +407,7 @@ export default function AdminManagementPage() {
                 <div><p className="text-muted-foreground mb-1 text-[10px] uppercase tracking-wider">Admin Responsable</p><p className="font-bold text-sm">{selectedBusiness.administrator}</p></div>
                 <div>
                   <p className="text-muted-foreground mb-1 text-[10px] uppercase tracking-wider">Estado</p>
-                  <span className={`inline-block rounded-full px-2.5 py-0.5 font-bold text-[10px] ${selectedBusiness.active ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>{selectedBusiness.active ? 'Activo' : 'Pausado'}</span>
+                  <span className={`inline-block rounded-full px-2.5 py-0.5 font-bold text-[10px] ${selectedBusiness.active ? 'bg-violet-100 text-violet-800' : 'bg-amber-100 text-amber-800'}`}>{selectedBusiness.active ? 'Activo' : 'Pausado'}</span>
                 </div>
               </div>
             )}
@@ -461,7 +461,7 @@ export default function AdminManagementPage() {
                       ) : <span className="text-xs font-semibold">{user.role}</span>}
                     </td>
                     <td className="px-5 py-4">
-                      <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${user.active ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-700'}`}>{user.active ? 'Activo' : 'Bloqueado'}</span>
+                      <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${user.active ? 'bg-violet-100 text-violet-800' : 'bg-red-100 text-red-700'}`}>{user.active ? 'Activo' : 'Bloqueado'}</span>
                     </td>
                     <td className="px-5 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
@@ -503,7 +503,7 @@ export default function AdminManagementPage() {
                     ) : admin.businessName}
                   </td>
                   <td className="px-5 py-4">
-                    <button onClick={() => toggleAdminAccount(admin.id)} className={`min-h-11 rounded-full px-2.5 py-1 text-[10px] font-bold sm:min-h-0 ${admin.accountActive ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-700'}`}>{admin.accountActive ? 'Activa' : 'Bloqueada'}</button>
+                    <button onClick={() => toggleAdminAccount(admin.id)} className={`min-h-11 rounded-full px-2.5 py-1 text-[10px] font-bold sm:min-h-0 ${admin.accountActive ? 'bg-violet-100 text-violet-800' : 'bg-red-100 text-red-700'}`}>{admin.accountActive ? 'Activa' : 'Bloqueada'}</button>
                   </td>
                   <td className="px-5 py-4">
                     <button onClick={() => toggleAdminPerms(admin.id)} className={`min-h-11 rounded-full px-2.5 py-1 text-[10px] font-bold sm:min-h-0 ${admin.permissionsActive ? 'bg-blue-100 text-blue-800' : 'bg-amber-100 text-amber-800'}`}>{admin.permissionsActive ? 'Completos' : 'Restringidos'}</button>
@@ -560,7 +560,7 @@ export default function AdminManagementPage() {
                       </div>
                       <div className="flex items-center gap-2">
                         <button onClick={() => { setEditingBusinessId(business.id); setEditingBusinessData({ ...business }); }} className="flex min-h-11 min-w-11 items-center justify-center rounded-lg bg-muted p-1.5 text-primary hover:bg-border sm:min-h-0 sm:min-w-0" aria-label={`Editar ${business.name}`}><Pencil className="h-3.5 w-3.5" /></button>
-                        <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${business.active ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>{business.active ? 'Activo' : 'Pausado'}</span>
+                        <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${business.active ? 'bg-violet-100 text-violet-800' : 'bg-amber-100 text-amber-800'}`}>{business.active ? 'Activo' : 'Pausado'}</span>
                       </div>
                     </div>
                     <h2 className="mt-4 font-display text-lg font-bold">{business.name}</h2>
@@ -610,7 +610,7 @@ export default function AdminManagementPage() {
                           <span className={product.stock === 0 ? 'font-bold text-red-700' : ''}>{product.stock > 0 ? product.stock : 'Agotado'}</span>
                         </td>
                         <td className="px-5 py-4 text-right">
-                          <button onClick={() => toggleProductActive(product.id)} className={`min-h-11 rounded-full px-2.5 py-1 text-[10px] font-bold sm:min-h-0 ${product.active ? 'bg-emerald-100 text-emerald-800' : 'bg-muted text-muted-foreground'}`}>
+                          <button onClick={() => toggleProductActive(product.id)} className={`min-h-11 rounded-full px-2.5 py-1 text-[10px] font-bold sm:min-h-0 ${product.active ? 'bg-violet-100 text-violet-800' : 'bg-muted text-muted-foreground'}`}>
                             {product.active ? 'Activo' : 'Desactivado'}
                           </button>
                         </td>
@@ -654,7 +654,7 @@ export default function AdminManagementPage() {
                         <span className="rounded-full bg-background px-2 py-0.5 text-[10px] font-bold text-muted-foreground border border-border">
                           {filteredProducts.filter(p => p.category === category.name).length} prod.
                         </span>
-                        <button onClick={() => toggleCategoryActive(category.id)} className={`min-h-11 rounded-full px-2 py-1 text-[10px] font-bold sm:min-h-0 ${category.active ? 'bg-emerald-100 text-emerald-800' : 'bg-muted text-muted-foreground'}`}>
+                        <button onClick={() => toggleCategoryActive(category.id)} className={`min-h-11 rounded-full px-2 py-1 text-[10px] font-bold sm:min-h-0 ${category.active ? 'bg-violet-100 text-violet-800' : 'bg-muted text-muted-foreground'}`}>
                           {category.active ? 'Activa' : 'Desactivada'}
                         </button>
                         {editingCategoryId === category.id ? (
@@ -694,7 +694,7 @@ export default function AdminManagementPage() {
                         <td className="px-5 py-4 font-mono-app text-xs">S/ {order.total.toFixed(2)}</td>
                         <td className="px-5 py-4 text-xs">{order.payment}</td>
                         <td className="px-5 py-4">
-                          <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${order.status === 'Entregado' ? 'bg-emerald-100 text-emerald-800' : order.status === 'Cancelado' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}`}>{order.status}</span>
+                          <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${order.status === 'Entregado' ? 'bg-violet-100 text-violet-800' : order.status === 'Cancelado' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}`}>{order.status}</span>
                         </td>
                         <td className="px-5 py-4 text-xs text-muted-foreground">{order.assigned}</td>
                       </tr>
@@ -728,7 +728,7 @@ export default function AdminManagementPage() {
                         <td className="px-5 py-4 text-xs font-semibold">{payment.method}</td>
                         <td className="px-5 py-4 font-mono-app text-xs">S/ {payment.amount.toFixed(2)}</td>
                         <td className="px-5 py-4 text-right">
-                          <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold inline-block ${payment.status === 'Confirmado' ? 'bg-emerald-100 text-emerald-800' : payment.status === 'Rechazado' || payment.status === 'Cancelado' ? 'bg-red-100 text-red-800' : 'bg-amber-100 text-amber-800'}`}>
+                          <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold inline-block ${payment.status === 'Confirmado' ? 'bg-violet-100 text-violet-800' : payment.status === 'Rechazado' || payment.status === 'Cancelado' ? 'bg-red-100 text-red-800' : 'bg-amber-100 text-amber-800'}`}>
                             {payment.status}
                           </span>
                         </td>
@@ -752,10 +752,10 @@ export default function AdminManagementPage() {
                   <td className="px-5 py-4 font-bold">{courier.name}</td>
                   <td className="px-5 py-4 text-xs font-mono-app">{courier.contact}</td>
                   <td className="px-5 py-4"><span className="rounded-full bg-muted px-2.5 py-1 text-[10px] font-bold">{courier.status}</span></td>
-                  <td className="px-5 py-4"><span className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${courier.availability === 'Disponible' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>{courier.availability}</span></td>
+                  <td className="px-5 py-4"><span className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${courier.availability === 'Disponible' ? 'bg-violet-100 text-violet-800' : 'bg-amber-100 text-amber-800'}`}>{courier.availability}</span></td>
                   <td className="px-5 py-4 font-mono-app text-xs font-bold text-primary">{courier.deliveries}</td>
                   <td className="px-5 py-4 text-right">
-                    <button onClick={() => toggleCourierActive(courier.id)} className={`min-h-11 rounded-lg px-3 py-2 text-[10px] font-bold sm:min-h-0 ${courier.active ? 'bg-red-50 text-red-700 hover:bg-red-100' : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'}`}>
+                    <button onClick={() => toggleCourierActive(courier.id)} className={`min-h-11 rounded-lg px-3 py-2 text-[10px] font-bold sm:min-h-0 ${courier.active ? 'bg-red-50 text-red-700 hover:bg-red-100' : 'bg-violet-50 text-violet-700 hover:bg-violet-100'}`}>
                       {courier.active ? 'Desactivar' : 'Activar'}
                     </button>
                   </td>
@@ -811,7 +811,7 @@ export default function AdminManagementPage() {
             <div className="rounded-2xl bg-card p-6 ring-1 ring-border">
               <p className="text-xs font-bold text-muted-foreground">Total Pedidos</p>
               <p className="mt-3 font-mono-app text-3xl font-bold">{statsOrdersAll}</p>
-              <p className="mt-2 text-[10px] font-bold text-emerald-600">{statsOrdersDelivered} entregados</p>
+              <p className="mt-2 text-[10px] font-bold text-violet-600">{statsOrdersDelivered} entregados</p>
             </div>
             <div className="rounded-2xl bg-primary text-white p-6 ring-1 ring-border">
               <p className="text-xs font-bold text-white/70">Ingresos (Pagados)</p>
@@ -853,7 +853,7 @@ export default function AdminManagementPage() {
             </div>
             <div className="rounded-2xl bg-card p-4 ring-1 ring-border">
               <p className="text-xs font-bold text-muted-foreground">Entregados</p>
-              <p className="mt-2 font-mono-app text-xl font-bold text-emerald-600">{statsOrdersDelivered}</p>
+              <p className="mt-2 font-mono-app text-xl font-bold text-violet-600">{statsOrdersDelivered}</p>
             </div>
             <div className="rounded-2xl bg-card p-4 ring-1 ring-border">
               <p className="text-xs font-bold text-muted-foreground">Pendientes</p>
