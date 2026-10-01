@@ -118,21 +118,21 @@
 
   --card-border: 35 25% 86%;
 
-  --sidebar: 164 32% 16%;
+  --sidebar: 29 100% 62%;
 
-  --sidebar-foreground: 39 33% 93%;
+  --sidebar-foreground: 164 32% 16%;
 
-  --sidebar-border: 164 25% 25%;
+  --sidebar-border: 29 90% 49%;
 
-  --sidebar-primary: 34 81% 57%;
+  --sidebar-primary: 164 32% 16%;
 
-  --sidebar-primary-foreground: 164 32% 16%;
+  --sidebar-primary-foreground: 39 33% 93%;
 
-  --sidebar-accent: 164 24% 23%;
+  --sidebar-accent: 34 100% 78%;
 
-  --sidebar-accent-foreground: 39 33% 93%;
+  --sidebar-accent-foreground: 164 32% 16%;
 
-  --sidebar-ring: 34 81% 57%;
+  --sidebar-ring: 164 32% 16%;
 
   --popover: 38 45% 99%;
 
