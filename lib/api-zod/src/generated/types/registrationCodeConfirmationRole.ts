@@ -11,6 +11,7 @@ export type RegistrationCodeConfirmationRole = typeof RegistrationCodeConfirmati
 
 export const RegistrationCodeConfirmationRole = {
   cliente: 'cliente',
-  administrador: 'administrador',
+  administrador_negocio: 'administrador_negocio',
   repartidor: 'repartidor',
+  administrador_sistema: 'administrador_sistema',
 } as const;

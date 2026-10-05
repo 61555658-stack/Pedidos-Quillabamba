@@ -6,22 +6,8 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export * from './adminOrder';
-export * from './adminProduct';
-export * from './adminProductInput';
-export * from './adminProductUpdate';
-export * from './adminSettings';
-export * from './assignmentInput';
-export * from './authLoginInput';
-export * from './authLoginInputRole';
-export * from './authRegisterInput';
-export * from './authRegisterInputRole';
-export * from './category';
-export * from './categoryInput';
-export * from './customer';
 export * from './dashboardSummary';
 export * from './dashboardSummaryWeeklySalesItem';
-export * from './deliveryPartner';
 export * from './healthStatus';
 export * from './order';
 export * from './orderInput';
@@ -32,7 +18,6 @@ export * from './orderStatus';
 export * from './orderStatusInput';
 export * from './orderStatusInputStatus';
 export * from './product';
-export * from './profileUpdateInput';
 export * from './registrationCodeConfirmation';
 export * from './registrationCodeConfirmationRole';
 export * from './registrationCodeRequest';
@@ -40,5 +25,3 @@ export * from './registrationCodeRequestRole';
 export * from './registrationCodeSent';
 export * from './registrationCodeVerified';
 export * from './restaurant';
-export * from './user';
-export * from './userRole';

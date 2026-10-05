@@ -10,8 +10,9 @@ export type RegistrationCodeRequestRole = typeof RegistrationCodeRequestRole[key
 
 export const RegistrationCodeRequestRole = {
   cliente: 'cliente',
-  administrador: 'administrador',
+  administrador_negocio: 'administrador_negocio',
   repartidor: 'repartidor',
+  administrador_sistema: 'administrador_sistema',
 } as const;
 
 export interface RegistrationCodeRequest {
@@ -28,8 +29,9 @@ export type RegistrationCodeConfirmationRole = typeof RegistrationCodeConfirmati
 
 export const RegistrationCodeConfirmationRole = {
   cliente: 'cliente',
-  administrador: 'administrador',
+  administrador_negocio: 'administrador_negocio',
   repartidor: 'repartidor',
+  administrador_sistema: 'administrador_sistema',
 } as const;
 
 export interface RegistrationCodeConfirmation {
@@ -165,127 +167,3 @@ export interface DashboardSummary {
   weeklySales: DashboardSummaryWeeklySalesItem[];
 }
 
-export type UserRole = typeof UserRole[keyof typeof UserRole];
-
-
-export const UserRole = {
-  cliente: 'cliente',
-  administrador: 'administrador',
-  repartidor: 'repartidor',
-} as const;
-
-export interface User {
-  id: number;
-  name: string;
-  email: string;
-  role: UserRole;
-  /** @nullable */
-  phone?: string | null;
-  /** @nullable */
-  address?: string | null;
-}
-
-export type AuthRegisterInputRole = typeof AuthRegisterInputRole[keyof typeof AuthRegisterInputRole];
-
-
-export const AuthRegisterInputRole = {
-  cliente: 'cliente',
-  administrador: 'administrador',
-  repartidor: 'repartidor',
-} as const;
-
-export interface AuthRegisterInput {
-  /** @minLength 2 */
-  name: string;
-  email: string;
-  /** @minLength 8 */
-  password: string;
-  role: AuthRegisterInputRole;
-}
-
-export type AuthLoginInputRole = typeof AuthLoginInputRole[keyof typeof AuthLoginInputRole];
-
-
-export const AuthLoginInputRole = {
-  cliente: 'cliente',
-  administrador: 'administrador',
-  repartidor: 'repartidor',
-} as const;
-
-export interface AuthLoginInput {
-  email: string;
-  password: string;
-  role: AuthLoginInputRole;
-}
-
-export interface ProfileUpdateInput {
-  name?: string;
-  address?: string;
-}
-
-export type AdminProduct = Product & {
-  stock: number;
-  active: boolean;
-};
-
-export interface AdminProductInput {
-  name: string;
-  description?: string;
-  category: string;
-  price: number;
-  stock: number;
-  restaurantId?: number;
-  image?: string;
-  popular?: boolean;
-  active?: boolean;
-}
-
-export interface AdminProductUpdate {
-  name?: string;
-  description?: string;
-  category?: string;
-  price?: number;
-  stock?: number;
-  active?: boolean;
-}
-
-export interface Category {
-  id: number;
-  name: string;
-}
-
-export interface CategoryInput {
-  name: string;
-}
-
-export interface Customer {
-  id: number;
-  name: string;
-  email: string;
-  /** @nullable */
-  phone?: string | null;
-  /** @nullable */
-  address?: string | null;
-  orders: number;
-}
-
-export interface DeliveryPartner {
-  id: number;
-  name: string;
-  email: string;
-}
-
-export interface AssignmentInput {
-  /** @nullable */
-  deliveryPartnerId: number | null;
-}
-
-export type AdminOrder = Order & ({
-  /** @nullable */
-  deliveryPartnerId?: number | null;
-});
-
-export interface AdminSettings {
-  platformName?: string;
-  minimumOrder?: string;
-}
