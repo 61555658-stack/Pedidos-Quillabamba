@@ -11,7 +11,6 @@ export type RegistrationCodeRequestRole = typeof RegistrationCodeRequestRole[key
 
 export const RegistrationCodeRequestRole = {
   cliente: 'cliente',
-  administrador_negocio: 'administrador_negocio',
+  administrador: 'administrador',
   repartidor: 'repartidor',
-  administrador_sistema: 'administrador_sistema',
 } as const;

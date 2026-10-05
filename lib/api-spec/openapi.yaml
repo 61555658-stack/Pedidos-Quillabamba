@@ -18,6 +18,12 @@ tags:
     description: Customer orders
   - name: dashboard
     description: Operational summaries
+  - name: auth
+    description: Account and session management
+  - name: administration
+    description: Protected administration operations
+  - name: delivery
+    description: Protected delivery operations
   - name: verification
     description: Email verification during registration and sign-in
 paths:
@@ -160,6 +166,79 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DashboardSummary"
+  /auth/register:
+    post:
+      operationId: registerUser
+      tags: [auth]
+      summary: Register an account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthRegisterInput"
+      responses:
+        "201":
+          description: Registered user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+  /auth/login:
+    post:
+      operationId: loginUser
+      tags: [auth]
+      summary: Start a secure session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthLoginInput"
+      responses:
+        "200":
+          description: Authenticated user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+  /auth/me:
+    get:
+      operationId: getCurrentUser
+      tags: [auth]
+      summary: Get the current session user
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+    patch:
+      operationId: updateCurrentUser
+      tags: [auth]
+      summary: Update the current user's profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProfileUpdateInput"
+      responses:
+        "200":
+          description: Updated user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+  /auth/logout:
+    post:
+      operationId: logoutUser
+      tags: [auth]
+      summary: End the current session
+      responses:
+        "204":
+          description: Session ended
   /auth/verification/send:
     post:
       operationId: sendRegistrationCode
@@ -204,6 +283,247 @@ paths:
           description: Incorrect or expired code
         "429":
           description: Too many attempts
+  /admin/products:
+    get:
+      operationId: listAdminProducts
+      tags: [administration]
+      summary: List products for management
+      responses:
+        "200":
+          description: Products
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdminProduct"
+    post:
+      operationId: createAdminProduct
+      tags: [administration]
+      summary: Create a product
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminProductInput"
+      responses:
+        "201":
+          description: Created product
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminProduct"
+  /admin/products/{id}:
+    patch:
+      operationId: updateAdminProduct
+      tags: [administration]
+      summary: Update a product
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: number }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminProductUpdate"
+      responses:
+        "200":
+          description: Updated product
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminProduct"
+    delete:
+      operationId: deleteAdminProduct
+      tags: [administration]
+      summary: Delete a product
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: number }
+      responses:
+        "204":
+          description: Product deleted
+  /admin/categories:
+    get:
+      operationId: listAdminCategories
+      tags: [administration]
+      summary: List categories
+      responses:
+        "200":
+          description: Categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Category"
+    post:
+      operationId: createAdminCategory
+      tags: [administration]
+      summary: Create a category
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CategoryInput"
+      responses:
+        "201":
+          description: Created category
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Category"
+  /admin/categories/{id}:
+    delete:
+      operationId: deleteAdminCategory
+      tags: [administration]
+      summary: Delete a category
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: number }
+      responses:
+        "204":
+          description: Category deleted
+  /admin/customers:
+    get:
+      operationId: listAdminCustomers
+      tags: [administration]
+      summary: List customers
+      responses:
+        "200":
+          description: Customers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Customer"
+  /admin/orders:
+    get:
+      operationId: listAdminOrders
+      tags: [administration]
+      summary: List all orders for administration
+      responses:
+        "200":
+          description: Orders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdminOrder"
+  /admin/delivery-partners:
+    get:
+      operationId: listAdminDeliveryPartners
+      tags: [administration]
+      summary: List delivery partners
+      responses:
+        "200":
+          description: Delivery partners
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DeliveryPartner"
+  /admin/orders/{id}/assignment:
+    patch:
+      operationId: assignAdminOrder
+      tags: [administration]
+      summary: Assign an order to a delivery partner
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: number }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AssignmentInput"
+      responses:
+        "200":
+          description: Assigned order
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminOrder"
+  /admin/settings:
+    get:
+      operationId: getAdminSettings
+      tags: [administration]
+      summary: Read platform settings
+      responses:
+        "200":
+          description: Settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminSettings"
+    patch:
+      operationId: updateAdminSettings
+      tags: [administration]
+      summary: Update platform settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminSettings"
+      responses:
+        "200":
+          description: Updated settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminSettings"
+  /delivery/orders:
+    get:
+      operationId: listDeliveryOrders
+      tags: [delivery]
+      summary: List assigned orders
+      responses:
+        "200":
+          description: Assigned orders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdminOrder"
+  /delivery/orders/{id}/status:
+    patch:
+      operationId: updateDeliveryOrderStatus
+      tags: [delivery]
+      summary: Update an assigned order
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: number }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrderStatusInput"
+      responses:
+        "200":
+          description: Updated order
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminOrder"
 components:
   schemas:
     RegistrationCodeRequest:
@@ -211,13 +531,13 @@ components:
       required: [email, role]
       properties:
         email: { type: string, pattern: '^[^@\s]+@[^@\s]+\.[^@\s]+$', maxLength: 254 }
-        role: { type: string, enum: [cliente, administrador_negocio, repartidor, administrador_sistema] }
+        role: { type: string, enum: [cliente, administrador, repartidor] }
     RegistrationCodeConfirmation:
       type: object
       required: [email, role, code]
       properties:
         email: { type: string, pattern: '^[^@\s]+@[^@\s]+\.[^@\s]+$', maxLength: 254 }
-        role: { type: string, enum: [cliente, administrador_negocio, repartidor, administrador_sistema] }
+        role: { type: string, enum: [cliente, administrador, repartidor] }
         code: { type: string, pattern: '^[0-9]{6}$' }
     RegistrationCodeSent:
       type: object
@@ -325,4 +645,116 @@ components:
             properties:
               day: { type: string }
               total: { type: number }
+    User:
+      type: object
+      required: [id, name, email, role]
+      properties:
+        id: { type: number }
+        name: { type: string }
+        email: { type: string }
+        role:
+          type: string
+          enum: [cliente, administrador, repartidor]
+        phone: { type: ["string", "null"] }
+        address: { type: ["string", "null"] }
+    AuthRegisterInput:
+      type: object
+      required: [name, email, password, role]
+      properties:
+        name: { type: string, minLength: 2 }
+        email: { type: string }
+        password: { type: string, minLength: 8 }
+        role:
+          type: string
+          enum: [cliente, administrador, repartidor]
+    AuthLoginInput:
+      type: object
+      required: [email, password, role]
+      properties:
+        email: { type: string }
+        password: { type: string }
+        role:
+          type: string
+          enum: [cliente, administrador, repartidor]
+    ProfileUpdateInput:
+      type: object
+      properties:
+        name: { type: string }
+        address: { type: string }
+    AdminProduct:
+      allOf:
+        - $ref: "#/components/schemas/Product"
+        - type: object
+          required: [stock, active]
+          properties:
+            stock: { type: number }
+            active: { type: boolean }
+    AdminProductInput:
+      type: object
+      required: [name, category, price, stock]
+      properties:
+        name: { type: string }
+        description: { type: string }
+        category: { type: string }
+        price: { type: number }
+        stock: { type: number }
+        restaurantId: { type: number }
+        image: { type: string }
+        popular: { type: boolean }
+        active: { type: boolean }
+    AdminProductUpdate:
+      type: object
+      properties:
+        name: { type: string }
+        description: { type: string }
+        category: { type: string }
+        price: { type: number }
+        stock: { type: number }
+        active: { type: boolean }
+    Category:
+      type: object
+      required: [id, name]
+      properties:
+        id: { type: number }
+        name: { type: string }
+    CategoryInput:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string }
+    Customer:
+      type: object
+      required: [id, name, email, orders]
+      properties:
+        id: { type: number }
+        name: { type: string }
+        email: { type: string }
+        phone: { type: ["string", "null"] }
+        address: { type: ["string", "null"] }
+        orders: { type: number }
+    DeliveryPartner:
+      type: object
+      required: [id, name, email]
+      properties:
+        id: { type: number }
+        name: { type: string }
+        email: { type: string }
+    AssignmentInput:
+      type: object
+      required: [deliveryPartnerId]
+      properties:
+        deliveryPartnerId:
+          type: ["number", "null"]
+    AdminOrder:
+      allOf:
+        - $ref: "#/components/schemas/Order"
+        - type: object
+          properties:
+            deliveryPartnerId:
+              type: ["number", "null"]
+    AdminSettings:
+      type: object
+      properties:
+        platformName: { type: string }
+        minimumOrder: { type: string }
 
