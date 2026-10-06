@@ -1,5 +1,5 @@
-import { useEffect, useState, type ReactNode } from 'react';
-import { ArrowRight, Bike, Building2, Check, ClipboardList, LogOut, MapPin, PackageCheck, ShieldCheck, Store, Users, Utensils } from 'lucide-react';
+import { useEffect, useState, type InputHTMLAttributes, type ReactNode } from 'react';
+import { ArrowRight, Bike, Building2, Check, ClipboardList, Eye, EyeOff, LogOut, MapPin, PackageCheck, ShieldCheck, Store, Users, Utensils } from 'lucide-react';
 import { Link, useLocation } from 'wouter';
 import { confirmRegistrationCode, sendRegistrationCode } from '@workspace/api-client-react';
 
@@ -18,6 +18,32 @@ type AuthField = 'name' | 'email' | 'password' | 'verificationCode' | 'passwordC
 function FieldError({ id, message }: { id: string; message?: string }) {
   if (!message) return null;
   return <span id={id} role="alert" className="mt-1.5 block text-xs font-bold text-red-600" data-testid={`${id}-error`}>{message}</span>;
+}
+
+type PasswordVisibilityInputProps = Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> & {
+  toggleTestId: string;
+};
+
+function PasswordVisibilityInput({ className, toggleTestId, ...inputProps }: PasswordVisibilityInputProps) {
+  const [visible, setVisible] = useState(false);
+
+  return (
+    <span className="relative block">
+      <input {...inputProps} type={visible ? 'text' : 'password'} className={`${className ?? ''} pr-11`} />
+      <button
+        type="button"
+        disabled={inputProps.disabled}
+        onClick={() => setVisible((current) => !current)}
+        aria-label={visible ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+        aria-pressed={visible}
+        aria-controls={inputProps.id}
+        data-testid={toggleTestId}
+        className="absolute inset-y-0 right-2 inline-flex w-9 items-center justify-center rounded-lg text-muted-foreground hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        {visible ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}
+      </button>
+    </span>
+  );
 }
 
 function normalizeEmail(email: string) {
@@ -300,7 +326,11 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
 
           {mode === 'register' && <label className="mt-7 block"><span className="mb-1.5 block text-xs font-bold text-primary">Nombre completo</span><input value={name} disabled={!!pendingVerification} onChange={(event) => { setName(event.target.value); setNotice(''); clearFieldError('name'); }} autoComplete="name" aria-invalid={Boolean(fieldErrors.name)} aria-describedby={fieldErrors.name ? 'role-name-error' : undefined} className={`h-11 w-full rounded-xl border bg-background px-3 text-base outline-none focus:border-accent disabled:opacity-60 sm:text-sm ${fieldErrors.name ? 'border-red-600 focus:border-red-600' : 'border-input'}`} data-testid="input-role-name" />{fieldErrors.name && <FieldError id="role-name-error" message={fieldErrors.name} />}</label>}
           <label className="mt-5 block"><span className="mb-1.5 block text-xs font-bold text-primary">Correo electrónico</span><input type="email" value={email} disabled={!!pendingVerification} onChange={(event) => { setEmail(event.target.value); setNotice(''); clearFieldError('email'); }} autoComplete="email" aria-invalid={Boolean(fieldErrors.email)} aria-describedby={fieldErrors.email ? 'role-email-error' : undefined} className={`h-11 w-full rounded-xl border bg-background px-3 text-base outline-none focus:border-accent disabled:opacity-60 sm:text-sm ${fieldErrors.email ? 'border-red-600 focus:border-red-600' : 'border-input'}`} placeholder="tu@correo.com" data-testid="input-role-email" />{fieldErrors.email && <FieldError id="role-email-error" message={fieldErrors.email} />}</label>
-          <label className="mt-5 block"><span className="mb-1.5 block text-xs font-bold text-primary">Contraseña</span><input type="password" value={password} disabled={!!pendingVerification} onChange={(event) => { setPassword(event.target.value); setNotice(''); clearFieldError('password'); }} autoComplete={mode === 'register' ? 'new-password' : 'current-password'} aria-invalid={Boolean(fieldErrors.password)} aria-describedby={fieldErrors.password ? 'role-password-error' : undefined} className={`h-11 w-full rounded-xl border bg-background px-3 text-base outline-none focus:border-accent disabled:opacity-60 sm:text-sm ${fieldErrors.password ? 'border-red-600 focus:border-red-600' : 'border-input'}`} placeholder="••••••••" data-testid="input-role-password" />{fieldErrors.password && <FieldError id="role-password-error" message={fieldErrors.password} />}</label>
+          <div className="mt-5">
+            <label htmlFor="role-password" className="mb-1.5 block text-xs font-bold text-primary">Contraseña</label>
+            <PasswordVisibilityInput id="role-password" value={password} disabled={!!pendingVerification} onChange={(event) => { setPassword(event.target.value); setNotice(''); clearFieldError('password'); }} autoComplete={mode === 'register' ? 'new-password' : 'current-password'} aria-invalid={Boolean(fieldErrors.password)} aria-describedby={fieldErrors.password ? 'role-password-error' : undefined} className={`h-11 w-full rounded-xl border bg-background px-3 text-base outline-none focus:border-accent disabled:opacity-60 sm:text-sm ${fieldErrors.password ? 'border-red-600 focus:border-red-600' : 'border-input'}`} placeholder="••••••••" data-testid="input-role-password" toggleTestId="button-toggle-role-password" />
+            {fieldErrors.password && <FieldError id="role-password-error" message={fieldErrors.password} />}
+          </div>
           {mode === 'login' && <Link href="/login?recovery=1" className="mt-2 block text-right text-xs font-bold text-accent" data-testid="link-forgot-password">¿Olvidaste tu contraseña?</Link>}
 
           <div className="mt-7">
@@ -466,16 +496,16 @@ export function PasswordRecoveryPage() {
               <input autoComplete="one-time-code" inputMode="numeric" pattern="[0-9]*" maxLength={6} value={verificationCode} onChange={(event) => { setVerificationCode(event.target.value.replace(/\D/g, '').slice(0, 6)); clearFieldError('verificationCode'); }} aria-invalid={Boolean(fieldErrors.verificationCode)} aria-describedby={fieldErrors.verificationCode ? 'recovery-code-error' : undefined} className={`h-11 w-full rounded-xl border bg-background px-3 text-center text-lg font-bold tracking-[.3em] ${fieldErrors.verificationCode ? 'border-red-600' : 'border-input'}`} placeholder="000000" data-testid="input-password-recovery-code" />
               {fieldErrors.verificationCode && <FieldError id="recovery-code-error" message={fieldErrors.verificationCode} />}
             </label>
-            <label className="mt-5 block">
-              <span className="mb-1.5 block text-xs font-bold text-primary">Nueva contraseña</span>
-              <input type="password" autoComplete="new-password" value={password} onChange={(event) => { setPassword(event.target.value); clearFieldError('password'); }} aria-invalid={Boolean(fieldErrors.password)} aria-describedby={fieldErrors.password ? 'recovery-new-password-error' : undefined} className={`h-11 w-full rounded-xl border bg-background px-3 text-base outline-none focus:border-accent sm:text-sm ${fieldErrors.password ? 'border-red-600 focus:border-red-600' : 'border-input'}`} placeholder="Al menos 8 caracteres" data-testid="input-password-recovery-new" />
+            <div className="mt-5">
+              <label htmlFor="recovery-new-password" className="mb-1.5 block text-xs font-bold text-primary">Nueva contraseña</label>
+              <PasswordVisibilityInput id="recovery-new-password" autoComplete="new-password" value={password} onChange={(event) => { setPassword(event.target.value); clearFieldError('password'); }} aria-invalid={Boolean(fieldErrors.password)} aria-describedby={fieldErrors.password ? 'recovery-new-password-error' : undefined} className={`h-11 w-full rounded-xl border bg-background px-3 text-base outline-none focus:border-accent sm:text-sm ${fieldErrors.password ? 'border-red-600 focus:border-red-600' : 'border-input'}`} placeholder="Al menos 8 caracteres" data-testid="input-password-recovery-new" toggleTestId="button-toggle-recovery-new-password" />
               {fieldErrors.password && <FieldError id="recovery-new-password-error" message={fieldErrors.password} />}
-            </label>
-            <label className="mt-5 block">
-              <span className="mb-1.5 block text-xs font-bold text-primary">Confirma la nueva contraseña</span>
-              <input type="password" autoComplete="new-password" value={passwordConfirmation} onChange={(event) => { setPasswordConfirmation(event.target.value); clearFieldError('passwordConfirmation'); }} aria-invalid={Boolean(fieldErrors.passwordConfirmation)} aria-describedby={fieldErrors.passwordConfirmation ? 'recovery-confirm-password-error' : undefined} className={`h-11 w-full rounded-xl border bg-background px-3 text-base outline-none focus:border-accent sm:text-sm ${fieldErrors.passwordConfirmation ? 'border-red-600 focus:border-red-600' : 'border-input'}`} placeholder="Repite tu nueva contraseña" data-testid="input-password-recovery-confirm" />
+            </div>
+            <div className="mt-5">
+              <label htmlFor="recovery-confirm-password" className="mb-1.5 block text-xs font-bold text-primary">Confirma la nueva contraseña</label>
+              <PasswordVisibilityInput id="recovery-confirm-password" autoComplete="new-password" value={passwordConfirmation} onChange={(event) => { setPasswordConfirmation(event.target.value); clearFieldError('passwordConfirmation'); }} aria-invalid={Boolean(fieldErrors.passwordConfirmation)} aria-describedby={fieldErrors.passwordConfirmation ? 'recovery-confirm-password-error' : undefined} className={`h-11 w-full rounded-xl border bg-background px-3 text-base outline-none focus:border-accent sm:text-sm ${fieldErrors.passwordConfirmation ? 'border-red-600 focus:border-red-600' : 'border-input'}`} placeholder="Repite tu nueva contraseña" data-testid="input-password-recovery-confirm" toggleTestId="button-toggle-recovery-confirm-password" />
               {fieldErrors.passwordConfirmation && <FieldError id="recovery-confirm-password-error" message={fieldErrors.passwordConfirmation} />}
-            </label>
+            </div>
             {notice && <p role="alert" className="mt-4 rounded-xl bg-red-50 px-3 py-2.5 text-xs font-bold text-red-700" data-testid="status-password-recovery">{notice}</p>}
             <button type="button" disabled={submitting} onClick={() => void resetPassword()} className="mt-7 flex h-12 w-full items-center justify-center rounded-full bg-primary text-sm font-extrabold text-white disabled:opacity-60" data-testid="button-password-recovery-submit">
               {submitting ? 'Verificando…' : 'Verificar y cambiar contraseña'}
