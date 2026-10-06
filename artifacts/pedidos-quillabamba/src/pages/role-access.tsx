@@ -17,7 +17,7 @@ type AuthField = 'name' | 'email' | 'password' | 'verificationCode' | 'passwordC
 
 function FieldError({ id, message }: { id: string; message?: string }) {
   if (!message) return null;
-  return <p id={id} role="alert" className="mt-1.5 text-xs font-bold text-red-600" data-testid={`${id}-error`}>{message}</p>;
+  return <span id={id} role="alert" className="mt-1.5 block text-xs font-bold text-red-600" data-testid={`${id}-error`}>{message}</span>;
 }
 
 function normalizeEmail(email: string) {
