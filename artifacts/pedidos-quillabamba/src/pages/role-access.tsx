@@ -14,6 +14,15 @@ export type UserSession = {
 type StoredAccount = UserSession & { password: string };
 type PendingVerification = { account: StoredAccount; mode: 'login' | 'register' };
 
+function normalizeEmail(email: string) {
+  return typeof email === 'string' ? email.trim().toLowerCase() : '';
+}
+
+function hasAccountWithEmail(accounts: StoredAccount[], email: string) {
+  const normalizedEmail = normalizeEmail(email);
+  return accounts.some((account) => normalizeEmail(account.email) === normalizedEmail);
+}
+
 const SESSION_KEY = 'quillayaa-session';
 const ACCOUNTS_KEY = 'quillayaa-accounts';
 const SYSTEM_ADMIN_ACCOUNT: StoredAccount = {
@@ -126,7 +135,7 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
   const submit = async () => {
     if (submitting) return;
     setNotice('');
-    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedEmail = normalizeEmail(email);
     if (!normalizedEmail.includes('@') || !password.trim() || (mode === 'register' && !name.trim())) {
       setNotice('Completa nombre, correo y contraseña para continuar.');
       return;
@@ -138,7 +147,7 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
         setNotice('El administrador del sistema no puede registrarse. Inicia sesión con tu cuenta.');
         return;
       }
-      if (accounts.some((account) => account.email === normalizedEmail)) {
+      if (hasAccountWithEmail(accounts, normalizedEmail)) {
         setNotice('Ese correo ya está registrado. Inicia sesión para continuar.');
         return;
       }
@@ -157,7 +166,7 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
       return;
     }
 
-    const account = accounts.find((candidate) => candidate.email === normalizedEmail && candidate.password === password && candidate.role === role);
+    const account = accounts.find((candidate) => normalizeEmail(candidate.email) === normalizedEmail && candidate.password === password && candidate.role === role);
     if (!account) {
       setNotice('Los datos no coinciden con una cuenta de ese rol. Regístrate primero o revisa tu selección.');
       return;
@@ -197,7 +206,7 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
       if (!result.verified) throw new Error('No se pudo verificar el correo.');
       const accounts = readAccounts();
       if (mode === 'login') {
-        const account = accounts.find((candidate) => candidate.email === pendingVerification.account.email
+        const account = accounts.find((candidate) => normalizeEmail(candidate.email) === normalizeEmail(pendingVerification.account.email)
           && candidate.password === pendingVerification.account.password
           && candidate.role === pendingVerification.account.role);
         if (!account) {
@@ -214,7 +223,7 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
         setNotice('El administrador del sistema no puede registrarse.');
         return;
       }
-      if (accounts.some((account) => account.email === pendingVerification.account.email)) {
+      if (hasAccountWithEmail(accounts, pendingVerification.account.email)) {
         setPendingVerification(null);
         setNotice('Ese correo ya está registrado. Inicia sesión para continuar.');
         return;
