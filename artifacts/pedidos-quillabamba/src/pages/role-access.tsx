@@ -309,12 +309,12 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
         <span className="font-display text-lg font-bold text-primary">QUILLAYAA<span className="text-accent">.</span></span>
       </Link>
       <div className="mx-auto mt-6 max-w-[1080px] overflow-hidden rounded-3xl bg-card ring-1 ring-border warm-shadow sm:mt-10 md:grid md:grid-cols-[.8fr_1.2fr]">
-        <div className="relative hidden min-h-[650px] overflow-hidden bg-violet-100 p-10 md:block">
+        <div className="relative min-h-[340px] overflow-hidden bg-violet-100 p-6 sm:min-h-[400px] sm:p-8 md:min-h-[650px] md:p-10">
           <img src="/quillabamba-access.jpg" alt="" className="absolute inset-0 h-full w-full object-cover" />
           <div className="relative flex h-full flex-col justify-between">
             <p className="font-mono-app text-[10px] uppercase tracking-[.18em] text-white drop-shadow-md">Acceso por roles</p>
             <div>
-              <h1 className="font-display text-4xl font-bold leading-tight text-white drop-shadow-md">Una plataforma,<br /><span className="text-secondary">cuatro formas</span><br />de trabajar.</h1>
+              <h1 className="font-display text-3xl font-bold leading-tight text-white drop-shadow-md md:text-4xl">Una plataforma,<br /><span className="text-secondary">cuatro formas</span><br />de trabajar.</h1>
               <p className="mt-5 max-w-xs text-sm leading-6 text-white/90 drop-shadow-md">Cada persona entra al espacio que corresponde a su cargo dentro de QUILLAYAA.</p>
             </div>
           </div>
