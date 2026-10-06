@@ -91,17 +91,14 @@ function readAccounts(): StoredAccount[] {
       const role = normalizeRole(account.role);
       return role ? [{ ...account, role }] : [];
     });
-    const accountsWithoutSystemAdmin = accounts.filter((account) => account.email !== SYSTEM_ADMIN_ACCOUNT.email);
-    const normalizedAccounts = [...accountsWithoutSystemAdmin, SYSTEM_ADMIN_ACCOUNT];
-    if (
-      accounts.some((account, index) => account.role !== parsed[index]?.role)
-      || normalizedAccounts.length !== accounts.length
-      || !accounts.some((account) => (
-        account.email === SYSTEM_ADMIN_ACCOUNT.email
-        && account.password === SYSTEM_ADMIN_ACCOUNT.password
-        && account.role === SYSTEM_ADMIN_ACCOUNT.role
-      ))
-    ) {
+    const systemAdminEmail = normalizeEmail(SYSTEM_ADMIN_ACCOUNT.email);
+    const storedSystemAdmin = accounts.find((account) => (
+      normalizeEmail(account.email) === systemAdminEmail
+      && account.role === SYSTEM_ADMIN_ACCOUNT.role
+    ));
+    const accountsWithoutSystemAdmin = accounts.filter((account) => normalizeEmail(account.email) !== systemAdminEmail);
+    const normalizedAccounts = [...accountsWithoutSystemAdmin, storedSystemAdmin ?? SYSTEM_ADMIN_ACCOUNT];
+    if (JSON.stringify(normalizedAccounts) !== JSON.stringify(parsed)) {
       writeAccounts(normalizedAccounts);
     }
     return normalizedAccounts;
@@ -293,6 +290,158 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
           <p className="mt-6 text-center text-xs text-muted-foreground">{mode === 'login' ? '¿Aún no tienes cuenta? ' : '¿Ya tienes cuenta? '}<Link href={mode === 'login' ? '/register' : '/login'} className="font-bold text-accent" data-testid="link-role-auth-switch">{mode === 'login' ? 'Regístrate' : 'Inicia sesión'}</Link></p>
         </div>
       </div>
+    </div>
+  );
+}
+
+export function PasswordRecoveryPage() {
+  const [, setLocation] = useLocation();
+  const [email, setEmail] = useState('');
+  const [verificationCode, setVerificationCode] = useState('');
+  const [password, setPassword] = useState('');
+  const [passwordConfirmation, setPasswordConfirmation] = useState('');
+  const [pending, setPending] = useState<{ email: string; role: UserRole } | null>(null);
+  const [complete, setComplete] = useState(false);
+  const [notice, setNotice] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  const requestCode = async () => {
+    if (submitting) return;
+    setNotice('');
+    const normalizedEmail = normalizeEmail(email);
+    if (!normalizedEmail.includes('@')) {
+      setNotice('Ingresa un correo electrónico válido.');
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const account = readAccounts().find((candidate) => normalizeEmail(candidate.email) === normalizedEmail);
+      const role = account?.role ?? 'cliente';
+      const result = await sendRegistrationCode({ email: normalizedEmail, role });
+      if (!result.sent) throw new Error('No se pudo enviar el código.');
+      setPending({ email: normalizedEmail, role });
+      setVerificationCode('');
+      setNotice('');
+    } catch (error) {
+      setNotice(apiErrorMessage(error, 'No pudimos enviar el código. Inténtalo más tarde.'));
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const resetPassword = async () => {
+    if (!pending || submitting) return;
+    setNotice('');
+    if (!/^\d{6}$/.test(verificationCode)) {
+      setNotice('Ingresa el código de seis dígitos recibido por correo.');
+      return;
+    }
+    if (password.length < 8) {
+      setNotice('La nueva contraseña debe tener al menos 8 caracteres.');
+      return;
+    }
+    if (password !== passwordConfirmation) {
+      setNotice('Las contraseñas no coinciden.');
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const result = await confirmRegistrationCode({
+        email: pending.email,
+        role: pending.role,
+        code: verificationCode,
+      });
+      if (!result.verified) throw new Error('No se pudo verificar el código.');
+
+      const accounts = readAccounts();
+      const accountIndex = accounts.findIndex((account) => (
+        normalizeEmail(account.email) === pending.email
+        && account.role === pending.role
+      ));
+      if (accountIndex < 0) {
+        setNotice('No pudimos restablecer el acceso. Comprueba el correo e inténtalo nuevamente.');
+        return;
+      }
+
+      const updatedAccounts = accounts.map((account, index) => (
+        index === accountIndex ? { ...account, password } : account
+      ));
+      writeAccounts(updatedAccounts);
+      setComplete(true);
+      setPassword('');
+      setPasswordConfirmation('');
+    } catch (error) {
+      setNotice(apiErrorMessage(error, 'No se pudo verificar el código. Inténtalo de nuevo.'));
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="paper-grid min-h-[100dvh] bg-background px-4 py-5 sm:px-5 sm:py-6">
+      <Link href="/" className="mx-auto flex max-w-[1100px] items-center gap-3" data-testid="link-password-recovery-brand">
+        <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-secondary text-primary"><Utensils className="h-4 w-4" /></span>
+        <span className="font-display text-lg font-bold text-primary">QUILLAYAA<span className="text-accent">.</span></span>
+      </Link>
+      <main className="mx-auto mt-8 max-w-xl rounded-3xl bg-card p-6 ring-1 ring-border warm-shadow sm:mt-12 sm:p-10">
+        <p className="font-mono-app text-[10px] font-bold uppercase tracking-[.18em] text-accent">Recupera tu acceso</p>
+        <h1 className="mt-3 font-display text-3xl font-bold tracking-[-.04em] text-primary">
+          {complete ? 'Contraseña actualizada' : '¿Olvidaste tu contraseña?'}
+        </h1>
+        <p className="mt-2 text-sm leading-6 text-muted-foreground">
+          {complete
+            ? 'Tu cuenta y tus datos siguen en el mismo lugar. Ya puedes iniciar sesión con tu nueva contraseña.'
+            : 'Te enviaremos un código a tu correo para que puedas elegir una contraseña nueva.'}
+        </p>
+
+        {complete ? (
+          <Link href="/login" className="mt-7 flex h-12 items-center justify-center rounded-full bg-primary text-sm font-extrabold text-white" data-testid="link-password-recovery-login">
+            Volver a iniciar sesión
+          </Link>
+        ) : pending ? (
+          <>
+            <div className="mt-6 rounded-2xl bg-secondary/20 p-4 ring-1 ring-secondary">
+              <p className="text-sm font-bold text-primary">Revisa tu correo</p>
+              <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                Enviamos un código de seis dígitos a {pending.email}. Caduca en 10 minutos.
+              </p>
+            </div>
+            <label className="mt-5 block">
+              <span className="mb-1.5 block text-xs font-bold text-primary">Código de verificación</span>
+              <input autoComplete="one-time-code" inputMode="numeric" pattern="[0-9]*" maxLength={6} value={verificationCode} onChange={(event) => setVerificationCode(event.target.value.replace(/\D/g, '').slice(0, 6))} className="h-11 w-full rounded-xl border border-input bg-background px-3 text-center text-lg font-bold tracking-[.3em]" placeholder="000000" data-testid="input-password-recovery-code" />
+            </label>
+            <label className="mt-5 block">
+              <span className="mb-1.5 block text-xs font-bold text-primary">Nueva contraseña</span>
+              <input type="password" autoComplete="new-password" value={password} onChange={(event) => setPassword(event.target.value)} className="h-11 w-full rounded-xl border border-input bg-background px-3 text-base outline-none focus:border-accent sm:text-sm" placeholder="Al menos 8 caracteres" data-testid="input-password-recovery-new" />
+            </label>
+            <label className="mt-5 block">
+              <span className="mb-1.5 block text-xs font-bold text-primary">Confirma la nueva contraseña</span>
+              <input type="password" autoComplete="new-password" value={passwordConfirmation} onChange={(event) => setPasswordConfirmation(event.target.value)} className="h-11 w-full rounded-xl border border-input bg-background px-3 text-base outline-none focus:border-accent sm:text-sm" placeholder="Repite tu nueva contraseña" data-testid="input-password-recovery-confirm" />
+            </label>
+            {notice && <p role="alert" className="mt-4 rounded-xl bg-red-50 px-3 py-2.5 text-xs font-bold text-red-700" data-testid="status-password-recovery">{notice}</p>}
+            <button type="button" disabled={submitting} onClick={() => void resetPassword()} className="mt-7 flex h-12 w-full items-center justify-center rounded-full bg-primary text-sm font-extrabold text-white disabled:opacity-60" data-testid="button-password-recovery-submit">
+              {submitting ? 'Verificando…' : 'Verificar y cambiar contraseña'}
+            </button>
+            <button type="button" disabled={submitting} onClick={() => { setPending(null); setVerificationCode(''); setNotice(''); }} className="mt-3 min-h-11 w-full text-center text-xs font-bold text-accent underline">
+              Cambiar correo o solicitar otro código
+            </button>
+          </>
+        ) : (
+          <>
+            <label className="mt-6 block">
+              <span className="mb-1.5 block text-xs font-bold text-primary">Correo electrónico</span>
+              <input type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} className="h-11 w-full rounded-xl border border-input bg-background px-3 text-base outline-none focus:border-accent sm:text-sm" placeholder="tu@correo.com" data-testid="input-password-recovery-email" />
+            </label>
+            {notice && <p role="alert" className="mt-4 rounded-xl bg-red-50 px-3 py-2.5 text-xs font-bold text-red-700" data-testid="status-password-recovery">{notice}</p>}
+            <button type="button" disabled={submitting} onClick={() => void requestCode()} className="mt-7 flex h-12 w-full items-center justify-center rounded-full bg-primary text-sm font-extrabold text-white disabled:opacity-60" data-testid="button-password-recovery-request">
+              {submitting ? 'Enviando…' : 'Enviar código de recuperación'}
+            </button>
+            <Link href="/login" className="mt-5 block text-center text-xs font-bold text-accent" data-testid="link-password-recovery-back">Volver a iniciar sesión</Link>
+          </>
+        )}
+      </main>
     </div>
   );
 }
