@@ -242,6 +242,10 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
     { value: 'administrador_sistema', icon: ShieldCheck },
   ];
 
+  if (mode === 'login' && new URLSearchParams(window.location.search).get('recovery') === '1') {
+    return <PasswordRecoveryPage />;
+  }
+
   return (
     <div className="paper-grid min-h-[100dvh] bg-background px-4 py-5 sm:px-5 sm:py-6">
       <Link href="/" className="mx-auto flex max-w-[1100px] items-center gap-3" data-testid="link-role-auth-brand">
@@ -267,7 +271,7 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
           {mode === 'register' && <label className="mt-7 block"><span className="mb-1.5 block text-xs font-bold text-primary">Nombre completo</span><input value={name} disabled={!!pendingVerification} onChange={(event) => setName(event.target.value)} autoComplete="name" className="h-11 w-full rounded-xl border border-input bg-background px-3 text-base outline-none focus:border-accent disabled:opacity-60 sm:text-sm" placeholder="María Quispe" data-testid="input-role-name" /></label>}
           <label className="mt-5 block"><span className="mb-1.5 block text-xs font-bold text-primary">Correo electrónico</span><input type="email" value={email} disabled={!!pendingVerification} onChange={(event) => setEmail(event.target.value)} autoComplete="email" className="h-11 w-full rounded-xl border border-input bg-background px-3 text-base outline-none focus:border-accent disabled:opacity-60 sm:text-sm" placeholder="tu@correo.com" data-testid="input-role-email" /></label>
           <label className="mt-5 block"><span className="mb-1.5 block text-xs font-bold text-primary">Contraseña</span><input type="password" value={password} disabled={!!pendingVerification} onChange={(event) => setPassword(event.target.value)} autoComplete={mode === 'register' ? 'new-password' : 'current-password'} className="h-11 w-full rounded-xl border border-input bg-background px-3 text-base outline-none focus:border-accent disabled:opacity-60 sm:text-sm" placeholder="••••••••" data-testid="input-role-password" /></label>
-          {mode === 'login' && <Link href="/forgot-password" className="mt-2 block text-right text-xs font-bold text-accent" data-testid="link-forgot-password">¿Olvidaste tu contraseña?</Link>}
+          {mode === 'login' && <Link href="/login?recovery=1" className="mt-2 block text-right text-xs font-bold text-accent" data-testid="link-forgot-password">¿Olvidaste tu contraseña?</Link>}
 
           <div className="mt-7">
             <p className="mb-3 text-xs font-bold text-primary">¿Cómo ingresarás?</p>
