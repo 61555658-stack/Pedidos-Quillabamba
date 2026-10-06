@@ -309,13 +309,15 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
         <span className="font-display text-lg font-bold text-primary">QUILLAYAA<span className="text-accent">.</span></span>
       </Link>
       <div className="mx-auto mt-6 max-w-[1080px] overflow-hidden rounded-3xl bg-card ring-1 ring-border warm-shadow sm:mt-10 md:grid md:grid-cols-[.8fr_1.2fr]">
-        <div className="relative hidden min-h-[650px] overflow-hidden bg-primary p-10 md:block">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,hsl(39_93%_59%/.35),transparent_45%)]" />
+        <div className="relative hidden min-h-[650px] overflow-hidden bg-violet-100 p-10 md:block">
+          <img src="/quillabamba-access.jpg" alt="" className="absolute inset-0 h-full w-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-b from-violet-100/55 via-violet-100/75 to-violet-200/90" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,hsl(39_93%_59%/.22),transparent_45%)]" />
           <div className="relative flex h-full flex-col justify-between">
-            <p className="font-mono-app text-[10px] uppercase tracking-[.18em] text-secondary">Acceso por roles</p>
+            <p className="font-mono-app text-[10px] uppercase tracking-[.18em] text-primary">Acceso por roles</p>
             <div>
-              <h1 className="font-display text-4xl font-bold leading-tight text-white">Una plataforma,<br /><span className="text-secondary">cuatro formas</span><br />de trabajar.</h1>
-              <p className="mt-5 max-w-xs text-sm leading-6 text-white/60">Cada persona entra al espacio que corresponde a su cargo dentro de QUILLAYAA.</p>
+              <h1 className="font-display text-4xl font-bold leading-tight text-primary">Una plataforma,<br /><span className="text-amber-800">cuatro formas</span><br />de trabajar.</h1>
+              <p className="mt-5 max-w-xs text-sm leading-6 text-primary/75">Cada persona entra al espacio que corresponde a su cargo dentro de QUILLAYAA.</p>
             </div>
           </div>
         </div>
