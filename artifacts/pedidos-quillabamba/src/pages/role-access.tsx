@@ -13,6 +13,12 @@ export type UserSession = {
 
 type StoredAccount = UserSession & { password: string };
 type PendingVerification = { account: StoredAccount; mode: 'login' | 'register' };
+type AuthField = 'name' | 'email' | 'password' | 'verificationCode' | 'passwordConfirmation';
+
+function FieldError({ id, message }: { id: string; message?: string }) {
+  if (!message) return null;
+  return <p id={id} role="alert" className="mt-1.5 text-xs font-bold text-red-600" data-testid={`${id}-error`}>{message}</p>;
+}
 
 function normalizeEmail(email: string) {
   return typeof email === 'string' ? email.trim().toLowerCase() : '';
@@ -118,14 +124,20 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
   const [password, setPassword] = useState('');
   const [role, setRole] = useState<UserRole>('cliente');
   const [notice, setNotice] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<AuthField, string>>>({});
   const [verificationCode, setVerificationCode] = useState('');
   const [pendingVerification, setPendingVerification] = useState<PendingVerification | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  const clearFieldError = (field: AuthField) => {
+    setFieldErrors((current) => ({ ...current, [field]: undefined }));
+  };
 
   useEffect(() => {
     setPendingVerification(null);
     setVerificationCode('');
     setNotice('');
+    setFieldErrors({});
     setRole('cliente');
   }, [mode]);
 
@@ -133,8 +145,20 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
     if (submitting) return;
     setNotice('');
     const normalizedEmail = normalizeEmail(email);
-    if (!normalizedEmail.includes('@') || !password.trim() || (mode === 'register' && !name.trim())) {
-      setNotice('Completa nombre, correo y contraseña para continuar.');
+    const errors: Partial<Record<AuthField, string>> = {};
+    if (mode === 'register' && !name.trim()) {
+      errors.name = 'Falta completar el campo «Nombre completo».';
+    }
+    if (!normalizedEmail) {
+      errors.email = 'Falta completar el campo «Correo electrónico».';
+    } else if (!normalizedEmail.includes('@')) {
+      errors.email = 'Ingresa un correo electrónico válido.';
+    }
+    if (!password.trim()) {
+      errors.password = 'Falta completar el campo «Contraseña».';
+    }
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) {
       return;
     }
 
@@ -190,9 +214,15 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
     if (!pendingVerification || pendingVerification.mode !== mode || submitting) return;
     setNotice('');
     if (!/^\d{6}$/.test(verificationCode)) {
-      setNotice('Ingresa el código de seis dígitos recibido por correo.');
+      setFieldErrors((current) => ({
+        ...current,
+        verificationCode: verificationCode.trim()
+          ? 'Ingresa los seis dígitos del código.'
+          : 'Falta completar el campo «Código de verificación».',
+      }));
       return;
     }
+    clearFieldError('verificationCode');
     setSubmitting(true);
     try {
       const result = await confirmRegistrationCode({
@@ -268,9 +298,9 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
           <h2 className="mt-3 font-display text-3xl font-bold tracking-[-.04em] text-primary">{mode === 'login' ? 'Ingresa a tu plataforma' : 'Regístrate según tu cargo'}</h2>
           <p className="mt-2 text-sm leading-6 text-muted-foreground">Selecciona tu rol para abrir únicamente las herramientas que necesitas.</p>
 
-          {mode === 'register' && <label className="mt-7 block"><span className="mb-1.5 block text-xs font-bold text-primary">Nombre completo</span><input value={name} disabled={!!pendingVerification} onChange={(event) => setName(event.target.value)} autoComplete="name" className="h-11 w-full rounded-xl border border-input bg-background px-3 text-base outline-none focus:border-accent disabled:opacity-60 sm:text-sm" placeholder="María Quispe" data-testid="input-role-name" /></label>}
-          <label className="mt-5 block"><span className="mb-1.5 block text-xs font-bold text-primary">Correo electrónico</span><input type="email" value={email} disabled={!!pendingVerification} onChange={(event) => setEmail(event.target.value)} autoComplete="email" className="h-11 w-full rounded-xl border border-input bg-background px-3 text-base outline-none focus:border-accent disabled:opacity-60 sm:text-sm" placeholder="tu@correo.com" data-testid="input-role-email" /></label>
-          <label className="mt-5 block"><span className="mb-1.5 block text-xs font-bold text-primary">Contraseña</span><input type="password" value={password} disabled={!!pendingVerification} onChange={(event) => setPassword(event.target.value)} autoComplete={mode === 'register' ? 'new-password' : 'current-password'} className="h-11 w-full rounded-xl border border-input bg-background px-3 text-base outline-none focus:border-accent disabled:opacity-60 sm:text-sm" placeholder="••••••••" data-testid="input-role-password" /></label>
+          {mode === 'register' && <label className="mt-7 block"><span className="mb-1.5 block text-xs font-bold text-primary">Nombre completo</span><input value={name} disabled={!!pendingVerification} onChange={(event) => { setName(event.target.value); setNotice(''); clearFieldError('name'); }} autoComplete="name" aria-invalid={Boolean(fieldErrors.name)} aria-describedby={fieldErrors.name ? 'role-name-error' : undefined} className={`h-11 w-full rounded-xl border bg-background px-3 text-base outline-none focus:border-accent disabled:opacity-60 sm:text-sm ${fieldErrors.name ? 'border-red-600 focus:border-red-600' : 'border-input'}`} placeholder="María Quispe" data-testid="input-role-name" />{fieldErrors.name && <FieldError id="role-name-error" message={fieldErrors.name} />}</label>}
+          <label className="mt-5 block"><span className="mb-1.5 block text-xs font-bold text-primary">Correo electrónico</span><input type="email" value={email} disabled={!!pendingVerification} onChange={(event) => { setEmail(event.target.value); setNotice(''); clearFieldError('email'); }} autoComplete="email" aria-invalid={Boolean(fieldErrors.email)} aria-describedby={fieldErrors.email ? 'role-email-error' : undefined} className={`h-11 w-full rounded-xl border bg-background px-3 text-base outline-none focus:border-accent disabled:opacity-60 sm:text-sm ${fieldErrors.email ? 'border-red-600 focus:border-red-600' : 'border-input'}`} placeholder="tu@correo.com" data-testid="input-role-email" />{fieldErrors.email && <FieldError id="role-email-error" message={fieldErrors.email} />}</label>
+          <label className="mt-5 block"><span className="mb-1.5 block text-xs font-bold text-primary">Contraseña</span><input type="password" value={password} disabled={!!pendingVerification} onChange={(event) => { setPassword(event.target.value); setNotice(''); clearFieldError('password'); }} autoComplete={mode === 'register' ? 'new-password' : 'current-password'} aria-invalid={Boolean(fieldErrors.password)} aria-describedby={fieldErrors.password ? 'role-password-error' : undefined} className={`h-11 w-full rounded-xl border bg-background px-3 text-base outline-none focus:border-accent disabled:opacity-60 sm:text-sm ${fieldErrors.password ? 'border-red-600 focus:border-red-600' : 'border-input'}`} placeholder="••••••••" data-testid="input-role-password" />{fieldErrors.password && <FieldError id="role-password-error" message={fieldErrors.password} />}</label>
           {mode === 'login' && <Link href="/login?recovery=1" className="mt-2 block text-right text-xs font-bold text-accent" data-testid="link-forgot-password">¿Olvidaste tu contraseña?</Link>}
 
           <div className="mt-7">
@@ -287,7 +317,7 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
           {pendingVerification?.mode === mode && <div className="mt-6 rounded-2xl bg-secondary/20 p-4 ring-1 ring-secondary">
             <p className="text-sm font-bold text-primary">Revisa tu correo</p>
             <p className="mt-1 text-xs leading-5 text-muted-foreground">Enviamos un código de seis dígitos a {pendingVerification.account.email}. Caduca en 10 minutos. {mode === 'register' ? 'La cuenta se creará cuando lo confirmes.' : 'Entrarás a tu plataforma cuando lo confirmes.'}</p>
-            <label className="mt-4 block"><span className="text-xs font-bold text-primary">Código de verificación</span><input autoComplete="one-time-code" inputMode="numeric" pattern="[0-9]*" maxLength={6} value={verificationCode} onChange={event => setVerificationCode(event.target.value.replace(/\D/g, '').slice(0, 6))} className="mt-1.5 h-11 w-full rounded-xl border border-input bg-background px-3 text-center text-lg font-bold tracking-[.3em]" placeholder="000000" data-testid="input-role-verification-code" /></label>
+            <label className="mt-4 block"><span className="text-xs font-bold text-primary">Código de verificación</span><input autoComplete="one-time-code" inputMode="numeric" pattern="[0-9]*" maxLength={6} value={verificationCode} onChange={event => { setVerificationCode(event.target.value.replace(/\D/g, '').slice(0, 6)); clearFieldError('verificationCode'); }} aria-invalid={Boolean(fieldErrors.verificationCode)} aria-describedby={fieldErrors.verificationCode ? 'role-verification-code-error' : undefined} className={`mt-1.5 h-11 w-full rounded-xl border bg-background px-3 text-center text-lg font-bold tracking-[.3em] ${fieldErrors.verificationCode ? 'border-red-600' : 'border-input'}`} placeholder="000000" data-testid="input-role-verification-code" />{fieldErrors.verificationCode && <FieldError id="role-verification-code-error" message={fieldErrors.verificationCode} />}</label>
             <button type="button" disabled={submitting} onClick={() => { setPendingVerification(null); setVerificationCode(''); setNotice(''); }} className="mt-3 min-h-11 text-left text-xs font-bold text-accent underline">Cambiar correo o solicitar otro código</button>
           </div>}
           {notice && <p role="alert" className="mt-4 rounded-xl bg-red-50 px-3 py-2.5 text-xs font-bold text-red-700" data-testid="status-role-auth-feedback">{notice}</p>}
@@ -308,16 +338,26 @@ export function PasswordRecoveryPage() {
   const [pending, setPending] = useState<{ email: string; role: UserRole } | null>(null);
   const [complete, setComplete] = useState(false);
   const [notice, setNotice] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<AuthField, string>>>({});
   const [submitting, setSubmitting] = useState(false);
+
+  const clearFieldError = (field: AuthField) => {
+    setFieldErrors((current) => ({ ...current, [field]: undefined }));
+  };
 
   const requestCode = async () => {
     if (submitting) return;
     setNotice('');
     const normalizedEmail = normalizeEmail(email);
-    if (!normalizedEmail.includes('@')) {
-      setNotice('Ingresa un correo electrónico válido.');
+    if (!normalizedEmail || !normalizedEmail.includes('@')) {
+      setFieldErrors({
+        email: normalizedEmail
+          ? 'Ingresa un correo electrónico válido.'
+          : 'Falta completar el campo «Correo electrónico».',
+      });
       return;
     }
+    setFieldErrors({});
 
     setSubmitting(true);
     try {
@@ -338,16 +378,24 @@ export function PasswordRecoveryPage() {
   const resetPassword = async () => {
     if (!pending || submitting) return;
     setNotice('');
+    const errors: Partial<Record<AuthField, string>> = {};
     if (!/^\d{6}$/.test(verificationCode)) {
-      setNotice('Ingresa el código de seis dígitos recibido por correo.');
-      return;
+      errors.verificationCode = verificationCode.trim()
+        ? 'Ingresa los seis dígitos del código.'
+        : 'Falta completar el campo «Código de verificación».';
     }
     if (password.length < 8) {
-      setNotice('La nueva contraseña debe tener al menos 8 caracteres.');
-      return;
+      errors.password = password.trim()
+        ? 'La nueva contraseña debe tener al menos 8 caracteres.'
+        : 'Falta completar el campo «Nueva contraseña».';
     }
-    if (password !== passwordConfirmation) {
-      setNotice('Las contraseñas no coinciden.');
+    if (!passwordConfirmation.trim()) {
+      errors.passwordConfirmation = 'Falta completar el campo «Confirma la nueva contraseña».';
+    } else if (password !== passwordConfirmation) {
+      errors.passwordConfirmation = 'Las contraseñas no coinciden.';
+    }
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) {
       return;
     }
 
@@ -415,21 +463,24 @@ export function PasswordRecoveryPage() {
             </div>
             <label className="mt-5 block">
               <span className="mb-1.5 block text-xs font-bold text-primary">Código de verificación</span>
-              <input autoComplete="one-time-code" inputMode="numeric" pattern="[0-9]*" maxLength={6} value={verificationCode} onChange={(event) => setVerificationCode(event.target.value.replace(/\D/g, '').slice(0, 6))} className="h-11 w-full rounded-xl border border-input bg-background px-3 text-center text-lg font-bold tracking-[.3em]" placeholder="000000" data-testid="input-password-recovery-code" />
+              <input autoComplete="one-time-code" inputMode="numeric" pattern="[0-9]*" maxLength={6} value={verificationCode} onChange={(event) => { setVerificationCode(event.target.value.replace(/\D/g, '').slice(0, 6)); clearFieldError('verificationCode'); }} aria-invalid={Boolean(fieldErrors.verificationCode)} aria-describedby={fieldErrors.verificationCode ? 'recovery-code-error' : undefined} className={`h-11 w-full rounded-xl border bg-background px-3 text-center text-lg font-bold tracking-[.3em] ${fieldErrors.verificationCode ? 'border-red-600' : 'border-input'}`} placeholder="000000" data-testid="input-password-recovery-code" />
+              {fieldErrors.verificationCode && <FieldError id="recovery-code-error" message={fieldErrors.verificationCode} />}
             </label>
             <label className="mt-5 block">
               <span className="mb-1.5 block text-xs font-bold text-primary">Nueva contraseña</span>
-              <input type="password" autoComplete="new-password" value={password} onChange={(event) => setPassword(event.target.value)} className="h-11 w-full rounded-xl border border-input bg-background px-3 text-base outline-none focus:border-accent sm:text-sm" placeholder="Al menos 8 caracteres" data-testid="input-password-recovery-new" />
+              <input type="password" autoComplete="new-password" value={password} onChange={(event) => { setPassword(event.target.value); clearFieldError('password'); }} aria-invalid={Boolean(fieldErrors.password)} aria-describedby={fieldErrors.password ? 'recovery-new-password-error' : undefined} className={`h-11 w-full rounded-xl border bg-background px-3 text-base outline-none focus:border-accent sm:text-sm ${fieldErrors.password ? 'border-red-600 focus:border-red-600' : 'border-input'}`} placeholder="Al menos 8 caracteres" data-testid="input-password-recovery-new" />
+              {fieldErrors.password && <FieldError id="recovery-new-password-error" message={fieldErrors.password} />}
             </label>
             <label className="mt-5 block">
               <span className="mb-1.5 block text-xs font-bold text-primary">Confirma la nueva contraseña</span>
-              <input type="password" autoComplete="new-password" value={passwordConfirmation} onChange={(event) => setPasswordConfirmation(event.target.value)} className="h-11 w-full rounded-xl border border-input bg-background px-3 text-base outline-none focus:border-accent sm:text-sm" placeholder="Repite tu nueva contraseña" data-testid="input-password-recovery-confirm" />
+              <input type="password" autoComplete="new-password" value={passwordConfirmation} onChange={(event) => { setPasswordConfirmation(event.target.value); clearFieldError('passwordConfirmation'); }} aria-invalid={Boolean(fieldErrors.passwordConfirmation)} aria-describedby={fieldErrors.passwordConfirmation ? 'recovery-confirm-password-error' : undefined} className={`h-11 w-full rounded-xl border bg-background px-3 text-base outline-none focus:border-accent sm:text-sm ${fieldErrors.passwordConfirmation ? 'border-red-600 focus:border-red-600' : 'border-input'}`} placeholder="Repite tu nueva contraseña" data-testid="input-password-recovery-confirm" />
+              {fieldErrors.passwordConfirmation && <FieldError id="recovery-confirm-password-error" message={fieldErrors.passwordConfirmation} />}
             </label>
             {notice && <p role="alert" className="mt-4 rounded-xl bg-red-50 px-3 py-2.5 text-xs font-bold text-red-700" data-testid="status-password-recovery">{notice}</p>}
             <button type="button" disabled={submitting} onClick={() => void resetPassword()} className="mt-7 flex h-12 w-full items-center justify-center rounded-full bg-primary text-sm font-extrabold text-white disabled:opacity-60" data-testid="button-password-recovery-submit">
               {submitting ? 'Verificando…' : 'Verificar y cambiar contraseña'}
             </button>
-            <button type="button" disabled={submitting} onClick={() => { setPending(null); setVerificationCode(''); setNotice(''); }} className="mt-3 min-h-11 w-full text-center text-xs font-bold text-accent underline">
+            <button type="button" disabled={submitting} onClick={() => { setPending(null); setVerificationCode(''); setFieldErrors({}); setNotice(''); }} className="mt-3 min-h-11 w-full text-center text-xs font-bold text-accent underline">
               Cambiar correo o solicitar otro código
             </button>
           </>
@@ -437,7 +488,8 @@ export function PasswordRecoveryPage() {
           <>
             <label className="mt-6 block">
               <span className="mb-1.5 block text-xs font-bold text-primary">Correo electrónico</span>
-              <input type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} className="h-11 w-full rounded-xl border border-input bg-background px-3 text-base outline-none focus:border-accent sm:text-sm" placeholder="tu@correo.com" data-testid="input-password-recovery-email" />
+              <input type="email" autoComplete="email" value={email} onChange={(event) => { setEmail(event.target.value); clearFieldError('email'); setNotice(''); }} aria-invalid={Boolean(fieldErrors.email)} aria-describedby={fieldErrors.email ? 'recovery-email-error' : undefined} className={`h-11 w-full rounded-xl border bg-background px-3 text-base outline-none focus:border-accent sm:text-sm ${fieldErrors.email ? 'border-red-600 focus:border-red-600' : 'border-input'}`} placeholder="tu@correo.com" data-testid="input-password-recovery-email" />
+              {fieldErrors.email && <FieldError id="recovery-email-error" message={fieldErrors.email} />}
             </label>
             {notice && <p role="alert" className="mt-4 rounded-xl bg-red-50 px-3 py-2.5 text-xs font-bold text-red-700" data-testid="status-password-recovery">{notice}</p>}
             <button type="button" disabled={submitting} onClick={() => void requestCode()} className="mt-7 flex h-12 w-full items-center justify-center rounded-full bg-primary text-sm font-extrabold text-white disabled:opacity-60" data-testid="button-password-recovery-request">
