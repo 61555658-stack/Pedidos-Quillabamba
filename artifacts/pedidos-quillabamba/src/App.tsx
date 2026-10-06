@@ -22,7 +22,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import NotFound from '@/pages/not-found';
 import SystemMapPage from '@/pages/system-map';
-import { clearSession, PasswordRecoveryPage, RoleAuthPage, RoleGate, roleHome, readSession } from '@/pages/role-access';
+import { clearSession, RoleAuthPage, RoleGate, roleHome, readSession } from '@/pages/role-access';
 import AdminManagementPage from '@/pages/admin-management';
 import EnhancedDeliveryPortalPage from '@/pages/delivery-portal';
 import BusinessPortalPage from '@/pages/business-portal';
