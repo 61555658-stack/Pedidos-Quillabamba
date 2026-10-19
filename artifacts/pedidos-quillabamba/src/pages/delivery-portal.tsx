@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Bike, Check, ClipboardList, CreditCard, LogOut, MapPin, PackageCheck, RefreshCw, Wallet } from 'lucide-react';
 import { getListOrdersQueryKey, useClaimOrder, useListOrders, useUpdateOrderStatus } from '@workspace/api-client-react';
@@ -150,6 +150,9 @@ export default function DeliveryPortalPage() {
   const queryClient = useQueryClient();
   const session = readSession();
   const [notice, setNotice] = useState('');
+  const [proofPhoto, setProofPhoto] = useState<{ orderId: number; file: File; url: string } | null>(null);
+  const photoInputRef = useRef<HTMLInputElement>(null);
+  const photoOrderIdRef = useRef<number | null>(null);
   const ordersQuery = useListOrders({
     query: { queryKey: getListOrdersQueryKey(), refetchInterval: 4000, refetchOnWindowFocus: true },
   });
@@ -170,6 +173,10 @@ export default function DeliveryPortalPage() {
     order.deliveryPartnerEmail?.toLowerCase() === courierEmail && order.status === 'delivered'
   ));
   const trackingIds = myActiveOrders.filter((order) => order.status === 'on_the_way').map((order) => order.id).join(',');
+
+  useEffect(() => () => {
+    if (proofPhoto) URL.revokeObjectURL(proofPhoto.url);
+  }, [proofPhoto]);
 
   useEffect(() => {
     if (!trackingIds || !navigator.geolocation) return;
@@ -242,6 +249,32 @@ export default function DeliveryPortalPage() {
     );
   };
 
+  const openPhotoCapture = (orderId: number) => {
+    photoOrderIdRef.current = orderId;
+    setNotice('');
+    setProofPhoto(null);
+    if (photoInputRef.current) {
+      photoInputRef.current.value = '';
+      photoInputRef.current.click();
+    }
+  };
+
+  const handlePhotoSelected = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    const orderId = photoOrderIdRef.current;
+    if (!file || orderId === null) return;
+    if (!file.type.startsWith('image/')) {
+      setNotice('Selecciona una fotografía válida.');
+      return;
+    }
+    if (file.size > 8 * 1024 * 1024) {
+      setNotice('La foto debe pesar menos de 8 MB. Intenta tomarla nuevamente.');
+      return;
+    }
+    setProofPhoto({ orderId, file, url: URL.createObjectURL(file) });
+    setNotice('Foto tomada. El comprobante todavía no se ha guardado en el pedido.');
+  };
+
   const logout = () => {
     clearSession();
     setLocation('/login');
@@ -252,6 +285,16 @@ export default function DeliveryPortalPage() {
 
   return (
     <main className="min-h-[100dvh] bg-[#f1efe7] text-primary">
+      <input
+        ref={photoInputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        className="sr-only"
+        aria-label="Tomar foto del comprobante de entrega"
+        onChange={handlePhotoSelected}
+        data-testid="input-delivery-photo"
+      />
       <header className="border-b border-border/70 bg-[#f7f5ee]">
         <div className="mx-auto flex min-h-16 max-w-[1200px] items-center gap-3 px-4 py-2 sm:px-5 md:px-8">
           <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-secondary"><Bike className="h-4 w-4" /></span>
@@ -328,16 +371,26 @@ export default function DeliveryPortalPage() {
               </div>
               <div className="mt-4 grid gap-4">
                 {myActiveOrders.map((order) => (
-                  <OrderCard
-                    key={order.id}
-                    order={order}
-                    action={() => advanceOrder(order)}
-                    actionLabel={updateStatus.isPending
-                      ? 'Guardando…'
-                      : order.status === 'on_the_way' ? 'Comprobante fotográfico pendiente' : 'Marcar en camino'}
-                    disabled={updateStatus.isPending || order.status === 'on_the_way'}
-                    actionTestId={`button-advance-order-${order.id}`}
-                  />
+                  <div key={order.id} className="space-y-3">
+                    <OrderCard
+                      order={order}
+                      action={() => order.status === 'on_the_way' ? openPhotoCapture(order.id) : advanceOrder(order)}
+                      actionLabel={updateStatus.isPending
+                        ? 'Guardando…'
+                        : order.status === 'on_the_way'
+                          ? proofPhoto?.orderId === order.id ? 'Tomar otra foto' : 'Tomar foto del comprobante'
+                          : 'Marcar en camino'}
+                      disabled={updateStatus.isPending}
+                      actionTestId={`button-advance-order-${order.id}`}
+                    />
+                    {proofPhoto?.orderId === order.id && (
+                      <div className="rounded-2xl bg-card p-4 ring-1 ring-border" data-testid={`preview-delivery-photo-${order.id}`}>
+                        <img src={proofPhoto.url} alt={`Vista previa de la foto del pedido ${order.id}`} className="max-h-72 w-full rounded-xl object-contain" />
+                        <p className="mt-3 break-words text-xs font-bold">{proofPhoto.file.name}</p>
+                        <p className="mt-1 text-xs leading-5 text-muted-foreground">La foto está lista en este dispositivo, pero todavía no se guardó como comprobante.</p>
+                      </div>
+                    )}
+                  </div>
                 ))}
                 {!myActiveOrders.length && <div className="rounded-2xl border border-dashed border-border bg-card p-6 text-center text-sm text-muted-foreground">Cuando tomes un pedido, aparecerá aquí para que puedas gestionarlo.</div>}
               </div>
