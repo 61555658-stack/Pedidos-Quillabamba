@@ -22,8 +22,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import NotFound from '@/pages/not-found';
 import SystemMapPage from '@/pages/system-map';
-import { clearSession, SecureRoleAuthPage, RoleGate, roleHome, readSession, syncSecureSession } from '@/pages/role-access';
-import { useAuth } from '@workspace/replit-auth-web';
+import { clearSession, RoleAuthPage, RoleGate, roleHome, readSession } from '@/pages/role-access';
 import AdminManagementPage from '@/pages/admin-management';
 import EnhancedDeliveryPortalPage from '@/pages/delivery-portal';
 import BusinessPortalPage from '@/pages/business-portal';
@@ -399,8 +398,8 @@ function Router() {
       <Route path="/admin/restaurants"><RoleGate allowed={['administrador_sistema']}><AdminRestaurants /></RoleGate></Route>
       <Route path="/admin/delivery"><RoleGate allowed={['administrador_sistema']}><AdminDelivery /></RoleGate></Route>
       <Route path="/delivery"><RoleGate allowed={['repartidor']}><EnhancedDeliveryPortalPage /></RoleGate></Route>
-      <Route path="/login"><SecureRoleAuthPage /></Route>
-      <Route path="/register"><SecureRoleAuthPage /></Route>
+      <Route path="/login"><RoleAuthPage mode="login" /></Route>
+      <Route path="/register"><RoleAuthPage mode="register" /></Route>
       <Route path="/settings"><RoleGate allowed={['cliente']}><SettingsPage /></RoleGate></Route>
       <Route component={NotFound} />
     </Switch>
@@ -433,8 +432,6 @@ function LiveOrderLocation() {
 
 // Proveedores globales: consultas, tooltips, manejo de errores y notificaciones.
 function App() {
-  const auth = useAuth();
-  useEffect(() => { if (!auth.isLoading) syncSecureSession(auth.user); }, [auth.user, auth.isLoading]);
   return <QueryClientProvider client={queryClient}><TooltipProvider><WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}><ErrorBoundary><Router /><LiveOrderLocation /></ErrorBoundary></WouterRouter><Toaster /></TooltipProvider></QueryClientProvider>;
 }
 

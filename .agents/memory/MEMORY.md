@@ -1,4 +1,5 @@
 - [OpenAPI and Zod compatibility](zod-openapi-compatibility.md) — avoid generator output unsupported by the installed Zod runtime for numeric and email schemas.
 - [SendGrid connection replacement](sendgrid-connection-replacement.md) — a Repl accepts one SendGrid connector assignment; an additional authorized connection cannot replace it via addIntegration.
 - [Compatibilidad con celulares](compatibilidad-celulares.md) — todas las modificaciones deben seguir siendo compatibles con celulares.
-- [Esquema compartido de PostgreSQL](postgres-legacy-schema.md) — preservar las tablas heredadas de `public`; mantener Replit Auth separado salvo migración explícita.
+- [Esquema compartido de PostgreSQL](postgres-legacy-schema.md) — preservar `public`; la autenticación propia reutiliza sus cuentas y sesiones sin forzar migraciones.
+- [Acceso de usuarios de QUILLAYAA](quillayaa-auth.md) — los usuarios se registran en la app, nunca se les debe exigir una cuenta Replit.

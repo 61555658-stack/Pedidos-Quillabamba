@@ -2,7 +2,6 @@ import { useEffect, useState, type InputHTMLAttributes, type ReactNode } from 'r
 import { ArrowRight, Bike, Building2, Check, ClipboardList, Eye, EyeOff, LogOut, MapPin, PackageCheck, ShieldCheck, Store, Users, Utensils } from 'lucide-react';
 import { Link, useLocation } from 'wouter';
 import { confirmRegistrationCode, sendRegistrationCode } from '@workspace/api-client-react';
-import { useAuth } from '@workspace/replit-auth-web';
 
 export type UserRole = 'cliente' | 'administrador_negocio' | 'repartidor' | 'administrador_sistema';
 
@@ -51,23 +50,9 @@ function normalizeEmail(email: string) {
   return typeof email === 'string' ? email.trim().toLowerCase() : '';
 }
 
-function hasAccountWithEmail(accounts: StoredAccount[], email: string) {
-  const normalizedEmail = normalizeEmail(email);
-  return accounts.some((account) => normalizeEmail(account.email) === normalizedEmail);
-}
-
 const SESSION_KEY = 'quillayaa-session';
 const ACCOUNTS_KEY = 'quillayaa-accounts';
-const SYSTEM_ADMIN_ACCOUNT: StoredAccount = {
-  name: 'Administrador del sistema',
-  email: 'admin@gmail.com',
-  password: 'admin',
-  role: 'administrador_sistema',
-};
-const DEMO_TEST_ACCOUNTS: StoredAccount[] = import.meta.env.DEV ? [
-  { name: 'Cliente de prueba', email: 'cliente@gmail.com', password: 'cliente', role: 'cliente' },
-  { name: 'Repartidor de prueba', email: 'repartidor@gmail.com', password: 'repartidor', role: 'repartidor' },
-] : [];
+const APP_AUTH_VERSION_KEY = 'quillayaa-app-auth-v1';
 
 export const roleHome: Record<UserRole, string> = {
   cliente: '/',
@@ -98,6 +83,11 @@ function normalizeRole(role: unknown): UserRole | null {
 
 export function readSession(): UserSession | null {
   try {
+    if (!localStorage.getItem(APP_AUTH_VERSION_KEY)) {
+      localStorage.removeItem(SESSION_KEY);
+      localStorage.removeItem(ACCOUNTS_KEY);
+      localStorage.setItem(APP_AUTH_VERSION_KEY, '1');
+    }
     const raw = localStorage.getItem(SESSION_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as Omit<UserSession, 'role'> & { role: unknown };
@@ -112,61 +102,26 @@ export function readSession(): UserSession | null {
 }
 
 function saveSession(session: UserSession) {
+  localStorage.setItem(APP_AUTH_VERSION_KEY, '1');
   localStorage.setItem(SESSION_KEY, JSON.stringify(session));
 }
 
 export function clearSession() {
   localStorage.removeItem(SESSION_KEY);
-  window.location.href = `/api/logout?returnTo=${encodeURIComponent('/login')}`;
-}
-
-export function syncSecureSession(user: { email: string | null; firstName: string | null; lastName: string | null; role: UserRole } | null) {
-  if (!user) {
-    localStorage.removeItem(SESSION_KEY);
-    return;
-  }
-  saveSession({ name: [user.firstName, user.lastName].filter(Boolean).join(' ') || user.email || 'Usuario', email: user.email || '', role: user.role });
-}
-
-export function SecureRoleAuthPage() {
-  const [, setLocation] = useLocation();
-  const { user, isLoading, login } = useAuth();
-  useEffect(() => {
-    if (user) setLocation(roleHome[user.role]);
-  }, [user, setLocation]);
-  return <main className="flex min-h-[100dvh] items-center justify-center bg-background px-5"><div className="w-full max-w-md rounded-3xl bg-card p-8 text-center ring-1 ring-border"><div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-secondary text-primary"><ShieldCheck className="h-5 w-5" /></div><h1 className="mt-5 font-display text-2xl font-bold text-primary">Accede a Quillayaa</h1><p className="mt-2 text-sm leading-6 text-muted-foreground">Usa tu cuenta segura para ver pedidos y compartir la ubicación del reparto.</p><button disabled={isLoading} onClick={login} className="mt-6 min-h-12 w-full rounded-xl bg-primary px-5 py-3 text-sm font-bold text-white disabled:opacity-60">{isLoading ? 'Verificando sesión…' : 'Iniciar sesión'}</button></div></main>;
+  void fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => undefined);
 }
 
 function readAccounts(): StoredAccount[] {
   try {
     const raw = localStorage.getItem(ACCOUNTS_KEY);
-    if (!raw) return [SYSTEM_ADMIN_ACCOUNT, ...DEMO_TEST_ACCOUNTS];
+    if (!raw) return [];
     const parsed = JSON.parse(raw) as Array<Omit<StoredAccount, 'role'> & { role: unknown }>;
-    const accounts = parsed.flatMap((account) => {
+    return parsed.flatMap((account) => {
       const role = normalizeRole(account.role);
       return role ? [{ ...account, role }] : [];
     });
-    const systemAdminEmail = normalizeEmail(SYSTEM_ADMIN_ACCOUNT.email);
-    const demoEmails = new Set(DEMO_TEST_ACCOUNTS.map((account) => normalizeEmail(account.email)));
-    const storedSystemAdmin = accounts.find((account) => (
-      normalizeEmail(account.email) === systemAdminEmail
-      && account.role === SYSTEM_ADMIN_ACCOUNT.role
-    ));
-    const accountsWithoutBuiltIns = accounts.filter((account) => (
-      normalizeEmail(account.email) !== systemAdminEmail
-      && !demoEmails.has(normalizeEmail(account.email))
-    ));
-    const normalizedAccounts = [
-      ...accountsWithoutBuiltIns,
-      ...DEMO_TEST_ACCOUNTS,
-      storedSystemAdmin ?? SYSTEM_ADMIN_ACCOUNT,
-    ];
-    if (JSON.stringify(normalizedAccounts) !== JSON.stringify(parsed)) {
-      writeAccounts(normalizedAccounts);
-    }
-    return normalizedAccounts;
   } catch {
-    return [SYSTEM_ADMIN_ACCOUNT, ...DEMO_TEST_ACCOUNTS];
+    return [];
   }
 }
 
@@ -213,20 +168,17 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
     }
     if (!password.trim()) {
       errors.password = 'Falta completar el campo «Contraseña».';
+    } else if (mode === 'register' && password.length < 8) {
+      errors.password = 'La contraseña debe tener al menos 8 caracteres.';
     }
     setFieldErrors(errors);
     if (Object.keys(errors).length > 0) {
       return;
     }
 
-    const accounts = readAccounts();
     if (mode === 'register') {
       if (role === 'administrador_sistema') {
         setNotice('El administrador del sistema no puede registrarse. Inicia sesión con tu cuenta.');
-        return;
-      }
-      if (hasAccountWithEmail(accounts, normalizedEmail)) {
-        setNotice('Ese correo ya está registrado. Inicia sesión para continuar.');
         return;
       }
       const account: StoredAccount = { name: name.trim(), email: normalizedEmail, password, role };
@@ -244,32 +196,26 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
       return;
     }
 
-    const account = accounts.find((candidate) => normalizeEmail(candidate.email) === normalizedEmail && candidate.password === password && candidate.role === role);
-    if (!account) {
-      setNotice('Los datos no coinciden con una cuenta de ese rol. Regístrate primero o revisa tu selección.');
-      return;
+    setSubmitting(true);
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: normalizedEmail, password }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Correo o contraseña incorrectos.');
+      const accountRole = normalizeRole(data.user?.role);
+      if (!accountRole) throw new Error('La cuenta no tiene un rol válido.');
+      const account = { name: data.user.name as string, email: data.user.email as string, role: accountRole };
+      saveSession(account);
+      setLocation(roleHome[accountRole]);
+    } catch (error) {
+      setNotice(apiErrorMessage(error, 'No se pudo iniciar sesión.'));
+    } finally {
+      setSubmitting(false);
     }
-    const isDevelopmentTestAccount = DEMO_TEST_ACCOUNTS.some((testAccount) => (
-      normalizeEmail(testAccount.email) === normalizedEmail
-      && testAccount.password === password
-      && testAccount.role === role
-    ));
-    if (role !== 'administrador_sistema' && !isDevelopmentTestAccount) {
-      setSubmitting(true);
-      try {
-        const result = await sendRegistrationCode({ email: account.email, role: account.role });
-        if (!result.sent) throw new Error('No se pudo enviar el código.');
-        setPendingVerification({ account, mode: 'login' });
-        setVerificationCode('');
-      } catch (error) {
-        setNotice(apiErrorMessage(error, 'No pudimos enviar el código. Inténtalo más tarde.'));
-      } finally {
-        setSubmitting(false);
-      }
-      return;
-    }
-    saveSession({ name: account.name, email: account.email, role: account.role });
-    setLocation(roleHome[account.role]);
   };
 
   const verifyCode = async () => {
@@ -293,33 +239,19 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
         code: verificationCode,
       });
       if (!result.verified) throw new Error('No se pudo verificar el correo.');
-      const accounts = readAccounts();
-      if (mode === 'login') {
-        const account = accounts.find((candidate) => normalizeEmail(candidate.email) === normalizeEmail(pendingVerification.account.email)
-          && candidate.password === pendingVerification.account.password
-          && candidate.role === pendingVerification.account.role);
-        if (!account) {
-          setPendingVerification(null);
-          setNotice('La cuenta cambió. Ingresa tus datos nuevamente.');
-          return;
-        }
-        saveSession({ name: account.name, email: account.email, role: account.role });
-        setLocation(roleHome[account.role]);
-        return;
-      }
-      if (pendingVerification.account.role === 'administrador_sistema') {
-        setPendingVerification(null);
-        setNotice('El administrador del sistema no puede registrarse.');
-        return;
-      }
-      if (hasAccountWithEmail(accounts, pendingVerification.account.email)) {
-        setPendingVerification(null);
-        setNotice('Ese correo ya está registrado. Inicia sesión para continuar.');
-        return;
-      }
-      writeAccounts([...accounts, pendingVerification.account]);
-      saveSession({ name: pendingVerification.account.name, email: pendingVerification.account.email, role: pendingVerification.account.role });
-      setLocation(roleHome[pendingVerification.account.role]);
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(pendingVerification.account),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'No se pudo crear la cuenta.');
+      const accountRole = normalizeRole(data.user?.role);
+      if (!accountRole) throw new Error('La cuenta no tiene un rol válido.');
+      const account = { name: data.user.name as string, email: data.user.email as string, role: accountRole };
+      saveSession(account);
+      setLocation(roleHome[accountRole]);
     } catch (error) {
       setNotice(apiErrorMessage(error, 'No se pudo verificar el código. Inténtalo de nuevo.'));
     } finally {
@@ -333,10 +265,6 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
     { value: 'repartidor', icon: Bike },
     { value: 'administrador_sistema', icon: ShieldCheck },
   ];
-
-  if (mode === 'login' && new URLSearchParams(window.location.search).get('recovery') === '1') {
-    return <PasswordRecoveryPage />;
-  }
 
   return (
     <div className="paper-grid min-h-[100dvh] bg-background px-4 py-5 sm:px-5 sm:py-6">
@@ -360,12 +288,6 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
           <h2 className="mt-3 font-display text-3xl font-bold tracking-[-.04em] text-primary">{mode === 'login' ? 'Ingresa a tu plataforma' : 'Regístrate según tu cargo'}</h2>
           <p className="mt-2 text-sm leading-6 text-muted-foreground">Selecciona tu rol para abrir únicamente las herramientas que necesitas.</p>
 
-          {mode === 'login' && DEMO_TEST_ACCOUNTS.length > 0 && <div className="mt-5 rounded-2xl border border-secondary bg-secondary/20 p-4" data-testid="notice-demo-access">
-            <p className="text-xs font-extrabold text-primary">Accesos de prueba · solo desarrollo</p>
-            <p className="mt-2 text-xs leading-5 text-muted-foreground">Cliente: cliente@gmail.com · contraseña: cliente</p>
-            <p className="text-xs leading-5 text-muted-foreground">Repartidor: repartidor@gmail.com · contraseña: repartidor</p>
-          </div>}
-
           {mode === 'register' && <label className="mt-7 block"><span className="mb-1.5 block text-xs font-bold text-primary">Nombre completo</span><input value={name} disabled={!!pendingVerification} onChange={(event) => { setName(event.target.value); setNotice(''); clearFieldError('name'); }} autoComplete="name" aria-invalid={Boolean(fieldErrors.name)} aria-describedby={fieldErrors.name ? 'role-name-error' : undefined} className={`h-11 w-full rounded-xl border bg-background px-3 text-base outline-none focus:border-accent disabled:opacity-60 sm:text-sm ${fieldErrors.name ? 'border-red-600 focus:border-red-600' : 'border-input'}`} data-testid="input-role-name" />{fieldErrors.name && <FieldError id="role-name-error" message={fieldErrors.name} />}</label>}
           <label className="mt-5 block"><span className="mb-1.5 block text-xs font-bold text-primary">Correo electrónico</span><input type="email" value={email} disabled={!!pendingVerification} onChange={(event) => { setEmail(event.target.value); setNotice(''); clearFieldError('email'); }} autoComplete="email" aria-invalid={Boolean(fieldErrors.email)} aria-describedby={fieldErrors.email ? 'role-email-error' : undefined} className={`h-11 w-full rounded-xl border bg-background px-3 text-base outline-none focus:border-accent disabled:opacity-60 sm:text-sm ${fieldErrors.email ? 'border-red-600 focus:border-red-600' : 'border-input'}`} placeholder="tu@correo.com" data-testid="input-role-email" />{fieldErrors.email && <FieldError id="role-email-error" message={fieldErrors.email} />}</label>
           <div className="mt-5">
@@ -373,8 +295,6 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
             <PasswordVisibilityInput id="role-password" value={password} disabled={!!pendingVerification} onChange={(event) => { setPassword(event.target.value); setNotice(''); clearFieldError('password'); }} autoComplete={mode === 'register' ? 'new-password' : 'current-password'} aria-invalid={Boolean(fieldErrors.password)} aria-describedby={fieldErrors.password ? 'role-password-error' : undefined} className={`h-11 w-full rounded-xl border bg-background px-3 text-base outline-none focus:border-accent disabled:opacity-60 sm:text-sm ${fieldErrors.password ? 'border-red-600 focus:border-red-600' : 'border-input'}`} placeholder="••••••••" data-testid="input-role-password" toggleTestId="button-toggle-role-password" />
             {fieldErrors.password && <FieldError id="role-password-error" message={fieldErrors.password} />}
           </div>
-          {mode === 'login' && <Link href="/login?recovery=1" className="mt-2 block text-right text-xs font-bold text-accent" data-testid="link-forgot-password">¿Olvidaste tu contraseña?</Link>}
-
           <div className="mt-7">
             <p className="mb-3 text-xs font-bold text-primary">¿Cómo ingresarás?</p>
             <div className="grid gap-2 min-[360px]:grid-cols-2">
@@ -385,6 +305,7 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
               </button>)}
             </div>
           </div>
+          {mode === 'register' && <p className="mt-3 rounded-xl bg-secondary/20 p-3 text-xs leading-5 text-muted-foreground">Regístrate directamente en QUILLAYAA con tu correo. Los roles de repartidor y administrador necesitan autorización previa.</p>}
 
           {pendingVerification?.mode === mode && <div className="mt-6 rounded-2xl bg-secondary/20 p-4 ring-1 ring-secondary">
             <p className="text-sm font-bold text-primary">Revisa tu correo</p>
@@ -393,7 +314,7 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
             <button type="button" disabled={submitting} onClick={() => { setPendingVerification(null); setVerificationCode(''); setNotice(''); }} className="mt-3 min-h-11 text-left text-xs font-bold text-accent underline">Cambiar correo o solicitar otro código</button>
           </div>}
           {notice && <p role="alert" className="mt-4 rounded-xl bg-red-50 px-3 py-2.5 text-xs font-bold text-red-700" data-testid="status-role-auth-feedback">{notice}</p>}
-          <button disabled={submitting} onClick={pendingVerification?.mode === mode ? verifyCode : submit} className="mt-7 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-primary text-sm font-extrabold text-white disabled:opacity-60" data-testid="button-role-auth-submit">{submitting ? 'Procesando...' : pendingVerification?.mode === mode ? mode === 'register' ? 'Verificar y crear cuenta' : 'Verificar e ingresar' : mode === 'login' && role === 'administrador_sistema' ? 'Entrar a mi plataforma' : 'Enviar código a mi correo'} <ArrowRight className="h-4 w-4 text-secondary" /></button>
+          <button disabled={submitting} onClick={pendingVerification?.mode === mode ? verifyCode : submit} className="mt-7 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-primary text-sm font-extrabold text-white disabled:opacity-60" data-testid="button-role-auth-submit">{submitting ? 'Procesando...' : pendingVerification?.mode === 'register' && mode === 'register' ? 'Verificar y crear cuenta' : mode === 'login' ? 'Iniciar sesión' : 'Enviar código a mi correo'} <ArrowRight className="h-4 w-4 text-secondary" /></button>
           <p className="mt-6 text-center text-xs text-muted-foreground">{mode === 'login' ? '¿Aún no tienes cuenta? ' : '¿Ya tienes cuenta? '}<Link href={mode === 'login' ? '/register' : '/login'} className="font-bold text-accent" data-testid="link-role-auth-switch">{mode === 'login' ? 'Regístrate' : 'Inicia sesión'}</Link></p>
         </div>
       </div>

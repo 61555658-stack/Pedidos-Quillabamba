@@ -24,9 +24,17 @@ type Challenge = {
 // Temporary challenges are server-owned; restarting the server invalidates outstanding codes.
 const challenges = new Map<string, Challenge>();
 const sendHistory = new Map<string, number[]>();
+const verifiedRegistrations = new Map<string, number>();
 
 function key(email: string, role: string) {
   return `${email.trim().toLowerCase()}:${role}`;
+}
+
+export function consumeVerifiedRegistration(email: string, role: string) {
+  const challengeKey = key(email, role);
+  const expiresAt = verifiedRegistrations.get(challengeKey);
+  verifiedRegistrations.delete(challengeKey);
+  return Boolean(expiresAt && Date.now() < expiresAt);
 }
 
 function digestCode(salt: string, code: string) {
@@ -41,6 +49,15 @@ router.post("/auth/verification/send", async (req, res): Promise<void> => {
   }
 
   const email = parsed.data.email.trim().toLowerCase();
+  const requestedRole = parsed.data.role;
+  if (requestedRole === "repartidor" && email !== (process.env.INITIAL_COURIER_EMAIL || "").trim().toLowerCase()) {
+    res.status(403).json({ error: "El acceso de repartidor requiere autorización previa." });
+    return;
+  }
+  if (requestedRole === "administrador_negocio" && email !== (process.env.INITIAL_BUSINESS_ADMIN_EMAIL || "").trim().toLowerCase()) {
+    res.status(403).json({ error: "El acceso de administrador de negocio requiere autorización previa." });
+    return;
+  }
   const challengeKey = key(email, parsed.data.role);
   const now = Date.now();
   const historyKey = `${req.ip || "unknown"}:${email}`;
@@ -128,6 +145,7 @@ router.post("/auth/verification/confirm", (req, res) => {
     return;
   }
   challenges.delete(challengeKey);
+  verifiedRegistrations.set(challengeKey, Date.now() + lifetimeMs);
   res.json(ConfirmRegistrationCodeResponse.parse({ verified: true }));
 });
 
