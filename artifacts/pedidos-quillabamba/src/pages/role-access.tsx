@@ -288,6 +288,12 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
           <h2 className="mt-3 font-display text-3xl font-bold tracking-[-.04em] text-primary">{mode === 'login' ? 'Ingresa a tu plataforma' : 'Regístrate según tu cargo'}</h2>
           <p className="mt-2 text-sm leading-6 text-muted-foreground">Selecciona tu rol para abrir únicamente las herramientas que necesitas.</p>
 
+          {mode === 'login' && import.meta.env.DEV && <div className="mt-5 rounded-2xl border border-secondary bg-secondary/20 p-4" data-testid="notice-demo-access">
+            <p className="text-xs font-extrabold text-primary">Accesos de prueba · solo desarrollo</p>
+            <p className="mt-2 text-xs leading-5 text-muted-foreground">Cliente: cliente@gmail.com · contraseña: cliente</p>
+            <p className="text-xs leading-5 text-muted-foreground">Repartidor: repartidor@gmail.com · contraseña: repartidor</p>
+          </div>}
+
           {mode === 'register' && <label className="mt-7 block"><span className="mb-1.5 block text-xs font-bold text-primary">Nombre completo</span><input value={name} disabled={!!pendingVerification} onChange={(event) => { setName(event.target.value); setNotice(''); clearFieldError('name'); }} autoComplete="name" aria-invalid={Boolean(fieldErrors.name)} aria-describedby={fieldErrors.name ? 'role-name-error' : undefined} className={`h-11 w-full rounded-xl border bg-background px-3 text-base outline-none focus:border-accent disabled:opacity-60 sm:text-sm ${fieldErrors.name ? 'border-red-600 focus:border-red-600' : 'border-input'}`} data-testid="input-role-name" />{fieldErrors.name && <FieldError id="role-name-error" message={fieldErrors.name} />}</label>}
           <label className="mt-5 block"><span className="mb-1.5 block text-xs font-bold text-primary">Correo electrónico</span><input type="email" value={email} disabled={!!pendingVerification} onChange={(event) => { setEmail(event.target.value); setNotice(''); clearFieldError('email'); }} autoComplete="email" aria-invalid={Boolean(fieldErrors.email)} aria-describedby={fieldErrors.email ? 'role-email-error' : undefined} className={`h-11 w-full rounded-xl border bg-background px-3 text-base outline-none focus:border-accent disabled:opacity-60 sm:text-sm ${fieldErrors.email ? 'border-red-600 focus:border-red-600' : 'border-input'}`} placeholder="tu@correo.com" data-testid="input-role-email" />{fieldErrors.email && <FieldError id="role-email-error" message={fieldErrors.email} />}</label>
           <div className="mt-5">
