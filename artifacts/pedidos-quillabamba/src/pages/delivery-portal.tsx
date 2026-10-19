@@ -22,6 +22,40 @@ function isHttpConflict(error: unknown) {
 }
 
 const maxLocationAccuracyMeters = 250;
+const minimumPhotoSharpness = 32;
+
+function measurePhotoSharpness(source: HTMLCanvasElement) {
+  const scale = Math.min(1, 320 / source.width);
+  const width = Math.max(64, Math.round(source.width * scale));
+  const height = Math.max(64, Math.round(source.height * scale));
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  const context = canvas.getContext('2d', { willReadFrequently: true });
+  if (!context) return 0;
+  context.drawImage(source, 0, 0, width, height);
+  const { data } = context.getImageData(0, 0, width, height);
+  const grayscale = new Float32Array(width * height);
+  for (let i = 0; i < grayscale.length; i++) {
+    const offset = i * 4;
+    grayscale[i] = data[offset] * 0.299 + data[offset + 1] * 0.587 + data[offset + 2] * 0.114;
+  }
+  let sum = 0;
+  let sumSquares = 0;
+  let count = 0;
+  for (let y = 1; y < height - 1; y++) {
+    for (let x = 1; x < width - 1; x++) {
+      const index = y * width + x;
+      const laplacian = grayscale[index - width] + grayscale[index + width]
+        + grayscale[index - 1] + grayscale[index + 1] - 4 * grayscale[index];
+      sum += laplacian;
+      sumSquares += laplacian * laplacian;
+      count++;
+    }
+  }
+  const mean = sum / count;
+  return sumSquares / count - mean * mean;
+}
 
 function waitForAccuratePosition() {
   return new Promise<GeolocationPosition>((resolve, reject) => {
@@ -150,7 +184,7 @@ export default function DeliveryPortalPage() {
   const queryClient = useQueryClient();
   const session = readSession();
   const [notice, setNotice] = useState('');
-  const [proofPhoto, setProofPhoto] = useState<{ orderId: number; file: File; url: string } | null>(null);
+  const [proofPhoto, setProofPhoto] = useState<{ orderId: number; file: File; url: string; sharpness: number } | null>(null);
   const [cameraOrderId, setCameraOrderId] = useState<number | null>(null);
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
   const cameraVideoRef = useRef<HTMLVideoElement>(null);
@@ -313,6 +347,11 @@ export default function DeliveryPortalPage() {
       return;
     }
     context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const sharpness = measurePhotoSharpness(canvas);
+    if (sharpness < minimumPhotoSharpness) {
+      setNotice('La foto se ve borrosa. Mantén el celular firme, espera el enfoque y vuelve a capturar.');
+      return;
+    }
     canvas.toBlob((blob) => {
       if (!blob) {
         setNotice('No se pudo procesar la foto. Inténtalo nuevamente.');
@@ -323,8 +362,8 @@ export default function DeliveryPortalPage() {
         return;
       }
       const file = new File([blob], `comprobante-${cameraOrderId}.jpg`, { type: 'image/jpeg' });
-      setProofPhoto({ orderId: cameraOrderId, file, url: URL.createObjectURL(blob) });
-      setNotice('Foto capturada desde la cámara. El comprobante todavía no se ha guardado en el pedido.');
+      setProofPhoto({ orderId: cameraOrderId, file, url: URL.createObjectURL(blob), sharpness });
+      setNotice('Nitidez verificada. El comprobante privado debe guardarse antes de marcar el pedido como realizado.');
       closeCamera();
     }, 'image/jpeg', 0.88);
   };
@@ -449,8 +488,8 @@ export default function DeliveryPortalPage() {
                     {proofPhoto?.orderId === order.id && (
                       <div className="rounded-2xl bg-card p-4 ring-1 ring-border" data-testid={`preview-delivery-photo-${order.id}`}>
                         <img src={proofPhoto.url} alt={`Vista previa de la foto del pedido ${order.id}`} className="max-h-72 w-full rounded-xl object-contain" />
-                        <p className="mt-3 break-words text-xs font-bold">{proofPhoto.file.name}</p>
-                        <p className="mt-1 text-xs leading-5 text-muted-foreground">La foto está lista en este dispositivo, pero todavía no se guardó como comprobante.</p>
+                        <p className="mt-3 break-words text-xs font-bold">Nitidez verificada</p>
+                        <p className="mt-1 text-xs leading-5 text-muted-foreground">La foto está lista en este dispositivo, pero todavía no se guardó como comprobante privado.</p>
                       </div>
                     )}
                   </div>
