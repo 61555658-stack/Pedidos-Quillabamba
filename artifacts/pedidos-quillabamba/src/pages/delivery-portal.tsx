@@ -151,8 +151,10 @@ export default function DeliveryPortalPage() {
   const session = readSession();
   const [notice, setNotice] = useState('');
   const [proofPhoto, setProofPhoto] = useState<{ orderId: number; file: File; url: string } | null>(null);
-  const photoInputRef = useRef<HTMLInputElement>(null);
-  const photoOrderIdRef = useRef<number | null>(null);
+  const [cameraOrderId, setCameraOrderId] = useState<number | null>(null);
+  const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
+  const cameraVideoRef = useRef<HTMLVideoElement>(null);
+  const cameraRequestRef = useRef(0);
   const ordersQuery = useListOrders({
     query: { queryKey: getListOrdersQueryKey(), refetchInterval: 4000, refetchOnWindowFocus: true },
   });
@@ -177,6 +179,15 @@ export default function DeliveryPortalPage() {
   useEffect(() => () => {
     if (proofPhoto) URL.revokeObjectURL(proofPhoto.url);
   }, [proofPhoto]);
+
+  useEffect(() => {
+    const video = cameraVideoRef.current;
+    if (video && cameraStream) {
+      video.srcObject = cameraStream;
+      void video.play().catch(() => setNotice('No se pudo iniciar la vista de cámara. Comprueba el permiso del navegador.'));
+    }
+    return () => cameraStream?.getTracks().forEach((track) => track.stop());
+  }, [cameraStream, cameraOrderId]);
 
   useEffect(() => {
     if (!trackingIds || !navigator.geolocation) return;
@@ -249,30 +260,73 @@ export default function DeliveryPortalPage() {
     );
   };
 
-  const openPhotoCapture = (orderId: number) => {
-    photoOrderIdRef.current = orderId;
+  const closeCamera = () => {
+    cameraRequestRef.current++;
+    setCameraOrderId(null);
+    setCameraStream(null);
+  };
+
+  const openPhotoCapture = async (orderId: number) => {
     setNotice('');
     setProofPhoto(null);
-    if (photoInputRef.current) {
-      photoInputRef.current.value = '';
-      photoInputRef.current.click();
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setNotice('Este navegador no permite abrir la cámara. Usa un navegador actualizado y vuelve a intentar.');
+      return;
+    }
+    const requestId = ++cameraRequestRef.current;
+    setCameraOrderId(orderId);
+    setCameraStream(null);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: 'environment' } },
+        audio: false,
+      });
+      if (requestId !== cameraRequestRef.current) {
+        stream.getTracks().forEach((track) => track.stop());
+        return;
+      }
+      setCameraStream(stream);
+    } catch (error) {
+      if (requestId !== cameraRequestRef.current) return;
+      setCameraOrderId(null);
+      const name = typeof error === 'object' && error !== null && 'name' in error ? String(error.name) : '';
+      setNotice(name === 'NotAllowedError'
+        ? 'Permite el acceso a la cámara para tomar el comprobante.'
+        : name === 'NotFoundError'
+          ? 'No se encontró una cámara en este dispositivo.'
+          : 'No se pudo abrir la cámara. Comprueba sus permisos e inténtalo de nuevo.');
     }
   };
 
-  const handlePhotoSelected = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    const orderId = photoOrderIdRef.current;
-    if (!file || orderId === null) return;
-    if (!file.type.startsWith('image/')) {
-      setNotice('Selecciona una fotografía válida.');
+  const capturePhoto = () => {
+    const video = cameraVideoRef.current;
+    if (!video || !cameraStream || cameraOrderId === null || !video.videoWidth || !video.videoHeight) {
+      setNotice('La cámara todavía está iniciando. Espera un momento y vuelve a capturar.');
       return;
     }
-    if (file.size > 8 * 1024 * 1024) {
-      setNotice('La foto debe pesar menos de 8 MB. Intenta tomarla nuevamente.');
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const context = canvas.getContext('2d');
+    if (!context) {
+      setNotice('No se pudo capturar la foto. Inténtalo nuevamente.');
       return;
     }
-    setProofPhoto({ orderId, file, url: URL.createObjectURL(file) });
-    setNotice('Foto tomada. El comprobante todavía no se ha guardado en el pedido.');
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    canvas.toBlob((blob) => {
+      if (!blob) {
+        setNotice('No se pudo procesar la foto. Inténtalo nuevamente.');
+        return;
+      }
+      if (blob.size > 8 * 1024 * 1024) {
+        setNotice('La foto pesa más de 8 MB. Aléjate un poco e inténtalo nuevamente.');
+        return;
+      }
+      const file = new File([blob], `comprobante-${cameraOrderId}.jpg`, { type: 'image/jpeg' });
+      setProofPhoto({ orderId: cameraOrderId, file, url: URL.createObjectURL(blob) });
+      setNotice('Foto capturada desde la cámara. El comprobante todavía no se ha guardado en el pedido.');
+      closeCamera();
+    }, 'image/jpeg', 0.88);
   };
 
   const logout = () => {
@@ -285,16 +339,25 @@ export default function DeliveryPortalPage() {
 
   return (
     <main className="min-h-[100dvh] bg-[#f1efe7] text-primary">
-      <input
-        ref={photoInputRef}
-        type="file"
-        accept="image/*"
-        capture="environment"
-        className="sr-only"
-        aria-label="Tomar foto del comprobante de entrega"
-        onChange={handlePhotoSelected}
-        data-testid="input-delivery-photo"
-      />
+      {cameraOrderId !== null && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/75 p-0 sm:items-center sm:p-4" data-testid="dialog-delivery-camera">
+          <section role="dialog" aria-modal="true" aria-labelledby="delivery-camera-title" className="w-full max-w-xl rounded-t-3xl bg-card p-4 shadow-2xl sm:rounded-3xl sm:p-6">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <div>
+                <h2 id="delivery-camera-title" className="font-display text-lg font-bold">Foto del pedido #{cameraOrderId}</h2>
+                <p className="mt-1 text-xs text-muted-foreground">Encuadra la entrega y captura la foto aquí.</p>
+              </div>
+              <button type="button" onClick={closeCamera} className="min-h-11 rounded-xl px-3 text-sm font-bold text-muted-foreground" data-testid="button-close-delivery-camera">Cancelar</button>
+            </div>
+            {cameraStream ? (
+              <video ref={cameraVideoRef} autoPlay playsInline muted className="max-h-[62dvh] min-h-56 w-full rounded-2xl bg-black object-contain" data-testid="video-delivery-camera" />
+            ) : (
+              <div className="flex min-h-56 items-center justify-center rounded-2xl bg-black px-6 text-center text-sm text-white">Solicitando permiso para abrir la cámara…</div>
+            )}
+            <button type="button" onClick={capturePhoto} disabled={!cameraStream} className="mt-4 flex min-h-12 w-full items-center justify-center rounded-full bg-primary px-5 py-3 text-sm font-extrabold text-white disabled:opacity-50" data-testid="button-capture-delivery-photo">Capturar foto</button>
+          </section>
+        </div>
+      )}
       <header className="border-b border-border/70 bg-[#f7f5ee]">
         <div className="mx-auto flex min-h-16 max-w-[1200px] items-center gap-3 px-4 py-2 sm:px-5 md:px-8">
           <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-secondary"><Bike className="h-4 w-4" /></span>
