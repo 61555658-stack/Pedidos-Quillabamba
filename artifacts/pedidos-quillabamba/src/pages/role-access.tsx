@@ -63,6 +63,10 @@ const SYSTEM_ADMIN_ACCOUNT: StoredAccount = {
   password: 'admin',
   role: 'administrador_sistema',
 };
+const DEMO_TEST_ACCOUNTS: StoredAccount[] = import.meta.env.DEV ? [
+  { name: 'Cliente de prueba', email: 'cliente@gmail.com', password: 'cliente', role: 'cliente' },
+  { name: 'Repartidor de prueba', email: 'repartidor@gmail.com', password: 'repartidor', role: 'repartidor' },
+] : [];
 
 export const roleHome: Record<UserRole, string> = {
   cliente: '/',
@@ -117,25 +121,33 @@ export function clearSession() {
 function readAccounts(): StoredAccount[] {
   try {
     const raw = localStorage.getItem(ACCOUNTS_KEY);
-    if (!raw) return [SYSTEM_ADMIN_ACCOUNT];
+    if (!raw) return [SYSTEM_ADMIN_ACCOUNT, ...DEMO_TEST_ACCOUNTS];
     const parsed = JSON.parse(raw) as Array<Omit<StoredAccount, 'role'> & { role: unknown }>;
     const accounts = parsed.flatMap((account) => {
       const role = normalizeRole(account.role);
       return role ? [{ ...account, role }] : [];
     });
     const systemAdminEmail = normalizeEmail(SYSTEM_ADMIN_ACCOUNT.email);
+    const demoEmails = new Set(DEMO_TEST_ACCOUNTS.map((account) => normalizeEmail(account.email)));
     const storedSystemAdmin = accounts.find((account) => (
       normalizeEmail(account.email) === systemAdminEmail
       && account.role === SYSTEM_ADMIN_ACCOUNT.role
     ));
-    const accountsWithoutSystemAdmin = accounts.filter((account) => normalizeEmail(account.email) !== systemAdminEmail);
-    const normalizedAccounts = [...accountsWithoutSystemAdmin, storedSystemAdmin ?? SYSTEM_ADMIN_ACCOUNT];
+    const accountsWithoutBuiltIns = accounts.filter((account) => (
+      normalizeEmail(account.email) !== systemAdminEmail
+      && !demoEmails.has(normalizeEmail(account.email))
+    ));
+    const normalizedAccounts = [
+      ...accountsWithoutBuiltIns,
+      ...DEMO_TEST_ACCOUNTS,
+      storedSystemAdmin ?? SYSTEM_ADMIN_ACCOUNT,
+    ];
     if (JSON.stringify(normalizedAccounts) !== JSON.stringify(parsed)) {
       writeAccounts(normalizedAccounts);
     }
     return normalizedAccounts;
   } catch {
-    return [SYSTEM_ADMIN_ACCOUNT];
+    return [SYSTEM_ADMIN_ACCOUNT, ...DEMO_TEST_ACCOUNTS];
   }
 }
 
@@ -218,7 +230,12 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
       setNotice('Los datos no coinciden con una cuenta de ese rol. Regístrate primero o revisa tu selección.');
       return;
     }
-    if (role !== 'administrador_sistema') {
+    const isDevelopmentTestAccount = DEMO_TEST_ACCOUNTS.some((testAccount) => (
+      normalizeEmail(testAccount.email) === normalizedEmail
+      && testAccount.password === password
+      && testAccount.role === role
+    ));
+    if (role !== 'administrador_sistema' && !isDevelopmentTestAccount) {
       setSubmitting(true);
       try {
         const result = await sendRegistrationCode({ email: account.email, role: account.role });
@@ -323,6 +340,12 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
           <p className="font-mono-app text-[10px] font-bold uppercase tracking-[.18em] text-accent">{mode === 'login' ? 'Bienvenido de vuelta' : 'Crea tu acceso'}</p>
           <h2 className="mt-3 font-display text-3xl font-bold tracking-[-.04em] text-primary">{mode === 'login' ? 'Ingresa a tu plataforma' : 'Regístrate según tu cargo'}</h2>
           <p className="mt-2 text-sm leading-6 text-muted-foreground">Selecciona tu rol para abrir únicamente las herramientas que necesitas.</p>
+
+          {mode === 'login' && DEMO_TEST_ACCOUNTS.length > 0 && <div className="mt-5 rounded-2xl border border-secondary bg-secondary/20 p-4" data-testid="notice-demo-access">
+            <p className="text-xs font-extrabold text-primary">Accesos de prueba · solo desarrollo</p>
+            <p className="mt-2 text-xs leading-5 text-muted-foreground">Cliente: cliente@gmail.com · contraseña: cliente</p>
+            <p className="text-xs leading-5 text-muted-foreground">Repartidor: repartidor@gmail.com · contraseña: repartidor</p>
+          </div>}
 
           {mode === 'register' && <label className="mt-7 block"><span className="mb-1.5 block text-xs font-bold text-primary">Nombre completo</span><input value={name} disabled={!!pendingVerification} onChange={(event) => { setName(event.target.value); setNotice(''); clearFieldError('name'); }} autoComplete="name" aria-invalid={Boolean(fieldErrors.name)} aria-describedby={fieldErrors.name ? 'role-name-error' : undefined} className={`h-11 w-full rounded-xl border bg-background px-3 text-base outline-none focus:border-accent disabled:opacity-60 sm:text-sm ${fieldErrors.name ? 'border-red-600 focus:border-red-600' : 'border-input'}`} data-testid="input-role-name" />{fieldErrors.name && <FieldError id="role-name-error" message={fieldErrors.name} />}</label>}
           <label className="mt-5 block"><span className="mb-1.5 block text-xs font-bold text-primary">Correo electrónico</span><input type="email" value={email} disabled={!!pendingVerification} onChange={(event) => { setEmail(event.target.value); setNotice(''); clearFieldError('email'); }} autoComplete="email" aria-invalid={Boolean(fieldErrors.email)} aria-describedby={fieldErrors.email ? 'role-email-error' : undefined} className={`h-11 w-full rounded-xl border bg-background px-3 text-base outline-none focus:border-accent disabled:opacity-60 sm:text-sm ${fieldErrors.email ? 'border-red-600 focus:border-red-600' : 'border-input'}`} placeholder="tu@correo.com" data-testid="input-role-email" />{fieldErrors.email && <FieldError id="role-email-error" message={fieldErrors.email} />}</label>
