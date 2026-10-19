@@ -137,6 +137,7 @@ function AdminShell({ children }: { children: ReactNode }) {
     { href: '/admin/orders', label: 'Pedidos', icon: PackageCheck },
     { href: '/admin/restaurants', label: 'Restaurantes', icon: Store },
     { href: '/admin/delivery', label: 'Repartidores', icon: Bike },
+    { href: '/business', label: 'Panel del negocio', icon: Store },
     { href: '/admin/system', label: 'Mapa del sistema', icon: TrendingUp },
     { href: '/admin/manage', label: 'Gestión integral', icon: SlidersHorizontal },
   ];
@@ -390,7 +391,7 @@ function Router() {
       <Route path="/cart"><RoleGate allowed={['cliente']}><CartPage cart={cart} /></RoleGate></Route>
       <Route path="/orders"><RoleGate allowed={['cliente']}><OrdersPage /></RoleGate></Route>
       <Route path="/orders/:id"><RoleGate allowed={['cliente']}><OrderDetailPage /></RoleGate></Route>
-      <Route path="/business"><RoleGate allowed={['administrador_negocio']}><BusinessPortalPage /></RoleGate></Route>
+      <Route path="/business"><RoleGate allowed={['administrador_negocio', 'administrador_sistema']}><BusinessPortalPage /></RoleGate></Route>
       <Route path="/admin/system"><RoleGate allowed={['administrador_sistema']}><SystemMapPage /></RoleGate></Route>
       <Route path="/admin/manage"><RoleGate allowed={['administrador_sistema']}><AdminManagementPage /></RoleGate></Route>
       <Route path="/admin"><RoleGate allowed={['administrador_sistema']}><AdminDashboard /></RoleGate></Route>
