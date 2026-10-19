@@ -20,6 +20,7 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  CourierClaimInput,
   DashboardSummary,
   HealthStatus,
   Order,
@@ -438,6 +439,78 @@ export const useCreateOrder = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getCreateOrderMutationOptions(options));
+    }
+
+export const getClaimOrderUrl = (orderId: number,) => {
+
+
+
+
+  return `/api/orders/${orderId}/claim`
+}
+
+/**
+ * @summary Claim an unassigned order for delivery
+ */
+export const claimOrder = async (orderId: number,
+    courierClaimInput: CourierClaimInput, options?: Parameters<typeof customFetch>[1]): Promise<Order> => {
+
+  return customFetch<Order>(getClaimOrderUrl(orderId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(courierClaimInput)
+  }
+);}
+
+
+
+
+
+export const getClaimOrderMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof claimOrder>>, TError,{orderId: number;data: BodyType<CourierClaimInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof claimOrder>>, TError,{orderId: number;data: BodyType<CourierClaimInput>}, TContext> => {
+
+const mutationKey = ['claimOrder'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof claimOrder>>, {orderId: number;data: BodyType<CourierClaimInput>}> = (props) => {
+          const {orderId,data} = props ?? {};
+
+          return  claimOrder(orderId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ClaimOrderMutationResult = NonNullable<Awaited<ReturnType<typeof claimOrder>>>
+    export type ClaimOrderMutationBody = BodyType<CourierClaimInput>
+    export type ClaimOrderMutationError = ErrorType<void>
+
+    /**
+ * @summary Claim an unassigned order for delivery
+ */
+export const useClaimOrder = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof claimOrder>>, TError,{orderId: number;data: BodyType<CourierClaimInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof claimOrder>>,
+        TError,
+        {orderId: number;data: BodyType<CourierClaimInput>},
+        TContext
+      > => {
+      return useMutation(getClaimOrderMutationOptions(options));
     }
 
 export const getGetOrderUrl = (orderId: number,) => {

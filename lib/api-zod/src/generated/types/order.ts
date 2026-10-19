@@ -18,5 +18,7 @@ export interface Order {
   paymentMethod: OrderPaymentMethod;
   createdAt: string;
   deliveryAddress?: string;
+  deliveryPartnerEmail?: string;
+  deliveryPartnerName?: string;
   items: OrderItem[];
 }

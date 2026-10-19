@@ -2,6 +2,9 @@ import { Router, type IRouter } from "express";
 import {
   CreateOrderBody,
   CreateOrderResponse,
+  ClaimOrderBody,
+  ClaimOrderParams,
+  ClaimOrderResponse,
   GetDashboardSummaryResponse,
   GetOrderParams,
   GetOrderResponse,
@@ -44,6 +47,8 @@ type Order = {
   paymentMethod: "cash" | "yape" | "card";
   createdAt: string;
   deliveryAddress?: string;
+  deliveryPartnerEmail?: string;
+  deliveryPartnerName?: string;
   items: { id: number; name: string; quantity: number; price: number }[];
 };
 
@@ -88,6 +93,46 @@ router.post("/orders", (req, res) => {
   };
   orders.unshift(order);
   res.status(201).json(CreateOrderResponse.parse(order));
+});
+
+// Reclamo atómico: el primer repartidor que llega a esta asignación queda registrado.
+router.post("/orders/:orderId/claim", (req, res) => {
+  const params = ClaimOrderParams.safeParse(req.params);
+  const body = ClaimOrderBody.safeParse(req.body);
+  if (!params.success || !body.success) {
+    res.status(400).json({ error: !params.success ? params.error.message : body.success ? "Solicitud inválida" : body.error.message });
+    return;
+  }
+
+  const courierEmail = body.data.courierEmail.trim().toLowerCase();
+  const courierName = body.data.courierName.trim();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(courierEmail) || !courierName) {
+    res.status(400).json({ error: "Se requiere un correo y nombre válidos del repartidor." });
+    return;
+  }
+
+  const order = orders.find((item) => item.id === params.data.orderId);
+  if (!order) {
+    res.status(404).json({ error: "Pedido no encontrado" });
+    return;
+  }
+  if (order.status === "delivered" || order.status === "cancelled") {
+    res.status(409).json({ error: "Este pedido ya no está disponible." });
+    return;
+  }
+  if (order.deliveryPartnerEmail) {
+    if (order.deliveryPartnerEmail === courierEmail) {
+      res.json(ClaimOrderResponse.parse(order));
+      return;
+    }
+    res.status(409).json({ error: "Otro repartidor ya tomó este pedido." });
+    return;
+  }
+
+  // No await between checking and assigning: concurrent requests are serialized by this process.
+  order.deliveryPartnerEmail = courierEmail;
+  order.deliveryPartnerName = courierName;
+  res.json(ClaimOrderResponse.parse(order));
 });
 
 // Obtiene el detalle que se muestra en el seguimiento del cliente.

@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from './courierClaimInput';
 export * from './dashboardSummary';
 export * from './dashboardSummaryWeeklySalesItem';
 export * from './healthStatus';

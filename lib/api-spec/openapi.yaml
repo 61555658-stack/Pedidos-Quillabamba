@@ -103,6 +103,34 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Order"
+  /orders/{orderId}/claim:
+    post:
+      operationId: claimOrder
+      tags: [orders]
+      summary: Claim an unassigned order for delivery
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CourierClaimInput"
+      responses:
+        "200":
+          description: Order claimed by this delivery partner
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+        "404":
+          description: Order not found
+        "409":
+          description: Order is no longer available
   # Detalle individual del pedido.
   /orders/{orderId}:
     get:
@@ -285,9 +313,17 @@ components:
           enum: [cash, yape, card]
         createdAt: { type: string }
         deliveryAddress: { type: string }
+        deliveryPartnerEmail: { type: string }
+        deliveryPartnerName: { type: string }
         items:
           type: array
           items: { $ref: "#/components/schemas/OrderItem" }
+    CourierClaimInput:
+      type: object
+      required: [courierEmail, courierName]
+      properties:
+        courierEmail: { type: string, minLength: 3 }
+        courierName: { type: string, minLength: 1 }
     OrderInput:
       type: object
       required: [restaurantName, customerName, total, paymentMethod, deliveryAddress, items]

@@ -117,7 +117,16 @@ export interface Order {
   paymentMethod: OrderPaymentMethod;
   createdAt: string;
   deliveryAddress?: string;
+  deliveryPartnerEmail?: string;
+  deliveryPartnerName?: string;
   items: OrderItem[];
+}
+
+export interface CourierClaimInput {
+  /** @minLength 3 */
+  courierEmail: string;
+  /** @minLength 1 */
+  courierName: string;
 }
 
 export type OrderInputPaymentMethod = typeof OrderInputPaymentMethod[keyof typeof OrderInputPaymentMethod];

@@ -66,6 +66,8 @@ export const ListOrdersResponseItem = zod.object({
   "paymentMethod": zod.enum(['cash', 'yape', 'card']),
   "createdAt": zod.string(),
   "deliveryAddress": zod.string().optional(),
+  "deliveryPartnerEmail": zod.string().optional(),
+  "deliveryPartnerName": zod.string().optional(),
   "items": zod.array(zod.object({
   "id": zod.number(),
   "name": zod.string(),
@@ -102,6 +104,45 @@ export const CreateOrderResponse = zod.object({
   "paymentMethod": zod.enum(['cash', 'yape', 'card']),
   "createdAt": zod.string(),
   "deliveryAddress": zod.string().optional(),
+  "deliveryPartnerEmail": zod.string().optional(),
+  "deliveryPartnerName": zod.string().optional(),
+  "items": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "quantity": zod.number(),
+  "price": zod.number()
+}))
+})
+
+
+/**
+ * @summary Claim an unassigned order for delivery
+ */
+export const ClaimOrderParams = zod.object({
+  "orderId": zod.coerce.number()
+})
+
+export const claimOrderBodyCourierEmailMin = 3;
+
+
+
+
+export const ClaimOrderBody = zod.object({
+  "courierEmail": zod.string().min(claimOrderBodyCourierEmailMin),
+  "courierName": zod.string().min(1)
+})
+
+export const ClaimOrderResponse = zod.object({
+  "id": zod.number(),
+  "restaurantName": zod.string(),
+  "customerName": zod.string(),
+  "total": zod.number(),
+  "status": zod.enum(['received', 'preparing', 'ready', 'on_the_way', 'delivered', 'cancelled']),
+  "paymentMethod": zod.enum(['cash', 'yape', 'card']),
+  "createdAt": zod.string(),
+  "deliveryAddress": zod.string().optional(),
+  "deliveryPartnerEmail": zod.string().optional(),
+  "deliveryPartnerName": zod.string().optional(),
   "items": zod.array(zod.object({
   "id": zod.number(),
   "name": zod.string(),
@@ -127,6 +168,8 @@ export const GetOrderResponse = zod.object({
   "paymentMethod": zod.enum(['cash', 'yape', 'card']),
   "createdAt": zod.string(),
   "deliveryAddress": zod.string().optional(),
+  "deliveryPartnerEmail": zod.string().optional(),
+  "deliveryPartnerName": zod.string().optional(),
   "items": zod.array(zod.object({
   "id": zod.number(),
   "name": zod.string(),
@@ -156,6 +199,8 @@ export const UpdateOrderStatusResponse = zod.object({
   "paymentMethod": zod.enum(['cash', 'yape', 'card']),
   "createdAt": zod.string(),
   "deliveryAddress": zod.string().optional(),
+  "deliveryPartnerEmail": zod.string().optional(),
+  "deliveryPartnerName": zod.string().optional(),
   "items": zod.array(zod.object({
   "id": zod.number(),
   "name": zod.string(),
