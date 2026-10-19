@@ -9,6 +9,21 @@ import * as zod from 'zod';
 
 
 /**
+ * @summary Get current authenticated user
+ */
+export const GetCurrentAuthUserResponse = zod.object({
+  "user": zod.union([zod.object({
+  "id": zod.string(),
+  "email": zod.string().nullable(),
+  "firstName": zod.string().nullable(),
+  "lastName": zod.string().nullable(),
+  "profileImageUrl": zod.string().nullable(),
+  "role": zod.enum(['cliente', 'administrador_negocio', 'repartidor', 'administrador_sistema'])
+}),zod.null()])
+})
+
+
+/**
  * Returns server health status
  * @summary Health check
  */

@@ -20,7 +20,21 @@ tags:
     description: Operational summaries
   - name: verification
     description: Email verification during registration and sign-in
+  - name: Auth
+    description: Browser and mobile authentication endpoints
 paths:
+  /auth/user:
+    get:
+      operationId: getCurrentAuthUser
+      tags: [Auth]
+      summary: Get current authenticated user
+      responses:
+        "200":
+          description: Authentication state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthUserEnvelope"
   # Comprobación simple para saber si el API está disponible.
   /healthz:
     get:
@@ -234,6 +248,50 @@ paths:
           description: Too many attempts
 components:
   schemas:
+    AuthUser:
+      type: object
+      required: [id, email, firstName, lastName, profileImageUrl, role]
+      properties:
+        id: { type: string }
+        email: { type: [string, "null"] }
+        firstName: { type: [string, "null"] }
+        lastName: { type: [string, "null"] }
+        profileImageUrl: { type: [string, "null"] }
+        role:
+          type: string
+          enum: [cliente, administrador_negocio, repartidor, administrador_sistema]
+    AuthUserEnvelope:
+      type: object
+      required: [user]
+      properties:
+        user:
+          oneOf:
+            - $ref: "#/components/schemas/AuthUser"
+            - type: "null"
+    MobileTokenExchangeRequest:
+      type: object
+      required: [code, code_verifier, redirect_uri, state]
+      properties:
+        code: { type: string, minLength: 1 }
+        code_verifier: { type: string, minLength: 1 }
+        redirect_uri: { type: string, minLength: 1, format: uri }
+        state: { type: string, minLength: 1 }
+        nonce: { type: string, minLength: 1 }
+    MobileTokenExchangeSuccess:
+      type: object
+      required: [token]
+      properties:
+        token: { type: string }
+    LogoutSuccess:
+      type: object
+      required: [success]
+      properties:
+        success: { type: boolean, const: true }
+    ErrorEnvelope:
+      type: object
+      required: [error]
+      properties:
+        error: { type: string }
     RegistrationCodeRequest:
       type: object
       required: [email, role]
