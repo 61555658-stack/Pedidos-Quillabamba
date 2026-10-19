@@ -26,3 +26,4 @@ channel = "stable-25_05"
 
 [userenv.shared]
 SENDGRID_FROM_EMAIL = "cesarcahuantico2007@gmail.com"
+QUILLAYAA_API_KEY = "quilla_yaa"
