@@ -2,6 +2,7 @@ import { useEffect, useState, type InputHTMLAttributes, type ReactNode } from 'r
 import { ArrowRight, Bike, Building2, Check, ClipboardList, Eye, EyeOff, LogOut, MapPin, PackageCheck, ShieldCheck, Store, Users, Utensils } from 'lucide-react';
 import { Link, useLocation } from 'wouter';
 import { confirmRegistrationCode, sendRegistrationCode } from '@workspace/api-client-react';
+import { useAuth } from '@workspace/replit-auth-web';
 
 export type UserRole = 'cliente' | 'administrador_negocio' | 'repartidor' | 'administrador_sistema';
 
@@ -116,6 +117,24 @@ function saveSession(session: UserSession) {
 
 export function clearSession() {
   localStorage.removeItem(SESSION_KEY);
+  window.location.href = `/api/logout?returnTo=${encodeURIComponent('/login')}`;
+}
+
+export function syncSecureSession(user: { email: string | null; firstName: string | null; lastName: string | null; role: UserRole } | null) {
+  if (!user) {
+    localStorage.removeItem(SESSION_KEY);
+    return;
+  }
+  saveSession({ name: [user.firstName, user.lastName].filter(Boolean).join(' ') || user.email || 'Usuario', email: user.email || '', role: user.role });
+}
+
+export function SecureRoleAuthPage() {
+  const [, setLocation] = useLocation();
+  const { user, isLoading, login } = useAuth();
+  useEffect(() => {
+    if (user) setLocation(roleHome[user.role]);
+  }, [user, setLocation]);
+  return <main className="flex min-h-[100dvh] items-center justify-center bg-background px-5"><div className="w-full max-w-md rounded-3xl bg-card p-8 text-center ring-1 ring-border"><div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-secondary text-primary"><ShieldCheck className="h-5 w-5" /></div><h1 className="mt-5 font-display text-2xl font-bold text-primary">Accede a Quillayaa</h1><p className="mt-2 text-sm leading-6 text-muted-foreground">Usa tu cuenta segura para ver pedidos y compartir la ubicación del reparto.</p><button disabled={isLoading} onClick={login} className="mt-6 min-h-12 w-full rounded-xl bg-primary px-5 py-3 text-sm font-bold text-white disabled:opacity-60">{isLoading ? 'Verificando sesión…' : 'Iniciar sesión'}</button></div></main>;
 }
 
 function readAccounts(): StoredAccount[] {

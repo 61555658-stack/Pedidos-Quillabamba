@@ -1,8 +1,10 @@
 import { sql } from 'drizzle-orm';
-import { index, jsonb, pgTable, timestamp, varchar } from 'drizzle-orm/pg-core';
+import { index, jsonb, pgSchema, timestamp, varchar } from 'drizzle-orm/pg-core';
+
+const authSchema = pgSchema('replit_auth');
 
 // (IMPORTANT) This table is mandatory for Replit Auth, don't drop it.
-export const sessionsTable = pgTable(
+export const sessionsTable = authSchema.table(
   'sessions',
   {
     sid: varchar('sid').primaryKey(),
@@ -13,7 +15,7 @@ export const sessionsTable = pgTable(
 );
 
 // (IMPORTANT) This table is mandatory for Replit Auth, don't drop it.
-export const usersTable = pgTable('users', {
+export const usersTable = authSchema.table('users', {
   id: varchar('id')
     .primaryKey()
     .default(sql`gen_random_uuid()`),

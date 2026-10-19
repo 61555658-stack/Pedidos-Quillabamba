@@ -2,7 +2,6 @@ import { Router, type IRouter } from "express";
 import {
   CreateOrderBody,
   CreateOrderResponse,
-  ClaimOrderBody,
   ClaimOrderParams,
   ClaimOrderResponse,
   GetDashboardSummaryResponse,
@@ -49,6 +48,9 @@ type Order = {
   deliveryAddress?: string;
   deliveryPartnerEmail?: string;
   deliveryPartnerName?: string;
+  customerUserId?: string;
+  deliveryPartnerUserId?: string;
+  currentLocation?: { latitude: number; longitude: number; accuracy: number; updatedAt: string };
   items: { id: number; name: string; quantity: number; price: number }[];
 };
 
@@ -74,12 +76,19 @@ router.get("/restaurants/:restaurantId/products", (req, res) => {
 });
 
 // Lista pedidos recientes para el historial y el panel administrativo.
-router.get("/orders", (_req, res) => {
-  res.json(ListOrdersResponse.parse(orders));
+router.get("/orders", (req, res) => {
+  if (!req.isAuthenticated()) return res.status(401).json({ error: "Inicia sesión." });
+  const visible = req.user.role === "administrador_sistema" || req.user.role === "administrador_negocio"
+    ? orders
+    : req.user.role === "repartidor"
+      ? orders.filter((order) => !order.deliveryPartnerUserId || order.deliveryPartnerUserId === req.user.id)
+      : orders.filter((order) => order.customerUserId === req.user.id);
+  return res.json(ListOrdersResponse.parse(visible));
 });
 
 // Valida el checkout, crea el pedido y lo inicia en estado "received".
 router.post("/orders", (req, res) => {
+  if (!req.isAuthenticated() || req.user.role !== "cliente") return res.status(403).json({ error: "Se requiere una cuenta de cliente." });
   const parsed = CreateOrderBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -90,26 +99,25 @@ router.post("/orders", (req, res) => {
     ...parsed.data,
     status: "received",
     createdAt: new Date().toISOString(),
+    customerUserId: req.user.id,
   };
   orders.unshift(order);
-  res.status(201).json(CreateOrderResponse.parse(order));
+  return res.status(201).json(CreateOrderResponse.parse(order));
 });
 
 // Reclamo atómico: el primer repartidor que llega a esta asignación queda registrado.
 router.post("/orders/:orderId/claim", (req, res) => {
   const params = ClaimOrderParams.safeParse(req.params);
-  const body = ClaimOrderBody.safeParse(req.body);
-  if (!params.success || !body.success) {
-    res.status(400).json({ error: !params.success ? params.error.message : body.success ? "Solicitud inválida" : body.error.message });
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
     return;
   }
-
-  const courierEmail = body.data.courierEmail.trim().toLowerCase();
-  const courierName = body.data.courierName.trim();
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(courierEmail) || !courierName) {
-    res.status(400).json({ error: "Se requiere un correo y nombre válidos del repartidor." });
+  if (!req.isAuthenticated() || req.user.role !== "repartidor" || !req.user.email) {
+    res.status(403).json({ error: "Se requiere una cuenta de repartidor." });
     return;
   }
+  const courierEmail = req.user.email.trim().toLowerCase();
+  const courierName = [req.user.firstName, req.user.lastName].filter(Boolean).join(" ") || courierEmail;
 
   const order = orders.find((item) => item.id === params.data.orderId);
   if (!order) {
@@ -120,8 +128,8 @@ router.post("/orders/:orderId/claim", (req, res) => {
     res.status(409).json({ error: "Este pedido ya no está disponible." });
     return;
   }
-  if (order.deliveryPartnerEmail) {
-    if (order.deliveryPartnerEmail === courierEmail) {
+  if (order.deliveryPartnerUserId) {
+    if (order.deliveryPartnerUserId === req.user.id) {
       res.json(ClaimOrderResponse.parse(order));
       return;
     }
@@ -132,7 +140,38 @@ router.post("/orders/:orderId/claim", (req, res) => {
   // No await between checking and assigning: concurrent requests are serialized by this process.
   order.deliveryPartnerEmail = courierEmail;
   order.deliveryPartnerName = courierName;
+  order.deliveryPartnerUserId = req.user.id;
   res.json(ClaimOrderResponse.parse(order));
+});
+
+router.put("/orders/:orderId/location", (req, res) => {
+  const orderId = Number(req.params.orderId);
+  const { latitude, longitude, accuracy } = req.body ?? {};
+  if (!Number.isSafeInteger(orderId) || orderId <= 0 || !Number.isFinite(latitude) || !Number.isFinite(longitude) || !Number.isFinite(accuracy)
+    || latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180 || accuracy < 0 || accuracy > 100) {
+    return res.status(400).json({ error: "Ubicación inválida o poco precisa." });
+  }
+  if (!req.isAuthenticated() || req.user.role !== "repartidor") return res.status(403).json({ error: "Se requiere una cuenta de repartidor." });
+  const order = orders.find((item) => item.id === orderId);
+  if (!order || order.deliveryPartnerUserId !== req.user.id || ["delivered", "cancelled"].includes(order.status)) {
+    return res.status(404).json({ error: "Pedido no disponible para este repartidor." });
+  }
+  order.currentLocation = { latitude, longitude, accuracy, updatedAt: new Date().toISOString() };
+  return res.json({ saved: true, updatedAt: order.currentLocation.updatedAt });
+});
+
+router.get("/orders/:orderId/location", (req, res) => {
+  const orderId = Number(req.params.orderId);
+  if (!Number.isSafeInteger(orderId) || orderId <= 0) return res.status(400).json({ error: "Pedido inválido." });
+  if (!req.isAuthenticated()) return res.status(401).json({ error: "Inicia sesión." });
+  const order = orders.find((item) => item.id === orderId);
+  if (!order || (req.user.role !== "administrador_sistema" && order.customerUserId !== req.user.id && order.deliveryPartnerUserId !== req.user.id)) {
+    return res.status(404).json({ error: "Ubicación no disponible." });
+  }
+  if (order.status !== "on_the_way" || !order.currentLocation || Date.now() - Date.parse(order.currentLocation.updatedAt) > 120_000) {
+    return res.status(404).json({ error: "Ubicación todavía no disponible." });
+  }
+  return res.json(order.currentLocation);
 });
 
 // Obtiene el detalle que se muestra en el seguimiento del cliente.
@@ -144,6 +183,10 @@ router.get("/orders/:orderId", (req, res) => {
   }
   const order = orders.find((item) => item.id === params.data.orderId);
   if (!order) {
+    res.status(404).json({ error: "Pedido no encontrado" });
+    return;
+  }
+  if (!req.isAuthenticated() || (req.user.role !== "administrador_sistema" && req.user.role !== "administrador_negocio" && order.customerUserId !== req.user.id && order.deliveryPartnerUserId !== req.user.id)) {
     res.status(404).json({ error: "Pedido no encontrado" });
     return;
   }
@@ -168,8 +211,20 @@ router.patch("/orders/:orderId/status", (req, res) => {
     res.status(404).json({ error: "Pedido no encontrado" });
     return;
   }
+  if (!req.isAuthenticated()
+    || (req.user.role === "repartidor" && order.deliveryPartnerUserId !== req.user.id)
+    || (req.user.role !== "repartidor" && req.user.role !== "administrador_sistema" && req.user.role !== "administrador_negocio")) {
+    return res.status(403).json({ error: "No tienes permiso para actualizar este pedido." });
+  }
+  if (req.user.role === "repartidor" && body.data.status === "on_the_way"
+    && (!order.currentLocation || Date.now() - Date.parse(order.currentLocation.updatedAt) > 60_000)) {
+    return res.status(409).json({ error: "Activa la ubicación precisa antes de iniciar el reparto." });
+  }
+  if (body.data.status === "delivered") {
+    return res.status(409).json({ error: "No se puede completar la entrega hasta que el comprobante fotográfico quede guardado." });
+  }
   order.status = body.data.status;
-  res.json(UpdateOrderStatusResponse.parse(order));
+  return res.json(UpdateOrderStatusResponse.parse(order));
 });
 
 // Métricas agregadas que alimentan el dashboard administrativo.

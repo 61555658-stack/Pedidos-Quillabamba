@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Bike, Check, ClipboardList, CreditCard, LogOut, MapPin, PackageCheck, RefreshCw, Wallet } from 'lucide-react';
 import { getListOrdersQueryKey, useClaimOrder, useListOrders, useUpdateOrderStatus } from '@workspace/api-client-react';
@@ -19,6 +19,20 @@ function statusLabel(status: Order['status']) {
 
 function isHttpConflict(error: unknown) {
   return typeof error === 'object' && error !== null && 'status' in error && error.status === 409;
+}
+
+async function uploadCurrentPosition(orderId: number, position: GeolocationPosition) {
+  const response = await fetch(`/api/orders/${orderId}/location`, {
+    method: 'PUT',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      latitude: position.coords.latitude,
+      longitude: position.coords.longitude,
+      accuracy: position.coords.accuracy,
+    }),
+  });
+  if (!response.ok) throw new Error('No se pudo compartir la ubicación.');
 }
 
 function OrderCard({
@@ -112,6 +126,17 @@ export default function DeliveryPortalPage() {
   const completedOrders = orders.filter((order) => (
     order.deliveryPartnerEmail?.toLowerCase() === courierEmail && order.status === 'delivered'
   ));
+  const trackingIds = myActiveOrders.filter((order) => order.status === 'on_the_way').map((order) => order.id).join(',');
+
+  useEffect(() => {
+    if (!trackingIds || !navigator.geolocation) return;
+    const watchers = trackingIds.split(',').map(Number).map((orderId) => navigator.geolocation.watchPosition(
+      (position) => { void uploadCurrentPosition(orderId, position).catch(() => undefined); },
+      () => setNotice('No se pudo actualizar tu ubicación. Revisa el permiso de ubicación del navegador.'),
+      { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 },
+    ));
+    return () => watchers.forEach((watcher) => navigator.geolocation.clearWatch(watcher));
+  }, [trackingIds]);
 
   const claim = (orderId: number) => {
     if (!session || session.role !== 'repartidor') {
@@ -138,6 +163,32 @@ export default function DeliveryPortalPage() {
 
   const advanceOrder = (order: Order) => {
     const status: OrderStatusInputStatus = order.status === 'on_the_way' ? 'delivered' : 'on_the_way';
+    if (status === 'on_the_way') {
+      if (!navigator.geolocation) {
+        setNotice('Este dispositivo no permite compartir ubicación. No se puede iniciar el reparto.');
+        return;
+      }
+      setNotice('Solicitando permiso para compartir tu ubicación precisa…');
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          void uploadCurrentPosition(order.id, position).then(() => {
+            updateStatus.mutate(
+              { orderId: order.id, data: { status } },
+              {
+                onSuccess: async () => {
+                  await queryClient.invalidateQueries({ queryKey: getListOrdersQueryKey() });
+                  setNotice(`El pedido #${order.id} está en camino y comparte tu ubicación con su cliente.`);
+                },
+                onError: () => setNotice('No se pudo iniciar el reparto. Inténtalo nuevamente.'),
+              },
+            );
+          }).catch(() => setNotice('No se pudo guardar tu ubicación. El pedido no se inició.'));
+        },
+        () => setNotice('Debes permitir la ubicación precisa para iniciar el reparto.'),
+        { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 },
+      );
+      return;
+    }
     updateStatus.mutate(
       { orderId: order.id, data: { status } },
       {
@@ -244,8 +295,8 @@ export default function DeliveryPortalPage() {
                     action={() => advanceOrder(order)}
                     actionLabel={updateStatus.isPending
                       ? 'Guardando…'
-                      : order.status === 'on_the_way' ? 'Marcar como entregado' : 'Marcar en camino'}
-                    disabled={updateStatus.isPending}
+                      : order.status === 'on_the_way' ? 'Comprobante fotográfico pendiente' : 'Marcar en camino'}
+                    disabled={updateStatus.isPending || order.status === 'on_the_way'}
                     actionTestId={`button-advance-order-${order.id}`}
                   />
                 ))}

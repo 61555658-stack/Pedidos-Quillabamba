@@ -4,6 +4,7 @@ import {
   GetCurrentAuthUserResponse,
   LogoutMobileSessionResponse,
 } from '@workspace/api-zod';
+import type { AuthUser } from '@workspace/api-zod';
 import { db, usersTable } from '@workspace/db';
 import { Router, type IRouter, type Request, type Response } from 'express';
 import * as oidc from 'openid-client';
@@ -98,16 +99,18 @@ function getSafeErrorMetadata(error: unknown) {
 }
 
 async function upsertUser(claims: Record<string, unknown>) {
+  const email = ((claims.email as string) || '').trim().toLowerCase();
+  const role: AuthUser['role'] = claims.email_verified === true
+    && email === (process.env.INITIAL_ADMIN_EMAIL || '').trim().toLowerCase()
+    ? 'administrador_sistema'
+    : claims.email_verified === true
+      && email === (process.env.INITIAL_COURIER_EMAIL || '').trim().toLowerCase()
+      ? 'repartidor'
+      : 'cliente';
   const userData = {
     id: claims.sub as string,
     email: (claims.email as string) || null,
-    role: claims.email_verified === true
-      && (claims.email as string || '').trim().toLowerCase() === (process.env.INITIAL_ADMIN_EMAIL || '').trim().toLowerCase()
-      ? 'administrador_sistema'
-      : claims.email_verified === true
-        && (claims.email as string || '').trim().toLowerCase() === (process.env.INITIAL_COURIER_EMAIL || '').trim().toLowerCase()
-        ? 'repartidor'
-        : 'cliente',
+    role,
     firstName: (claims.first_name as string) || null,
     lastName: (claims.last_name as string) || null,
     profileImageUrl: (claims.profile_image_url || claims.picture) as
@@ -221,7 +224,7 @@ router.get('/callback', async (req: Request, res: Response) => {
       firstName: dbUser.firstName,
       lastName: dbUser.lastName,
       profileImageUrl: dbUser.profileImageUrl,
-      role: dbUser.role,
+      role: dbUser.role as AuthUser['role'],
     },
     access_token: tokens.access_token,
     refresh_token: tokens.refresh_token,
@@ -294,7 +297,7 @@ router.post(
           firstName: dbUser.firstName,
           lastName: dbUser.lastName,
           profileImageUrl: dbUser.profileImageUrl,
-          role: dbUser.role,
+          role: dbUser.role as AuthUser['role'],
         },
         access_token: tokens.access_token,
         refresh_token: tokens.refresh_token,

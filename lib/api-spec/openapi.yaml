@@ -35,6 +35,35 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/AuthUserEnvelope"
+  /mobile-auth/token-exchange:
+    post:
+      operationId: exchangeMobileAuthorizationCode
+      tags: [Auth]
+      summary: Exchange a mobile authorization code
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MobileTokenExchangeRequest"
+      responses:
+        "200":
+          description: Session token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MobileTokenExchangeSuccess"
+  /mobile-auth/logout:
+    post:
+      operationId: logoutMobileSession
+      tags: [Auth]
+      responses:
+        "200":
+          description: Logged out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LogoutSuccess"
   # Comprobación simple para saber si el API está disponible.
   /healthz:
     get:
@@ -274,7 +303,7 @@ components:
       properties:
         code: { type: string, minLength: 1 }
         code_verifier: { type: string, minLength: 1 }
-        redirect_uri: { type: string, minLength: 1, format: uri }
+        redirect_uri: { type: string, minLength: 1 }
         state: { type: string, minLength: 1 }
         nonce: { type: string, minLength: 1 }
     MobileTokenExchangeSuccess:

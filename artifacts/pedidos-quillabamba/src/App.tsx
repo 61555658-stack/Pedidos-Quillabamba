@@ -22,7 +22,8 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import NotFound from '@/pages/not-found';
 import SystemMapPage from '@/pages/system-map';
-import { clearSession, RoleAuthPage, RoleGate, roleHome, readSession } from '@/pages/role-access';
+import { clearSession, SecureRoleAuthPage, RoleGate, roleHome, readSession, syncSecureSession } from '@/pages/role-access';
+import { useAuth } from '@workspace/replit-auth-web';
 import AdminManagementPage from '@/pages/admin-management';
 import EnhancedDeliveryPortalPage from '@/pages/delivery-portal';
 import BusinessPortalPage from '@/pages/business-portal';
@@ -398,15 +399,43 @@ function Router() {
       <Route path="/admin/restaurants"><RoleGate allowed={['administrador_sistema']}><AdminRestaurants /></RoleGate></Route>
       <Route path="/admin/delivery"><RoleGate allowed={['administrador_sistema']}><AdminDelivery /></RoleGate></Route>
       <Route path="/delivery"><RoleGate allowed={['repartidor']}><EnhancedDeliveryPortalPage /></RoleGate></Route>
-      <Route path="/login"><RoleAuthPage mode="login" /></Route>
-      <Route path="/register"><RoleAuthPage mode="register" /></Route>
+      <Route path="/login"><SecureRoleAuthPage /></Route>
+      <Route path="/register"><SecureRoleAuthPage /></Route>
       <Route path="/settings"><RoleGate allowed={['cliente']}><SettingsPage /></RoleGate></Route>
       <Route component={NotFound} />
     </Switch>
   );
 }
 
+function LiveOrderLocation() {
+  const orderId = Number(window.location.pathname.match(/\/orders\/(\d+)/)?.[1]);
+  const [location, setLocation] = useState<{ latitude: number; longitude: number; updatedAt: string } | null>(null);
+  useEffect(() => {
+    if (!orderId) return;
+    let mounted = true;
+    const refresh = async () => {
+      try {
+        const response = await fetch(`/api/orders/${orderId}/location`, { credentials: 'include' });
+        if (response.ok) {
+          const data = await response.json();
+          if (mounted) setLocation(data);
+        } else if (mounted) setLocation(null);
+      } catch { /* retry on the next poll */ }
+    };
+    void refresh();
+    const timer = window.setInterval(refresh, 5000);
+    return () => { mounted = false; window.clearInterval(timer); };
+  }, [orderId]);
+  if (!orderId) return null;
+  const mapUrl = location && `https://www.openstreetmap.org/export/embed.html?bbox=${location.longitude - 0.008}%2C${location.latitude - 0.008}%2C${location.longitude + 0.008}%2C${location.latitude + 0.008}&layer=mapnik&marker=${location.latitude}%2C${location.longitude}`;
+  return <section className="mx-auto mb-8 max-w-[960px] px-5 lg:px-8" aria-live="polite" data-testid="section-live-courier-location"><div className="rounded-2xl bg-card p-5 ring-1 ring-border"><h2 className="font-display text-xl font-bold">Ubicación del repartidor</h2>{location && mapUrl ? <><p className="mt-1 text-xs text-muted-foreground">Actualizado {new Date(location.updatedAt).toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })}</p><iframe title="Ubicación en vivo del repartidor" src={mapUrl} className="mt-4 h-64 w-full rounded-xl border-0" loading="lazy" /><a href={`https://www.openstreetmap.org/?mlat=${location.latitude}&mlon=${location.longitude}#map=16/${location.latitude}/${location.longitude}`} target="_blank" rel="noreferrer" className="mt-3 inline-flex min-h-10 items-center rounded-lg bg-secondary px-3 py-2 text-xs font-bold">Abrir mapa</a></> : <p className="mt-2 text-sm text-muted-foreground">La ubicación aparecerá cuando el pedido esté en camino y el repartidor autorice compartirla.</p>}</div></section>;
+}
+
 // Proveedores globales: consultas, tooltips, manejo de errores y notificaciones.
-function App() { return <QueryClientProvider client={queryClient}><TooltipProvider><WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}><ErrorBoundary><Router /></ErrorBoundary></WouterRouter><Toaster /></TooltipProvider></QueryClientProvider>; }
+function App() {
+  const auth = useAuth();
+  useEffect(() => { if (!auth.isLoading) syncSecureSession(auth.user); }, [auth.user, auth.isLoading]);
+  return <QueryClientProvider client={queryClient}><TooltipProvider><WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}><ErrorBoundary><Router /><LiveOrderLocation /></ErrorBoundary></WouterRouter><Toaster /></TooltipProvider></QueryClientProvider>;
+}
 
 export default App;
