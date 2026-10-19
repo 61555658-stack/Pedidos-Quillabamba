@@ -21,7 +21,38 @@ function isHttpConflict(error: unknown) {
   return typeof error === 'object' && error !== null && 'status' in error && error.status === 409;
 }
 
+const maxLocationAccuracyMeters = 250;
+
+function waitForAccuratePosition() {
+  return new Promise<GeolocationPosition>((resolve, reject) => {
+    let watchId: number | undefined;
+    let settled = false;
+    const timeoutId = window.setTimeout(() => finish(() => reject(new Error('No se obtuvo una ubicación GPS suficientemente precisa. Activa el GPS y vuelve a intentar.'))), 25_000);
+    const finish = (callback: () => void) => {
+      if (settled) return;
+      settled = true;
+      if (watchId !== undefined) navigator.geolocation.clearWatch(watchId);
+      window.clearTimeout(timeoutId);
+      callback();
+    };
+    watchId = navigator.geolocation.watchPosition(
+      (position) => {
+        if (position.coords.accuracy <= maxLocationAccuracyMeters) finish(() => resolve(position));
+      },
+      (error) => finish(() => reject(new Error(
+        error.code === error.PERMISSION_DENIED
+          ? 'Debes permitir la ubicación precisa para iniciar el reparto.'
+          : 'No se pudo obtener la ubicación GPS. Activa el GPS y vuelve a intentar.',
+      ))),
+      { enableHighAccuracy: true, maximumAge: 0, timeout: 20_000 },
+    );
+  });
+}
+
 async function uploadCurrentPosition(orderId: number, position: GeolocationPosition) {
+  if (position.coords.accuracy > maxLocationAccuracyMeters) {
+    throw new Error('La ubicación todavía no es suficientemente precisa. Espera un momento y vuelve a intentar.');
+  }
   const response = await fetch(`/api/orders/${orderId}/location`, {
     method: 'PUT',
     credentials: 'include',
@@ -32,7 +63,19 @@ async function uploadCurrentPosition(orderId: number, position: GeolocationPosit
       accuracy: position.coords.accuracy,
     }),
   });
-  if (!response.ok) throw new Error('No se pudo compartir la ubicación.');
+  if (!response.ok) {
+    const data = await response.json().catch(() => null);
+    throw new Error(typeof data?.error === 'string' ? data.error : 'No se pudo compartir la ubicación.');
+  }
+}
+
+function errorMessage(error: unknown, fallback: string) {
+  if (error instanceof Error && error.message) return error.message;
+  if (typeof error === 'object' && error !== null && 'data' in error) {
+    const data = (error as { data?: { error?: string } }).data;
+    if (typeof data?.error === 'string') return data.error;
+  }
+  return fallback;
 }
 
 function OrderCard({
@@ -131,7 +174,13 @@ export default function DeliveryPortalPage() {
   useEffect(() => {
     if (!trackingIds || !navigator.geolocation) return;
     const watchers = trackingIds.split(',').map(Number).map((orderId) => navigator.geolocation.watchPosition(
-      (position) => { void uploadCurrentPosition(orderId, position).catch(() => undefined); },
+      (position) => {
+        if (position.coords.accuracy > maxLocationAccuracyMeters) {
+          setNotice('El GPS está buscando una ubicación más precisa…');
+          return;
+        }
+        void uploadCurrentPosition(orderId, position).catch((error) => setNotice(errorMessage(error, 'No se pudo actualizar tu ubicación.')));
+      },
       () => setNotice('No se pudo actualizar tu ubicación. Revisa el permiso de ubicación del navegador.'),
       { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 },
     ));
@@ -168,25 +217,15 @@ export default function DeliveryPortalPage() {
         setNotice('Este dispositivo no permite compartir ubicación. No se puede iniciar el reparto.');
         return;
       }
-      setNotice('Solicitando permiso para compartir tu ubicación precisa…');
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          void uploadCurrentPosition(order.id, position).then(() => {
-            updateStatus.mutate(
-              { orderId: order.id, data: { status } },
-              {
-                onSuccess: async () => {
-                  await queryClient.invalidateQueries({ queryKey: getListOrdersQueryKey() });
-                  setNotice(`El pedido #${order.id} está en camino y comparte tu ubicación con su cliente.`);
-                },
-                onError: () => setNotice('No se pudo iniciar el reparto. Inténtalo nuevamente.'),
-              },
-            );
-          }).catch(() => setNotice('No se pudo guardar tu ubicación. El pedido no se inició.'));
-        },
-        () => setNotice('Debes permitir la ubicación precisa para iniciar el reparto.'),
-        { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 },
-      );
+      setNotice('Buscando una ubicación GPS precisa; mantén el permiso activado…');
+      void waitForAccuratePosition()
+        .then((position) => uploadCurrentPosition(order.id, position))
+        .then(() => updateStatus.mutateAsync({ orderId: order.id, data: { status } }))
+        .then(async () => {
+          await queryClient.invalidateQueries({ queryKey: getListOrdersQueryKey() });
+          setNotice(`El pedido #${order.id} está en camino y comparte tu ubicación con su cliente.`);
+        })
+        .catch((error) => setNotice(errorMessage(error, 'No se pudo iniciar el reparto. Inténtalo nuevamente.')));
       return;
     }
     updateStatus.mutate(

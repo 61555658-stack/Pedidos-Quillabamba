@@ -17,6 +17,7 @@ import {
 } from "@workspace/api-zod";
 
 const router: IRouter = Router();
+const maxLocationAccuracyMeters = 250;
 
 // Catálogo inicial que permite probar el producto sin una base de datos vacía.
 // En una siguiente etapa estos registros pueden trasladarse a tablas PostgreSQL.
@@ -148,7 +149,7 @@ router.put("/orders/:orderId/location", (req, res) => {
   const orderId = Number(req.params.orderId);
   const { latitude, longitude, accuracy } = req.body ?? {};
   if (!Number.isSafeInteger(orderId) || orderId <= 0 || !Number.isFinite(latitude) || !Number.isFinite(longitude) || !Number.isFinite(accuracy)
-    || latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180 || accuracy < 0 || accuracy > 100) {
+    || latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180 || accuracy < 0 || accuracy > maxLocationAccuracyMeters) {
     return res.status(400).json({ error: "Ubicación inválida o poco precisa." });
   }
   if (!req.isAuthenticated() || req.user.role !== "repartidor") return res.status(403).json({ error: "Se requiere una cuenta de repartidor." });
