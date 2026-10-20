@@ -106,6 +106,40 @@ export interface RegistrationCodeVerified {
   verified: boolean;
 }
 
+export interface BusinessAdminRegistrationRequest {
+  id: number;
+  name: string;
+  /** @pattern ^[^@\s]+@[^@\s]+\.[^@\s]+$ */
+  email: string;
+  createdAt: string;
+}
+
+export type BusinessAdminRegistrationRequests = BusinessAdminRegistrationRequest[];
+
+export type BusinessAdminRegistrationDecisionDecision = typeof BusinessAdminRegistrationDecisionDecision[keyof typeof BusinessAdminRegistrationDecisionDecision];
+
+
+export const BusinessAdminRegistrationDecisionDecision = {
+  approve: 'approve',
+  reject: 'reject',
+} as const;
+
+export interface BusinessAdminRegistrationDecision {
+  decision: BusinessAdminRegistrationDecisionDecision;
+}
+
+export type BusinessAdminRegistrationDecisionResultDecision = typeof BusinessAdminRegistrationDecisionResultDecision[keyof typeof BusinessAdminRegistrationDecisionResultDecision];
+
+
+export const BusinessAdminRegistrationDecisionResultDecision = {
+  approved: 'approved',
+  rejected: 'rejected',
+} as const;
+
+export interface BusinessAdminRegistrationDecisionResult {
+  decision: BusinessAdminRegistrationDecisionResultDecision;
+}
+
 export interface HealthStatus {
   status: string;
 }

@@ -275,6 +275,55 @@ paths:
           description: Incorrect or expired code
         "429":
           description: Too many attempts
+  /auth/business-admin-requests:
+    get:
+      operationId: listBusinessAdminRegistrationRequests
+      tags: [Auth]
+      summary: List pending business administrator registration requests
+      responses:
+        "200":
+          description: Pending requests
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BusinessAdminRegistrationRequests"
+        "401":
+          description: Authentication required
+        "403":
+          description: System administrator role required
+  /auth/business-admin-requests/{userId}/decision:
+    post:
+      operationId: decideBusinessAdminRegistrationRequest
+      tags: [Auth]
+      summary: Approve or reject a business administrator registration request
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: number
+            minimum: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BusinessAdminRegistrationDecision"
+      responses:
+        "200":
+          description: Request decided
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BusinessAdminRegistrationDecisionResult"
+        "400":
+          description: Invalid decision
+        "401":
+          description: Authentication required
+        "403":
+          description: System administrator role required
+        "404":
+          description: Pending request not found
 components:
   schemas:
     AuthUser:
@@ -344,6 +393,32 @@ components:
       required: [verified]
       properties:
         verified: { type: boolean }
+    BusinessAdminRegistrationRequest:
+      type: object
+      required: [id, name, email, createdAt]
+      properties:
+        id: { type: number }
+        name: { type: string }
+        email: { type: string, pattern: '^[^@\s]+@[^@\s]+\.[^@\s]+$' }
+        createdAt: { type: string, format: date-time }
+    BusinessAdminRegistrationRequests:
+      type: array
+      items:
+        $ref: "#/components/schemas/BusinessAdminRegistrationRequest"
+    BusinessAdminRegistrationDecision:
+      type: object
+      required: [decision]
+      properties:
+        decision:
+          type: string
+          enum: [approve, reject]
+    BusinessAdminRegistrationDecisionResult:
+      type: object
+      required: [decision]
+      properties:
+        decision:
+          type: string
+          enum: [approved, rejected]
     HealthStatus:
       type: object
       properties:

@@ -54,10 +54,6 @@ router.post("/auth/verification/send", async (req, res): Promise<void> => {
     res.status(403).json({ error: "El acceso de repartidor requiere autorización previa." });
     return;
   }
-  if (requestedRole === "administrador_negocio" && email !== (process.env.INITIAL_BUSINESS_ADMIN_EMAIL || "").trim().toLowerCase()) {
-    res.status(403).json({ error: "El acceso de administrador de negocio requiere autorización previa." });
-    return;
-  }
   const challengeKey = key(email, parsed.data.role);
   const now = Date.now();
   const historyKey = `${req.ip || "unknown"}:${email}`;

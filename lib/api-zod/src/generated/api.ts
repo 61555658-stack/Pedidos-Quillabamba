@@ -308,3 +308,37 @@ export const ConfirmRegistrationCodeResponse = zod.object({
 })
 
 
+/**
+ * @summary List pending business administrator registration requests
+ */
+export const listBusinessAdminRegistrationRequestsResponseEmailRegExp = new RegExp('^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$');
+
+
+export const ListBusinessAdminRegistrationRequestsResponseItem = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "email": zod.string().regex(listBusinessAdminRegistrationRequestsResponseEmailRegExp),
+  "createdAt": zod.coerce.date()
+})
+export const ListBusinessAdminRegistrationRequestsResponse = zod.array(ListBusinessAdminRegistrationRequestsResponseItem)
+
+
+/**
+ * @summary Approve or reject a business administrator registration request
+ */
+
+
+
+export const DecideBusinessAdminRegistrationRequestParams = zod.object({
+  "userId": zod.coerce.number().min(1)
+})
+
+export const DecideBusinessAdminRegistrationRequestBody = zod.object({
+  "decision": zod.enum(['approve', 'reject'])
+})
+
+export const DecideBusinessAdminRegistrationRequestResponse = zod.object({
+  "decision": zod.enum(['approved', 'rejected'])
+})
+
+

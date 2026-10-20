@@ -1,12 +1,13 @@
-import { useState, useMemo } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { BarChart3, Bike, Check, CircleDollarSign, ClipboardList, LayoutDashboard, LogOut, MapPin, PackageCheck, Pencil, Plus, Save, Settings2, Store, Tag, Trash2, UserCheck, Users, FileText, TrendingUp } from 'lucide-react';
 import { Link, useLocation } from 'wouter';
 import { clearSession } from '@/pages/role-access';
 import { useBrowserState } from '@/lib/use-browser-state';
 
-type ManagementTab = 'users' | 'business-admins' | 'businesses' | 'products' | 'categories' | 'orders' | 'payments' | 'couriers' | 'delivery' | 'reports' | 'stats' | 'settings';
+type ManagementTab = 'users' | 'business-requests' | 'business-admins' | 'businesses' | 'products' | 'categories' | 'orders' | 'payments' | 'couriers' | 'delivery' | 'reports' | 'stats' | 'settings';
 
 type PlatformUser = { id: number; name: string; email: string; role: string; active: boolean };
+type BusinessAdminRequest = { id: number; name: string; email: string; createdAt: string };
 type BusinessAdmin = { id: number; userId: number; name: string; email: string; businessName: string; accountActive: boolean; permissionsActive: boolean };
 type BusinessAccount = { id: number; name: string; ruc: string; address: string; phone: string; administrator: string; active: boolean };
 type ProductRow = { id: number; name: string; business: string; category: string; price: number; stock: number; active: boolean };
@@ -82,6 +83,7 @@ const initialCouriers: CourierRow[] = [
 
 const menu: Array<{ id: ManagementTab; label: string; icon: any }> = [
   { id: 'users', label: 'Usuarios', icon: Users },
+  { id: 'business-requests', label: 'Solicitudes', icon: ClipboardList },
   { id: 'business-admins', label: 'Admin. de negocio', icon: UserCheck },
   { id: 'businesses', label: 'Negocios', icon: Store },
   { id: 'products', label: 'Productos', icon: PackageCheck },
@@ -147,6 +149,10 @@ export default function AdminManagementPage() {
     : undefined;
   const [tab, setTab] = useState<ManagementTab>(initialTab);
   const [selectedBusinessId, setSelectedBusinessId] = useState<number | null>(businessFromQuery?.id ?? null);
+  const [businessRequests, setBusinessRequests] = useState<BusinessAdminRequest[]>([]);
+  const [requestsLoading, setRequestsLoading] = useState(false);
+  const [requestsError, setRequestsError] = useState('');
+  const [decidingRequestId, setDecidingRequestId] = useState<number | null>(null);
 
   // Forms and Inline Edits
   const [newUser, setNewUser] = useState({ name: '', email: '', role: 'Cliente' });
@@ -346,6 +352,52 @@ export default function AdminManagementPage() {
     setTab(targetTab);
   };
 
+  useEffect(() => {
+    let active = true;
+    let firstLoad = true;
+    const loadRequests = async () => {
+      if (firstLoad) setRequestsLoading(true);
+      try {
+        const response = await fetch('/api/auth/business-admin-requests', { credentials: 'include' });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'No se pudieron cargar las solicitudes.');
+        if (active) {
+          setBusinessRequests(data as BusinessAdminRequest[]);
+          setRequestsError('');
+        }
+      } catch (error) {
+        if (active) setRequestsError(error instanceof Error ? error.message : 'No se pudieron cargar las solicitudes.');
+      } finally {
+        if (active) setRequestsLoading(false);
+        firstLoad = false;
+      }
+    };
+    void loadRequests();
+    const interval = window.setInterval(() => void loadRequests(), 20_000);
+    return () => { active = false; window.clearInterval(interval); };
+  }, []);
+
+  const decideBusinessRequest = async (requestId: number, decision: 'approve' | 'reject') => {
+    setDecidingRequestId(requestId);
+    setRequestsError('');
+    try {
+      const response = await fetch(`/api/auth/business-admin-requests/${requestId}/decision`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ decision }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'No se pudo guardar la decisión.');
+      setBusinessRequests((current) => current.filter((request) => request.id !== requestId));
+      announce(decision === 'approve' ? 'Solicitud aprobada. La persona ya puede iniciar sesión.' : 'Solicitud rechazada. Esa cuenta no podrá ingresar.');
+    } catch (error) {
+      setRequestsError(error instanceof Error ? error.message : 'No se pudo guardar la decisión.');
+    } finally {
+      setDecidingRequestId(null);
+    }
+  };
+
   // -- CONTEXT-AWARE DATA --
   const selectedBusiness = businesses.find(b => b.id === selectedBusinessId);
   const isScopedTab = ['products', 'categories', 'orders', 'payments'].includes(tab);
@@ -530,7 +582,8 @@ export default function AdminManagementPage() {
          <nav aria-label="Módulos de administración" className="flex gap-1 overflow-x-auto overscroll-x-contain pb-1 md:block md:space-y-1 md:overflow-visible md:pb-0">
           {menu.map(({ id, label, icon: Icon }) => (
              <button key={id} onClick={() => setTab(id)} className={`flex min-h-11 shrink-0 items-center gap-3 whitespace-nowrap rounded-xl px-3 py-3 text-left text-xs font-bold transition md:w-full ${tab === id ? 'bg-secondary text-primary' : 'text-white/65 hover:bg-white/10 hover:text-white'}`} data-testid={`button-admin-module-${id}`}>
-               <Icon className="h-4 w-4 shrink-0" />{label}
+                <Icon className="h-4 w-4 shrink-0" />{label}
+                {id === 'business-requests' && businessRequests.length > 0 && <span className="ml-auto rounded-full bg-secondary px-2 py-0.5 text-[10px] font-extrabold text-primary">{businessRequests.length}</span>}
             </button>
           ))}
         </nav>
@@ -553,6 +606,29 @@ export default function AdminManagementPage() {
         </p>
         {storageError && <p role="alert" className="mt-3 rounded-xl bg-red-50 px-4 py-3 text-xs font-bold text-red-700">{storageError}</p>}
         {notice && <p className="mt-5 rounded-xl bg-violet-50 px-4 py-3 text-xs font-bold text-violet-700" data-testid="status-management-feedback">{notice}</p>}
+
+        {tab === 'business-requests' && <section className="mt-7 space-y-4" aria-label="Solicitudes de administradores de negocio">
+          {requestsError && <p role="alert" className="rounded-xl bg-red-50 px-4 py-3 text-sm font-bold text-red-700">{requestsError}</p>}
+          {requestsLoading ? (
+            <div className="rounded-2xl bg-card p-6 text-sm text-muted-foreground">Cargando solicitudes…</div>
+          ) : businessRequests.length ? businessRequests.map((request) => (
+            <article key={request.id} className="rounded-2xl bg-card p-5 ring-1 ring-border" data-testid={`card-business-admin-request-${request.id}`}>
+              <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+                <div className="min-w-0">
+                  <p className="font-display text-lg font-bold">{request.name}</p>
+                  <p className="mt-1 break-all text-sm text-muted-foreground">{request.email}</p>
+                  <p className="mt-2 text-xs text-muted-foreground">Correo verificado · {new Date(request.createdAt).toLocaleString('es-PE', { dateStyle: 'medium', timeStyle: 'short' })}</p>
+                </div>
+                <div className="flex flex-col gap-2 min-[420px]:flex-row">
+                  <button type="button" disabled={decidingRequestId === request.id} onClick={() => void decideBusinessRequest(request.id, 'reject')} className="min-h-11 rounded-xl border border-red-200 px-4 py-2 text-xs font-bold text-red-700 disabled:opacity-50" data-testid={`button-reject-business-request-${request.id}`}>Rechazar</button>
+                  <button type="button" disabled={decidingRequestId === request.id} onClick={() => void decideBusinessRequest(request.id, 'approve')} className="min-h-11 rounded-xl bg-primary px-4 py-2 text-xs font-bold text-white disabled:opacity-50" data-testid={`button-approve-business-request-${request.id}`}>{decidingRequestId === request.id ? 'Guardando…' : 'Aprobar solicitud'}</button>
+                </div>
+              </div>
+            </article>
+          )) : (
+            <div className="rounded-2xl border border-dashed border-border bg-card p-8 text-center text-sm text-muted-foreground">No hay solicitudes pendientes de administradores de negocio.</div>
+          )}
+        </section>}
         
         {isScopedTab && (
           <div className="mt-7 mb-6 rounded-2xl bg-card p-5 ring-1 ring-border flex flex-col lg:flex-row lg:items-center justify-between gap-5">

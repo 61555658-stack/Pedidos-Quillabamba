@@ -139,6 +139,7 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<AuthField, string>>>({});
   const [verificationCode, setVerificationCode] = useState('');
   const [pendingVerification, setPendingVerification] = useState<PendingVerification | null>(null);
+  const [registrationPendingApproval, setRegistrationPendingApproval] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   const clearFieldError = (field: AuthField) => {
@@ -151,6 +152,7 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
     setNotice('');
     setFieldErrors({});
     setRole('cliente');
+    setRegistrationPendingApproval(false);
   }, [mode]);
 
   const submit = async () => {
@@ -247,6 +249,12 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'No se pudo crear la cuenta.');
+      if (data.pendingApproval === true) {
+        setPendingVerification(null);
+        setVerificationCode('');
+        setRegistrationPendingApproval(true);
+        return;
+      }
       const accountRole = normalizeRole(data.user?.role);
       if (!accountRole) throw new Error('La cuenta no tiene un rol válido.');
       const account = { name: data.user.name as string, email: data.user.email as string, role: accountRole };
@@ -288,6 +296,14 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
           <h2 className="mt-3 font-display text-3xl font-bold tracking-[-.04em] text-primary">{mode === 'login' ? 'Ingresa a tu plataforma' : 'Regístrate según tu cargo'}</h2>
           <p className="mt-2 text-sm leading-6 text-muted-foreground">Selecciona tu rol para abrir únicamente las herramientas que necesitas.</p>
 
+          {registrationPendingApproval ? (
+            <div className="mt-8 rounded-2xl border border-secondary bg-secondary/20 p-5" role="status" data-testid="notice-business-admin-pending">
+              <h3 className="font-display text-lg font-bold text-primary">Solicitud enviada</h3>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">Verificamos tu correo. El administrador del sistema revisará tu solicitud; podrás ingresar al panel cuando la apruebe.</p>
+              <Link href="/login" className="mt-5 flex min-h-11 items-center justify-center rounded-full bg-primary px-4 py-3 text-sm font-bold text-white" data-testid="link-business-admin-pending-login">Volver al inicio de sesión</Link>
+            </div>
+          ) : (
+          <>
           {mode === 'login' && import.meta.env.DEV && <div className="mt-5 rounded-2xl border border-secondary bg-secondary/20 p-4" data-testid="notice-demo-access">
             <p className="text-xs font-extrabold text-primary">Accesos de prueba · solo desarrollo</p>
             <p className="mt-2 text-xs leading-5 text-muted-foreground">Cliente: cliente@gmail.com · contraseña: cliente</p>
@@ -311,7 +327,7 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
               </button>)}
             </div>
           </div>
-          {mode === 'register' && <p className="mt-3 rounded-xl bg-secondary/20 p-3 text-xs leading-5 text-muted-foreground">Regístrate directamente en QUILLAYAA con tu correo. Los roles de repartidor y administrador necesitan autorización previa.</p>}
+          {mode === 'register' && <p className="mt-3 rounded-xl bg-secondary/20 p-3 text-xs leading-5 text-muted-foreground">Verificaremos tu correo. Las solicitudes para administrar un negocio requieren la aprobación del administrador del sistema antes de ingresar.</p>}
 
           {pendingVerification?.mode === mode && <div className="mt-6 rounded-2xl bg-secondary/20 p-4 ring-1 ring-secondary">
             <p className="text-sm font-bold text-primary">Revisa tu correo</p>
@@ -322,6 +338,8 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
           {notice && <p role="alert" className="mt-4 rounded-xl bg-red-50 px-3 py-2.5 text-xs font-bold text-red-700" data-testid="status-role-auth-feedback">{notice}</p>}
           <button disabled={submitting} onClick={pendingVerification?.mode === mode ? verifyCode : submit} className="mt-7 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-primary text-sm font-extrabold text-white disabled:opacity-60" data-testid="button-role-auth-submit">{submitting ? 'Procesando...' : pendingVerification?.mode === 'register' && mode === 'register' ? 'Verificar y crear cuenta' : mode === 'login' ? 'Iniciar sesión' : 'Enviar código a mi correo'} <ArrowRight className="h-4 w-4 text-secondary" /></button>
           <p className="mt-6 text-center text-xs text-muted-foreground">{mode === 'login' ? '¿Aún no tienes cuenta? ' : '¿Ya tienes cuenta? '}<Link href={mode === 'login' ? '/register' : '/login'} className="font-bold text-accent" data-testid="link-role-auth-switch">{mode === 'login' ? 'Regístrate' : 'Inicia sesión'}</Link></p>
+          </>
+          )}
         </div>
       </div>
     </div>

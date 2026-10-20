@@ -21,6 +21,9 @@ import type {
 
 import type {
   AuthUserEnvelope,
+  BusinessAdminRegistrationDecision,
+  BusinessAdminRegistrationDecisionResult,
+  BusinessAdminRegistrationRequests,
   CourierClaimInput,
   DashboardSummary,
   HealthStatus,
@@ -1096,5 +1099,154 @@ export const useConfirmRegistrationCode = <TError = ErrorType<void>,
         TContext
       > => {
       return useMutation(getConfirmRegistrationCodeMutationOptions(options));
+    }
+
+export const getListBusinessAdminRegistrationRequestsUrl = () => {
+
+
+
+
+  return `/api/auth/business-admin-requests`
+}
+
+/**
+ * @summary List pending business administrator registration requests
+ */
+export const listBusinessAdminRegistrationRequests = async ( options?: Parameters<typeof customFetch>[1]): Promise<BusinessAdminRegistrationRequests> => {
+
+  return customFetch<BusinessAdminRegistrationRequests>(getListBusinessAdminRegistrationRequestsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListBusinessAdminRegistrationRequestsQueryKey = () => {
+    return [
+    `/api/auth/business-admin-requests`
+    ] as const;
+    }
+
+
+export const getListBusinessAdminRegistrationRequestsQueryOptions = <TData = Awaited<ReturnType<typeof listBusinessAdminRegistrationRequests>>, TError = ErrorType<void>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listBusinessAdminRegistrationRequests>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListBusinessAdminRegistrationRequestsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listBusinessAdminRegistrationRequests>>> = ({ signal }) => listBusinessAdminRegistrationRequests({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listBusinessAdminRegistrationRequests>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListBusinessAdminRegistrationRequestsQueryResult = NonNullable<Awaited<ReturnType<typeof listBusinessAdminRegistrationRequests>>>
+export type ListBusinessAdminRegistrationRequestsQueryError = ErrorType<void>
+
+
+/**
+ * @summary List pending business administrator registration requests
+ */
+
+export function useListBusinessAdminRegistrationRequests<TData = Awaited<ReturnType<typeof listBusinessAdminRegistrationRequests>>, TError = ErrorType<void>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listBusinessAdminRegistrationRequests>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListBusinessAdminRegistrationRequestsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getDecideBusinessAdminRegistrationRequestUrl = (userId: number,) => {
+
+
+
+
+  return `/api/auth/business-admin-requests/${userId}/decision`
+}
+
+/**
+ * @summary Approve or reject a business administrator registration request
+ */
+export const decideBusinessAdminRegistrationRequest = async (userId: number,
+    businessAdminRegistrationDecision: BusinessAdminRegistrationDecision, options?: Parameters<typeof customFetch>[1]): Promise<BusinessAdminRegistrationDecisionResult> => {
+
+  return customFetch<BusinessAdminRegistrationDecisionResult>(getDecideBusinessAdminRegistrationRequestUrl(userId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(businessAdminRegistrationDecision)
+  }
+);}
+
+
+
+
+
+export const getDecideBusinessAdminRegistrationRequestMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof decideBusinessAdminRegistrationRequest>>, TError,{userId: number;data: BodyType<BusinessAdminRegistrationDecision>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof decideBusinessAdminRegistrationRequest>>, TError,{userId: number;data: BodyType<BusinessAdminRegistrationDecision>}, TContext> => {
+
+const mutationKey = ['decideBusinessAdminRegistrationRequest'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof decideBusinessAdminRegistrationRequest>>, {userId: number;data: BodyType<BusinessAdminRegistrationDecision>}> = (props) => {
+          const {userId,data} = props ?? {};
+
+          return  decideBusinessAdminRegistrationRequest(userId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DecideBusinessAdminRegistrationRequestMutationResult = NonNullable<Awaited<ReturnType<typeof decideBusinessAdminRegistrationRequest>>>
+    export type DecideBusinessAdminRegistrationRequestMutationBody = BodyType<BusinessAdminRegistrationDecision>
+    export type DecideBusinessAdminRegistrationRequestMutationError = ErrorType<void>
+
+    /**
+ * @summary Approve or reject a business administrator registration request
+ */
+export const useDecideBusinessAdminRegistrationRequest = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof decideBusinessAdminRegistrationRequest>>, TError,{userId: number;data: BodyType<BusinessAdminRegistrationDecision>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof decideBusinessAdminRegistrationRequest>>,
+        TError,
+        {userId: number;data: BodyType<BusinessAdminRegistrationDecision>},
+        TContext
+      > => {
+      return useMutation(getDecideBusinessAdminRegistrationRequestMutationOptions(options));
     }
 
