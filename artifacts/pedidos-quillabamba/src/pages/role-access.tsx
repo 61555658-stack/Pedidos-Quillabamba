@@ -13,7 +13,7 @@ export type UserSession = {
 
 type StoredAccount = UserSession & { password: string };
 type PendingVerification = { account: StoredAccount; mode: 'login' | 'register' };
-type AuthField = 'name' | 'email' | 'password' | 'verificationCode' | 'passwordConfirmation';
+type AuthField = 'name' | 'email' | 'password' | 'role' | 'verificationCode' | 'passwordConfirmation';
 
 function FieldError({ id, message }: { id: string; message?: string }) {
   if (!message) return null;
@@ -144,7 +144,7 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState<UserRole>('cliente');
+  const [role, setRole] = useState<UserRole | null>(null);
   const [notice, setNotice] = useState('');
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<AuthField, string>>>({});
   const [verificationCode, setVerificationCode] = useState('');
@@ -161,7 +161,7 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
     setVerificationCode('');
     setNotice('');
     setFieldErrors({});
-    setRole('cliente');
+    setRole(null);
     setRegistrationPendingApproval(false);
   }, [mode]);
 
@@ -170,6 +170,9 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
     setNotice('');
     const normalizedEmail = normalizeEmail(email);
     const errors: Partial<Record<AuthField, string>> = {};
+    if (!role) {
+      errors.role = 'Selecciona con qué rol vas a ingresar.';
+    }
     if (mode === 'register' && !name.trim()) {
       errors.name = 'Falta completar el campo «Nombre completo».';
     }
@@ -184,7 +187,7 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
       errors.password = 'La contraseña debe tener al menos 8 caracteres.';
     }
     setFieldErrors(errors);
-    if (Object.keys(errors).length > 0) {
+    if (Object.keys(errors).length > 0 || !role) {
       return;
     }
 
@@ -214,7 +217,7 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: normalizedEmail, password }),
+        body: JSON.stringify({ email: normalizedEmail, password, role }),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Correo o contraseña incorrectos.');
@@ -224,7 +227,7 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
       saveSession(account);
       setLocation(roleHome[accountRole]);
     } catch (error) {
-      setNotice(apiErrorMessage(error, 'No se pudo iniciar sesión.'));
+      setNotice(error instanceof Error ? error.message : apiErrorMessage(error, 'No se pudo iniciar sesión.'));
     } finally {
       setSubmitting(false);
     }
@@ -316,14 +319,15 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
           <>
           {mode === 'register' && <label className="mt-7 block"><span className="mb-1.5 block text-xs font-bold text-primary">Nombre completo</span><input value={name} disabled={!!pendingVerification} onChange={(event) => { setName(event.target.value); setNotice(''); clearFieldError('name'); }} autoComplete="name" aria-invalid={Boolean(fieldErrors.name)} aria-describedby={fieldErrors.name ? 'role-name-error' : undefined} className={`h-11 w-full rounded-xl border bg-background px-3 text-base outline-none focus:border-accent disabled:opacity-60 sm:text-sm ${fieldErrors.name ? 'border-red-600 focus:border-red-600' : 'border-input'}`} data-testid="input-role-name" />{fieldErrors.name && <FieldError id="role-name-error" message={fieldErrors.name} />}</label>}
           <div className="mt-7">
-            <p className="mb-3 text-xs font-bold text-primary">¿Cómo ingresarás?</p>
-            <div className="grid gap-2 min-[360px]:grid-cols-2">
-              {roleOptions.filter(({ value }) => mode === 'login' || value !== 'administrador_sistema').map(({ value, icon: Icon }) => <button type="button" key={value} disabled={!!pendingVerification} onClick={() => setRole(value)} className={`rounded-xl p-3 text-left ring-1 transition disabled:cursor-not-allowed ${role === value ? 'bg-secondary/35 text-primary ring-accent' : 'bg-background text-muted-foreground ring-border hover:ring-secondary'}`} data-testid={`button-role-${value}`}>
+            <p id="role-choice-label" className="mb-3 text-xs font-bold text-primary">¿Cómo ingresarás?</p>
+            <div role="group" aria-labelledby="role-choice-label" aria-invalid={Boolean(fieldErrors.role)} aria-describedby={fieldErrors.role ? 'role-choice-error' : undefined} className="grid gap-2 min-[360px]:grid-cols-2">
+              {roleOptions.filter(({ value }) => mode === 'login' || value !== 'administrador_sistema').map(({ value, icon: Icon }) => <button type="button" key={value} disabled={!!pendingVerification || submitting} aria-pressed={role === value} onClick={() => { setRole(value); clearFieldError('role'); setNotice(''); }} className={`rounded-xl p-3 text-left ring-1 transition disabled:cursor-not-allowed ${role === value ? 'bg-secondary/35 text-primary ring-accent' : 'bg-background text-muted-foreground ring-border hover:ring-secondary'}`} data-testid={`button-role-${value}`}>
                 <Icon className="h-4 w-4" />
                 <span className="mt-2 block text-xs font-extrabold">{roleLabels[value]}</span>
                 <span className="mt-1 block text-[10px] leading-4">{roleDescriptions[value]}</span>
               </button>)}
             </div>
+            {fieldErrors.role && <FieldError id="role-choice-error" message={fieldErrors.role} />}
           </div>
           <label className="mt-5 block"><span className="mb-1.5 block text-xs font-bold text-primary">Correo electrónico</span><input type="email" value={email} disabled={!!pendingVerification} onChange={(event) => { setEmail(event.target.value); setNotice(''); clearFieldError('email'); }} autoComplete="email" aria-invalid={Boolean(fieldErrors.email)} aria-describedby={fieldErrors.email ? 'role-email-error' : undefined} className={`h-11 w-full rounded-xl border bg-background px-3 text-base outline-none focus:border-accent disabled:opacity-60 sm:text-sm ${fieldErrors.email ? 'border-red-600 focus:border-red-600' : 'border-input'}`} placeholder="tu@correo.com" data-testid="input-role-email" />{fieldErrors.email && <FieldError id="role-email-error" message={fieldErrors.email} />}</label>
           <div className="mt-5">

@@ -104,6 +104,10 @@ router.post("/auth/register", async (req, res) => {
 router.post("/auth/login", async (req, res) => {
   const email = typeof req.body?.email === "string" ? req.body.email.trim().toLowerCase() : "";
   const password = typeof req.body?.password === "string" ? req.body.password : "";
+  const role = req.body?.role;
+  if (!["cliente", "administrador_negocio", "repartidor", "administrador_sistema"].includes(role)) {
+    return res.status(400).json({ error: "Selecciona un rol válido para ingresar." });
+  }
   if (!email || !password) return res.status(400).json({ error: "Ingresa correo y contraseña." });
   try {
     const result = await pool.query(
@@ -117,6 +121,9 @@ router.post("/auth/login", async (req, res) => {
     }
     if ((user.role as string) === "administrador_negocio_rechazado") {
       return res.status(403).json({ error: "Tu solicitud fue rechazada. Comunícate con el administrador del sistema." });
+    }
+    if (user.role !== role) {
+      return res.status(403).json({ error: "El rol seleccionado no coincide con esta cuenta. Selecciona el rol correcto para ingresar." });
     }
     await createSession(user.id, res);
     return res.json({ user: { id: String(user.id), name: user.name, email: user.email, role: user.role } });
