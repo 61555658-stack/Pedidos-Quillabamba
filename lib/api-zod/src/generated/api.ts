@@ -8,6 +8,329 @@
 import * as zod from 'zod';
 
 
+export const getAccountProfileResponseNameMax = 250;
+
+export const getAccountProfileResponsePhoneMax = 250;
+
+export const getAccountProfileResponseAddressMax = 250;
+
+
+
+export const GetAccountProfileResponse = zod.object({
+  "name": zod.string().min(1).max(getAccountProfileResponseNameMax),
+  "phone": zod.string().max(getAccountProfileResponsePhoneMax),
+  "address": zod.string().max(getAccountProfileResponseAddressMax)
+})
+
+
+export const saveAccountProfileBodyNameMax = 250;
+
+export const saveAccountProfileBodyPhoneMax = 250;
+
+export const saveAccountProfileBodyAddressMax = 250;
+
+
+
+export const SaveAccountProfileBody = zod.object({
+  "name": zod.string().min(1).max(saveAccountProfileBodyNameMax),
+  "phone": zod.string().max(saveAccountProfileBodyPhoneMax),
+  "address": zod.string().max(saveAccountProfileBodyAddressMax)
+})
+
+export const saveAccountProfileResponseNameMax = 250;
+
+export const saveAccountProfileResponsePhoneMax = 250;
+
+export const saveAccountProfileResponseAddressMax = 250;
+
+
+
+export const SaveAccountProfileResponse = zod.object({
+  "name": zod.string().min(1).max(saveAccountProfileResponseNameMax),
+  "phone": zod.string().max(saveAccountProfileResponsePhoneMax),
+  "address": zod.string().max(saveAccountProfileResponseAddressMax)
+})
+
+
+export const GetOperationsStateResponse = zod.object({
+  "users": zod.array(zod.record(zod.string(), zod.unknown())),
+  "businesses": zod.array(zod.record(zod.string(), zod.unknown())),
+  "products": zod.array(zod.record(zod.string(), zod.unknown())),
+  "categories": zod.array(zod.record(zod.string(), zod.unknown())),
+  "orders": zod.array(zod.object({
+  "businessAddress": zod.string().optional(),
+  "businessPhone": zod.string().optional(),
+  "customerPhone": zod.string().optional(),
+  "deliveryPartnerPhone": zod.string().optional(),
+  "restaurantId": zod.number().optional(),
+  "deliveryFee": zod.number().optional(),
+  "deliveredAt": zod.string().optional(),
+  "rating": zod.number().nullish(),
+  "proofUrl": zod.string().optional(),
+  "customerUserId": zod.string().optional(),
+  "deliveryPartnerUserId": zod.string().optional(),
+  "id": zod.number(),
+  "restaurantName": zod.string(),
+  "customerName": zod.string(),
+  "total": zod.number(),
+  "status": zod.enum(['received', 'preparing', 'ready', 'on_the_way', 'delivered', 'cancelled']),
+  "paymentMethod": zod.enum(['cash', 'yape', 'card']),
+  "createdAt": zod.string(),
+  "deliveryAddress": zod.string().optional(),
+  "deliveryPartnerEmail": zod.string().optional(),
+  "deliveryPartnerName": zod.string().optional(),
+  "items": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "quantity": zod.number(),
+  "price": zod.number()
+}))
+})),
+  "settings": zod.record(zod.string(), zod.string())
+})
+
+
+export const CreateOperationalEntityParams = zod.object({
+  "entity": zod.enum(['users', 'businesses', 'products', 'categories', 'settings'])
+})
+
+export const CreateOperationalEntityBody = zod.record(zod.string(), zod.unknown())
+
+export const CreateOperationalEntityResponse = zod.record(zod.string(), zod.unknown())
+
+
+export const UpdateOperationalSettingsParams = zod.object({
+  "entity": zod.enum(['users', 'businesses', 'products', 'categories', 'settings'])
+})
+
+export const UpdateOperationalSettingsBody = zod.record(zod.string(), zod.unknown())
+
+export const UpdateOperationalSettingsResponse = zod.record(zod.string(), zod.unknown())
+
+
+
+
+
+export const UpdateOperationalEntityParams = zod.object({
+  "entity": zod.enum(['users', 'businesses', 'products', 'categories']),
+  "id": zod.coerce.number().min(1)
+})
+
+export const UpdateOperationalEntityBody = zod.record(zod.string(), zod.unknown())
+
+export const UpdateOperationalEntityResponse = zod.record(zod.string(), zod.unknown())
+
+
+
+
+
+export const DeleteOperationalEntityParams = zod.object({
+  "entity": zod.enum(['users', 'businesses', 'products', 'categories']),
+  "id": zod.coerce.number().min(1)
+})
+
+export const DeleteOperationalEntityResponse = zod.object({
+  "success": zod.boolean()
+})
+
+
+export const getSalesReportQueryPeriodDefault = `day`;
+export const getSalesReportQueryDateRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+
+
+
+export const GetSalesReportQueryParams = zod.object({
+  "period": zod.enum(['day', 'week', 'month']).default(getSalesReportQueryPeriodDefault),
+  "date": zod.coerce.string().regex(getSalesReportQueryDateRegExp).optional(),
+  "businessId": zod.coerce.number().min(1).optional()
+})
+
+export const GetSalesReportResponse = zod.object({
+  "period": zod.string(),
+  "date": zod.string(),
+  "start": zod.string(),
+  "end": zod.string(),
+  "businesses": zod.array(zod.object({
+  "businessId": zod.number(),
+  "businessName": zod.string(),
+  "orders": zod.number(),
+  "units": zod.number(),
+  "productSales": zod.number(),
+  "deliveryFees": zod.number(),
+  "total": zod.number(),
+  "items": zod.array(zod.object({
+  "productId": zod.number(),
+  "name": zod.string(),
+  "quantity": zod.number(),
+  "subtotal": zod.number()
+}))
+})),
+  "totals": zod.object({
+  "orders": zod.number(),
+  "units": zod.number(),
+  "productSales": zod.number(),
+  "deliveryFees": zod.number(),
+  "total": zod.number()
+})
+})
+
+
+export const downloadSalesReportQueryPeriodDefault = `day`;
+export const downloadSalesReportQueryDateRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+
+
+
+export const DownloadSalesReportQueryParams = zod.object({
+  "period": zod.enum(['day', 'week', 'month']).default(downloadSalesReportQueryPeriodDefault),
+  "date": zod.coerce.string().regex(downloadSalesReportQueryDateRegExp).optional(),
+  "businessId": zod.coerce.number().min(1).optional()
+})
+
+export const DownloadSalesReportResponse = zod.unknown()
+
+
+
+
+
+export const AssignOrderCourierParams = zod.object({
+  "orderId": zod.coerce.number().min(1)
+})
+
+
+
+
+export const AssignOrderCourierBody = zod.object({
+  "courierId": zod.number().min(1).nullable()
+})
+
+export const AssignOrderCourierResponse = zod.object({
+  "businessAddress": zod.string().optional(),
+  "businessPhone": zod.string().optional(),
+  "customerPhone": zod.string().optional(),
+  "deliveryPartnerPhone": zod.string().optional(),
+  "restaurantId": zod.number().optional(),
+  "deliveryFee": zod.number().optional(),
+  "deliveredAt": zod.string().optional(),
+  "rating": zod.number().nullish(),
+  "proofUrl": zod.string().optional(),
+  "customerUserId": zod.string().optional(),
+  "deliveryPartnerUserId": zod.string().optional(),
+  "id": zod.number(),
+  "restaurantName": zod.string(),
+  "customerName": zod.string(),
+  "total": zod.number(),
+  "status": zod.enum(['received', 'preparing', 'ready', 'on_the_way', 'delivered', 'cancelled']),
+  "paymentMethod": zod.enum(['cash', 'yape', 'card']),
+  "createdAt": zod.string(),
+  "deliveryAddress": zod.string().optional(),
+  "deliveryPartnerEmail": zod.string().optional(),
+  "deliveryPartnerName": zod.string().optional(),
+  "items": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "quantity": zod.number(),
+  "price": zod.number()
+}))
+})
+
+
+
+
+
+export const SaveDeliveryProofParams = zod.object({
+  "orderId": zod.coerce.number().min(1)
+})
+
+export const SaveDeliveryProofBody = zod.object({
+  "file": zod.instanceof(File)
+})
+
+export const SaveDeliveryProofResponse = zod.object({
+  "businessAddress": zod.string().optional(),
+  "businessPhone": zod.string().optional(),
+  "customerPhone": zod.string().optional(),
+  "deliveryPartnerPhone": zod.string().optional(),
+  "restaurantId": zod.number().optional(),
+  "deliveryFee": zod.number().optional(),
+  "deliveredAt": zod.string().optional(),
+  "rating": zod.number().nullish(),
+  "proofUrl": zod.string().optional(),
+  "customerUserId": zod.string().optional(),
+  "deliveryPartnerUserId": zod.string().optional(),
+  "id": zod.number(),
+  "restaurantName": zod.string(),
+  "customerName": zod.string(),
+  "total": zod.number(),
+  "status": zod.enum(['received', 'preparing', 'ready', 'on_the_way', 'delivered', 'cancelled']),
+  "paymentMethod": zod.enum(['cash', 'yape', 'card']),
+  "createdAt": zod.string(),
+  "deliveryAddress": zod.string().optional(),
+  "deliveryPartnerEmail": zod.string().optional(),
+  "deliveryPartnerName": zod.string().optional(),
+  "items": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "quantity": zod.number(),
+  "price": zod.number()
+}))
+})
+
+
+
+
+
+export const RateOrderParams = zod.object({
+  "orderId": zod.coerce.number().min(1)
+})
+
+export const rateOrderBodyRatingMax = 5;
+
+
+
+export const RateOrderBody = zod.object({
+  "rating": zod.number().min(1).max(rateOrderBodyRatingMax)
+})
+
+export const RateOrderResponse = zod.object({
+  "businessAddress": zod.string().optional(),
+  "businessPhone": zod.string().optional(),
+  "customerPhone": zod.string().optional(),
+  "deliveryPartnerPhone": zod.string().optional(),
+  "restaurantId": zod.number().optional(),
+  "deliveryFee": zod.number().optional(),
+  "deliveredAt": zod.string().optional(),
+  "rating": zod.number().nullish(),
+  "proofUrl": zod.string().optional(),
+  "customerUserId": zod.string().optional(),
+  "deliveryPartnerUserId": zod.string().optional(),
+  "id": zod.number(),
+  "restaurantName": zod.string(),
+  "customerName": zod.string(),
+  "total": zod.number(),
+  "status": zod.enum(['received', 'preparing', 'ready', 'on_the_way', 'delivered', 'cancelled']),
+  "paymentMethod": zod.enum(['cash', 'yape', 'card']),
+  "createdAt": zod.string(),
+  "deliveryAddress": zod.string().optional(),
+  "deliveryPartnerEmail": zod.string().optional(),
+  "deliveryPartnerName": zod.string().optional(),
+  "items": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "quantity": zod.number(),
+  "price": zod.number()
+}))
+})
+
+
+export const UploadProductImageBody = zod.object({
+  "file": zod.instanceof(File)
+})
+
+export const UploadProductImageResponse = zod.object({
+  "path": zod.string()
+})
+
+
 /**
  * @summary Get current authenticated user
  */
@@ -101,6 +424,17 @@ export const ListRestaurantProductsResponse = zod.array(ListRestaurantProductsRe
  * @summary List recent orders
  */
 export const ListOrdersResponseItem = zod.object({
+  "businessAddress": zod.string().optional(),
+  "businessPhone": zod.string().optional(),
+  "customerPhone": zod.string().optional(),
+  "deliveryPartnerPhone": zod.string().optional(),
+  "restaurantId": zod.number().optional(),
+  "deliveryFee": zod.number().optional(),
+  "deliveredAt": zod.string().optional(),
+  "rating": zod.number().nullish(),
+  "proofUrl": zod.string().optional(),
+  "customerUserId": zod.string().optional(),
+  "deliveryPartnerUserId": zod.string().optional(),
   "id": zod.number(),
   "restaurantName": zod.string(),
   "customerName": zod.string(),
@@ -139,6 +473,17 @@ export const CreateOrderBody = zod.object({
 })
 
 export const CreateOrderResponse = zod.object({
+  "businessAddress": zod.string().optional(),
+  "businessPhone": zod.string().optional(),
+  "customerPhone": zod.string().optional(),
+  "deliveryPartnerPhone": zod.string().optional(),
+  "restaurantId": zod.number().optional(),
+  "deliveryFee": zod.number().optional(),
+  "deliveredAt": zod.string().optional(),
+  "rating": zod.number().nullish(),
+  "proofUrl": zod.string().optional(),
+  "customerUserId": zod.string().optional(),
+  "deliveryPartnerUserId": zod.string().optional(),
   "id": zod.number(),
   "restaurantName": zod.string(),
   "customerName": zod.string(),
@@ -176,6 +521,17 @@ export const ClaimOrderBody = zod.object({
 })
 
 export const ClaimOrderResponse = zod.object({
+  "businessAddress": zod.string().optional(),
+  "businessPhone": zod.string().optional(),
+  "customerPhone": zod.string().optional(),
+  "deliveryPartnerPhone": zod.string().optional(),
+  "restaurantId": zod.number().optional(),
+  "deliveryFee": zod.number().optional(),
+  "deliveredAt": zod.string().optional(),
+  "rating": zod.number().nullish(),
+  "proofUrl": zod.string().optional(),
+  "customerUserId": zod.string().optional(),
+  "deliveryPartnerUserId": zod.string().optional(),
   "id": zod.number(),
   "restaurantName": zod.string(),
   "customerName": zod.string(),
@@ -203,6 +559,17 @@ export const GetOrderParams = zod.object({
 })
 
 export const GetOrderResponse = zod.object({
+  "businessAddress": zod.string().optional(),
+  "businessPhone": zod.string().optional(),
+  "customerPhone": zod.string().optional(),
+  "deliveryPartnerPhone": zod.string().optional(),
+  "restaurantId": zod.number().optional(),
+  "deliveryFee": zod.number().optional(),
+  "deliveredAt": zod.string().optional(),
+  "rating": zod.number().nullish(),
+  "proofUrl": zod.string().optional(),
+  "customerUserId": zod.string().optional(),
+  "deliveryPartnerUserId": zod.string().optional(),
   "id": zod.number(),
   "restaurantName": zod.string(),
   "customerName": zod.string(),
@@ -234,6 +601,17 @@ export const UpdateOrderStatusBody = zod.object({
 })
 
 export const UpdateOrderStatusResponse = zod.object({
+  "businessAddress": zod.string().optional(),
+  "businessPhone": zod.string().optional(),
+  "customerPhone": zod.string().optional(),
+  "deliveryPartnerPhone": zod.string().optional(),
+  "restaurantId": zod.number().optional(),
+  "deliveryFee": zod.number().optional(),
+  "deliveredAt": zod.string().optional(),
+  "rating": zod.number().nullish(),
+  "proofUrl": zod.string().optional(),
+  "customerUserId": zod.string().optional(),
+  "deliveryPartnerUserId": zod.string().optional(),
   "id": zod.number(),
   "restaurantName": zod.string(),
   "customerName": zod.string(),

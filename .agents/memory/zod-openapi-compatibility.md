@@ -14,3 +14,9 @@ Avoid OpenAPI `format: email` while this project's generator and runtime version
 **Why:** The generator emits a top-level `zod.email()` call that the installed Zod 3 runtime does not provide, causing library typechecking to fail.
 
 **How to apply:** When adding email fields to the API contract, run codegen and check the resulting library typecheck before implementing handlers.
+
+Prefer named component schemas for request bodies instead of inline object bodies.
+
+**Why:** This Orval setup exports both Zod operation schemas and generated TypeScript types through an automatically rewritten barrel. Inline bodies can generate the same exported name in both, breaking typechecking. Manually editing that barrel is not durable because codegen rewrites it.
+
+**How to apply:** If codegen reports duplicate operation-body exports, move those request shapes into named OpenAPI components and regenerate rather than repeatedly patching generated exports.

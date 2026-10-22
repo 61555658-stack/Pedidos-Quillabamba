@@ -1,5 +1,5 @@
 // Punto de entrada de toda la interfaz: rutas, pantallas y estado del carrito.
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Link, Route, Router as WouterRouter, Switch, useLocation, useParams } from 'wouter';
 import {
@@ -26,10 +26,13 @@ import { clearSession, RoleAuthPage, RoleGate, roleHome, readSession } from '@/p
 import AdminManagementPage from '@/pages/admin-management';
 import EnhancedDeliveryPortalPage from '@/pages/delivery-portal';
 import BusinessPortalPage from '@/pages/business-portal';
+import { OperationsDashboard } from '@/components/ops/dashboard';
+import { AccountSettings } from '@/components/account-settings';
+import { api } from '@/lib/operations-api';
 
 // React Query administra las consultas al API y permite refrescar datos
 // después de crear un pedido o cambiar su estado.
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({defaultOptions:{queries:{refetchInterval:10_000,refetchOnWindowFocus:true,retry:1}}});
 
 // Datos de respaldo para que la experiencia siga siendo navegable
 // mientras el API está cargando o si todavía no tiene registros.
@@ -73,6 +76,7 @@ function useCart() {
     } catch { return []; }
   });
   useEffect(() => { localStorage.setItem('pq-cart', JSON.stringify(cart)); }, [cart]);
+  useEffect(()=>{const reset=()=>setCart([]);window.addEventListener('quillayaa-auth-change',reset);return()=>window.removeEventListener('quillayaa-auth-change',reset);},[]);
   const add = (product: Product, restaurantName: string) => setCart((current) => {
     if (!Number.isFinite(product.id) || !Number.isFinite(product.restaurantId) || !Number.isFinite(product.price) || product.price < 0) return current;
     const found = current.find((line) => line.id === product.id);
@@ -184,18 +188,28 @@ function RestaurantCard({ restaurant }: { restaurant: Restaurant }) {
 // Inicio: consulta restaurantes, aplica búsqueda/filtros y abre cada menú.
 function HomePage({ cart }: { cart: ReturnType<typeof useCart> }) {
   const restaurantsQuery = useListRestaurants();
-  const restaurants = restaurantsQuery.data?.length ? restaurantsQuery.data : fallbackRestaurants;
+  const restaurants = restaurantsQuery.data || [];
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('Todos');
   const normalizedSearch = normalizeSearchText(search);
   const filtered = restaurants.filter((restaurant) => normalizeSearchText(`${restaurant.name} ${restaurant.cuisine}`).includes(normalizedSearch) && (filter === 'Todos' || restaurant.cuisine.split(/[&,/|]+/).some((tag) => normalizeSearchText(tag) === normalizeSearchText(filter))));
   const categories = ['Todos', ...new Set(restaurants.flatMap((restaurant) => restaurant.cuisine.split(/[&,/|]+/).map((tag) => tag.trim()).filter(Boolean)))];
   return <><CustomerHeader cartCount={cart.cart.reduce((a, b) => a + b.quantity, 0)} /><main className="mx-auto max-w-[1400px] px-5 pb-16 lg:px-9">
-    <section className="relative mt-5 overflow-hidden rounded-[28px] bg-primary shadow-[0_18px_50px_hsl(266_76%_25%/.18)]"><img src="/hero-quillabamba.jpg" alt="" className="absolute inset-0 h-full w-full object-cover opacity-55 mix-blend-luminosity" /><div className="absolute inset-0 bg-gradient-to-r from-primary via-primary/85 to-primary/10" /><div className="relative min-h-[350px] px-7 py-10 sm:px-12 sm:py-14 lg:min-h-[390px] lg:w-[64%] lg:px-14"><div className="flex items-center gap-2 font-mono-app text-[10px] font-bold uppercase tracking-[.2em] text-secondary"><span className="h-px w-8 bg-secondary" /> Hecho aquí, para ti</div><h1 className="mt-6 max-w-xl font-display text-4xl font-bold leading-[.98] tracking-[-.055em] text-primary-foreground sm:text-6xl">El sabor de<br /><span className="text-secondary">Quillabamba,</span><br />a tu puerta.</h1><p className="mt-5 max-w-md text-sm leading-6 text-primary-foreground/70 sm:text-base">Pide de tus lugares favoritos y disfruta más tiempo lo que importa.</p><Link href="#restaurantes" className="mt-7 inline-flex items-center gap-2 rounded-full bg-secondary px-5 py-3 text-sm font-extrabold text-primary transition hover:gap-3" data-testid="link-explore">Explorar restaurantes <ArrowRight className="h-4 w-4" /></Link></div><div className="absolute bottom-8 right-10 hidden max-w-[190px] rounded-2xl border border-white/20 bg-primary/45 p-4 backdrop-blur-sm lg:block"><p className="font-mono-app text-[10px] uppercase tracking-wide text-secondary">Ahora mismo</p><p className="mt-2 text-sm font-bold leading-5 text-primary-foreground">34 restaurantes cocinando cerca de ti.</p></div></section>
+    <section className="relative mt-5 overflow-hidden rounded-[28px] bg-primary shadow-[0_18px_50px_hsl(266_76%_25%/.18)]">
+      <img src="/hero-quillabamba.jpg" alt="" className="absolute inset-0 h-full w-full object-cover opacity-55 mix-blend-luminosity" />
+      <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary/85 to-primary/10" />
+      <div className="relative min-h-[350px] px-7 py-10 sm:px-12 sm:py-14 lg:min-h-[390px] lg:w-[64%] lg:px-14">
+        <p className="font-mono-app text-[10px] font-bold uppercase tracking-[.2em] text-secondary">Hecho aquí, para ti</p>
+        <h1 className="mt-6 max-w-xl font-display text-4xl font-bold leading-[.98] tracking-[-.055em] text-primary-foreground sm:text-6xl">El sabor de<br /><span className="text-secondary">Quillabamba,</span><br />a tu puerta.</h1>
+        <p className="mt-5 max-w-md text-sm leading-6 text-primary-foreground/70 sm:text-base">Pide de tus lugares favoritos y disfruta más tiempo lo que importa.</p>
+        <a href="#restaurantes" className="mt-7 inline-flex items-center gap-2 rounded-full bg-secondary px-5 py-3 text-sm font-extrabold text-primary" data-testid="link-explore">Explorar restaurantes <ArrowRight className="h-4 w-4" /></a>
+      </div>
+      <div className="absolute bottom-8 right-10 hidden max-w-[190px] rounded-2xl border border-white/20 bg-primary/45 p-4 lg:block"><p className="font-mono-app text-[10px] uppercase text-secondary">Ahora mismo</p><p className="mt-2 text-sm font-bold text-primary-foreground">{restaurants.filter(r=>r.isOpen).length} negocios abiertos en la plataforma.</p></div>
+    </section>
     <section className="mt-10 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between" id="restaurantes"><div><p className="font-mono-app text-[10px] font-bold uppercase tracking-[.18em] text-accent">La vuelta empieza aquí</p><h2 className="mt-2 font-display text-3xl font-bold tracking-[-.04em] text-primary">¿Qué se te antoja hoy?</h2></div><div className="relative w-full sm:w-[275px]"><Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Busca un restaurante..." className="h-11 w-full rounded-xl border border-border bg-card pl-10 pr-4 text-sm outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20" data-testid="input-search-restaurants" /></div></section>
     <div className="mt-5 flex gap-2 overflow-x-auto pb-1">{categories.map((category) => <button key={category} onClick={() => setFilter(category)} className={`whitespace-nowrap rounded-full px-4 py-2 text-xs font-extrabold transition ${filter === category ? 'bg-primary text-primary-foreground' : 'bg-card text-muted-foreground ring-1 ring-border hover:ring-secondary'}`} data-testid={`button-filter-${category.toLowerCase()}`}>{category}</button>)}</div>
     <div className="mt-7">{restaurantsQuery.isLoading ? <LoadingCards /> : restaurantsQuery.isError && !restaurantsQuery.data ? <QueryError retry={() => restaurantsQuery.refetch()} /> : filtered.length ? <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">{filtered.map((r) => <RestaurantCard key={r.id} restaurant={r} />)}</div> : <EmptyState title="No encontramos ese antojo" text="Prueba con otra palabra o vuelve a mirar todos los lugares." action={<button onClick={() => { setSearch(''); setFilter('Todos'); }} className="mt-5 rounded-full bg-primary px-4 py-2 text-xs font-bold text-primary-foreground" data-testid="button-clear-search">Limpiar búsqueda</button>} />}</div>
-    <section className="mt-14 grid gap-4 md:grid-cols-[1.2fr_.8fr]"><div className="rounded-2xl bg-[#e5dfc8] p-7 sm:p-9"><div className="flex items-center gap-2 text-accent"><Flame className="h-5 w-5" /><span className="font-mono-app text-[10px] font-bold uppercase tracking-[.16em]">Dato local</span></div><h3 className="mt-5 max-w-lg font-display text-2xl font-bold leading-tight text-primary">Los pedidos saben mejor cuando apoyan a los de siempre.</h3><p className="mt-3 max-w-md text-sm leading-6 text-primary/65">Cada compra fortalece a una cocina, una familia y el movimiento de nuestra ciudad.</p></div><div className="flex flex-col justify-between rounded-2xl bg-accent p-7 text-primary-foreground sm:p-9"><Tag className="h-6 w-6" /><div><p className="font-mono-app text-[10px] uppercase tracking-[.16em] text-primary-foreground/65">Primera vuelta</p><h3 className="mt-2 font-display text-2xl font-bold">Envío a S/ 0</h3><p className="mt-2 text-sm text-primary-foreground/75">En restaurantes seleccionados esta semana.</p></div></div></section>
+    <section className="mt-14 grid gap-4 md:grid-cols-2"><div className="rounded-2xl bg-[#e5dfc8] p-7"><h3 className="font-display text-2xl font-bold">Apoya a los negocios de tu ciudad</h3><p className="mt-3 text-sm leading-6">Consulta la carta, elige tus productos y sigue tu pedido.</p></div><div className="rounded-2xl bg-accent p-7 text-white"><h3 className="font-display text-2xl font-bold">Costo de envío visible</h3><p className="mt-3 text-sm leading-6">Cada negocio indica su tarifa. Revisa el total antes de confirmar tu pedido.</p></div></section>
   </main></>;
 }
 
@@ -205,13 +219,16 @@ function RestaurantPage({ cart }: { cart: ReturnType<typeof useCart> }) {
   const restaurantId = Number(id);
   const restaurantsQuery = useListRestaurants();
   const productsQuery = useListRestaurantProducts(restaurantId, { query: { queryKey: getListRestaurantProductsQueryKey(restaurantId) } });
-  const restaurant = (restaurantsQuery.data || fallbackRestaurants).find((r) => r.id === restaurantId) || fallbackRestaurants.find((r) => r.id === restaurantId) || fallbackRestaurants[0];
-  const products = productsQuery.data?.length ? productsQuery.data : fallbackProducts.filter((p) => p.restaurantId === restaurant.id);
+  const restaurant = restaurantsQuery.data?.find((r) => r.id === restaurantId);
+  const products = productsQuery.data || [];
   const categories = [...new Set(products.map((p) => p.category))];
   const [selectedCategory, setSelectedCategory] = useState('');
   const [notice, setNotice] = useState<Notice>(null);
   const shown = selectedCategory ? products.filter((p) => p.category === selectedCategory) : products;
-  const add = (product: Product) => { cart.add(product, restaurant.name); setNotice({ type: 'success', text: `${product.name} se sumó al carrito` }); setTimeout(() => setNotice(null), 2500); };
+  const add = (product: Product) => { if(!restaurant?.isOpen){setNotice({type:'error',text:'El negocio está cerrado.'});return;}cart.add(product, restaurant.name); setNotice({ type: 'success', text: `${product.name} se sumó al carrito` }); setTimeout(() => setNotice(null), 2500); };
+  if(restaurantsQuery.isLoading) return <LoadingCards/>;
+  if(restaurantsQuery.isError) return <QueryError retry={()=>void restaurantsQuery.refetch()}/>;
+  if(!restaurant) return <EmptyState title="Negocio no disponible" text="El negocio no existe o está deshabilitado." action={<Link href="/">Volver</Link>}/>;
   return <><CustomerHeader cartCount={cart.cart.reduce((a, b) => a + b.quantity, 0)} /><main className="mx-auto max-w-[1120px] px-5 pb-20 lg:px-8">
     <Link href="/" className="mt-7 inline-flex items-center gap-2 text-xs font-bold text-muted-foreground hover:text-primary" data-testid="link-back-restaurants"><ArrowLeft className="h-4 w-4" /> Todos los restaurantes</Link>
     <section className="mt-5 overflow-hidden rounded-3xl bg-card ring-1 ring-border warm-shadow"><div className="relative h-[220px] overflow-hidden sm:h-[280px]"><img src={restaurant.image || '/restaurant-selva.jpg'} alt={restaurant.name} className="h-full w-full object-cover" /><div className="absolute inset-0 bg-gradient-to-t from-primary/80 via-primary/10 to-transparent" /><div className="absolute bottom-6 left-6 right-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-end sm:left-9 sm:right-9"><div><Badge tone={restaurant.isOpen ? 'green' : 'red'}>{restaurant.isOpen ? 'Abierto ahora' : 'Cerrado'}</Badge><h1 className="mt-2 font-display text-3xl font-bold text-white sm:text-4xl">{restaurant.name}</h1><p className="mt-1 text-sm text-white/75">{restaurant.cuisine}</p></div><div className="flex gap-2 text-xs font-bold text-primary"><span className="flex items-center gap-1 rounded-full bg-[#f6e6bc] px-3 py-2"><Star className="h-3.5 w-3.5 fill-primary" /> {restaurant.rating.toFixed(1)}</span><span className="flex items-center gap-1 rounded-full bg-[#f6e6bc] px-3 py-2"><Clock3 className="h-3.5 w-3.5" /> {restaurant.deliveryMinutes} min</span></div></div></div><div className="flex items-center gap-2 overflow-x-auto px-6 py-4 sm:px-9">{['Todos', ...categories].map((cat) => <button key={cat} onClick={() => setSelectedCategory(cat === 'Todos' ? '' : cat)} className={`whitespace-nowrap rounded-full px-3.5 py-2 text-xs font-extrabold ${(!selectedCategory && cat === 'Todos') || selectedCategory === cat ? 'bg-primary text-white' : 'text-muted-foreground hover:bg-muted'}`} data-testid={`button-category-${cat}`}>{cat}</button>)}</div></section>
@@ -229,26 +246,38 @@ function ProductCard({ product, onAdd }: { product: Product; onAdd: () => void }
 // Checkout: calcula subtotal/envío, recoge dirección y crea el pedido en el API.
 function CartPage({ cart }: { cart: ReturnType<typeof useCart> }) {
   const [, setLocation] = useLocation();
-  const [name, setName] = useState(() => localStorage.getItem('pq-name') || '');
-  const [address, setAddress] = useState(() => localStorage.getItem('pq-address') || '');
+  const [name, setNameValue] = useState(() => readSession()?.name || '');
+  const [address, setAddressValue] = useState('');
+  const editedContact = useRef({ name: false, address: false });
+  const setName = (value: string) => { editedContact.current.name = true; setNameValue(value); };
+  const setAddress = (value: string) => { editedContact.current.address = true; setAddressValue(value); };
+  useEffect(() => {
+    let active = true;
+    void api<{ name: string; address: string }>('/api/account').then(profile => {
+      if (!active) return;
+      if (!editedContact.current.name) setNameValue(profile.name);
+      if (!editedContact.current.address) setAddressValue(profile.address);
+    }).catch(() => undefined);
+    return () => { active = false; };
+  }, []);
   const [payment, setPayment] = useState<'cash' | 'yape' | 'card'>('yape');
   const [notice, setNotice] = useState<Notice>(null);
   const createOrder = useCreateOrder();
   const restaurantsQuery = useListRestaurants();
-  const restaurants = restaurantsQuery.data?.length ? restaurantsQuery.data : fallbackRestaurants;
+  const restaurants = restaurantsQuery.data || [];
   const cartRestaurant = cart.cart[0] ? restaurants.find((restaurant) => restaurant.id === cart.cart[0].restaurantId) : undefined;
   const validCart = cart.cart.every((item) => Number.isFinite(item.price) && item.price >= 0 && Number.isInteger(item.quantity) && item.quantity > 0 && Number.isFinite(item.restaurantId));
   const subtotal = validCart ? cart.cart.reduce((sum, item) => sum + item.price * item.quantity, 0) : 0;
   const hasValidDeliveryFee = !!cartRestaurant && Number.isFinite(cartRestaurant.deliveryFee) && cartRestaurant.deliveryFee >= 0;
-  const delivery = subtotal >= 45 ? 0 : cartRestaurant && hasValidDeliveryFee ? cartRestaurant.deliveryFee : 0;
+  const delivery = cartRestaurant && hasValidDeliveryFee ? cartRestaurant.deliveryFee : 0;
   const total = subtotal + delivery;
   const submit = () => {
     if (!validCart || !Number.isFinite(subtotal) || !Number.isFinite(total)) { setNotice({ type: 'error', text: 'El carrito contiene cantidades o precios no válidos. Revisa el pedido antes de continuar.' }); return; }
     if (!name.trim() || !address.trim() || !cart.cart.length) { setNotice({ type: 'error', text: !cart.cart.length ? 'Agrega algo rico antes de continuar.' : 'Completa tu nombre y dirección de entrega.' }); return; }
-    if (subtotal < 45 && !hasValidDeliveryFee) { setNotice({ type: 'error', text: 'No pudimos verificar el costo de envío de este restaurante. Intenta de nuevo.' }); return; }
+    if (!hasValidDeliveryFee || !cartRestaurant?.isOpen) { setNotice({ type: 'error', text: 'El negocio no está disponible o no pudimos verificar su costo de envío.' }); return; }
     localStorage.setItem('pq-name', name); localStorage.setItem('pq-address', address);
     const items: OrderItem[] = cart.cart.map((item) => ({ id: item.id, name: item.name, quantity: item.quantity, price: item.price }));
-    createOrder.mutate({ data: { restaurantName: cart.cart[0].restaurantName, customerName: name, total, paymentMethod: payment, deliveryAddress: address, items } }, { onSuccess: (order) => { queryClient.invalidateQueries({ queryKey: getListOrdersQueryKey() }); queryClient.invalidateQueries({ queryKey: getGetDashboardSummaryQueryKey() }); queryClient.invalidateQueries({ queryKey: getGetOrderQueryKey(order.id) }); cart.clear(); setLocation(`/orders/${order.id}`); }, onError: () => setNotice({ type: 'error', text: 'No pudimos confirmar tu pedido. Intenta de nuevo.' }) });
+    createOrder.mutate({ data: { restaurantName: cart.cart[0].restaurantName, customerName: name, total, paymentMethod: payment, deliveryAddress: address, items } }, { onSuccess: (order) => { queryClient.invalidateQueries({ queryKey: getListOrdersQueryKey() }); queryClient.invalidateQueries({ queryKey: getGetDashboardSummaryQueryKey() }); queryClient.invalidateQueries({ queryKey: getGetOrderQueryKey(order.id) }); cart.clear(); setLocation(`/orders/${order.id}`); }, onError: (error) => setNotice({ type: 'error', text: (error as {data?:{error?:string}})?.data?.error || 'No pudimos confirmar tu pedido. Intenta de nuevo.' }) });
   };
   return <><CustomerHeader cartCount={cart.cart.reduce((a, b) => a + b.quantity, 0)} /><main className="mx-auto max-w-[1120px] px-5 pb-20 pt-8 lg:px-8"><Link href="/" className="inline-flex items-center gap-2 text-xs font-bold text-muted-foreground hover:text-primary" data-testid="link-back-cart"><ArrowLeft className="h-4 w-4" /> Seguir descubriendo</Link><div className="mt-8 grid gap-8 lg:grid-cols-[1fr_390px]"><div><p className="font-mono-app text-[10px] font-bold uppercase tracking-[.16em] text-accent">Último paso</p><h1 className="mt-2 font-display text-4xl font-bold tracking-[-.05em] text-primary">Tu pedido</h1>{cart.cart.length ? <div className="mt-7 overflow-hidden rounded-2xl bg-card ring-1 ring-border">{cart.cart.map((item) => <div key={item.id} className="flex items-center gap-4 border-b border-border/70 p-4 last:border-0" data-testid={`row-cart-${item.id}`}><img src={item.image || '/restaurant-selva.jpg'} alt="" className="h-16 w-16 rounded-xl object-cover" /><div className="min-w-0 flex-1"><h3 className="font-display font-bold text-primary">{item.name}</h3><p className="text-xs text-muted-foreground">{money(item.price)} · {item.restaurantName}</p></div><div className="flex items-center gap-2 rounded-full bg-muted p-1"><button onClick={() => cart.update(item.id, item.quantity - 1)} className="flex h-7 w-7 items-center justify-center rounded-full bg-card text-primary" data-testid={`button-decrease-${item.id}`}><Minus className="h-3 w-3" /></button><span className="w-4 text-center font-mono-app text-xs font-bold">{item.quantity}</span><button onClick={() => cart.update(item.id, item.quantity + 1)} className="flex h-7 w-7 items-center justify-center rounded-full bg-card text-primary" data-testid={`button-increase-${item.id}`}><Plus className="h-3 w-3" /></button></div><p className="w-16 text-right font-mono-app text-sm font-bold text-primary">{money(item.price * item.quantity)}</p></div>)}</div> : <div className="mt-7"><EmptyState title="Tu carrito está tranquilo" text="Explora las cocinas de Quillabamba y agrega algo que te provoque." action={<Link href="/" className="mt-5 inline-flex rounded-full bg-primary px-4 py-2 text-xs font-bold text-white" data-testid="link-empty-cart">Ver restaurantes</Link>} /></div>}<div className="mt-8 rounded-2xl bg-[#e5dfc8] p-5"><div className="flex gap-3"><MapPin className="mt-0.5 h-5 w-5 text-accent" /><div><p className="text-sm font-bold text-primary">Entregamos en todo Quillabamba</p><p className="mt-1 text-xs leading-5 text-primary/60">El repartidor te llamará al llegar. Revisa bien tu referencia.</p></div></div></div></div><div className="h-fit rounded-2xl bg-card p-6 ring-1 ring-border warm-shadow"><h2 className="font-display text-xl font-bold text-primary">Datos de entrega</h2><div className="mt-5 space-y-4"><label className="block"><span className="mb-1.5 block text-xs font-bold text-primary">¿A nombre de quién?</span><input value={name} onChange={(e) => setName(e.target.value)} placeholder="Tu nombre" className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none focus:border-accent" data-testid="input-customer-name" /></label><label className="block"><span className="mb-1.5 block text-xs font-bold text-primary">Dirección y referencia</span><textarea value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Ej. Jr. Junín 245, frente a la plaza" className="min-h-[84px] w-full resize-none rounded-xl border border-input bg-background p-3 text-sm outline-none focus:border-accent" data-testid="input-delivery-address" /></label><div><span className="mb-2 block text-xs font-bold text-primary">¿Cómo pagas?</span><div className="grid grid-cols-3 gap-2">{[['yape', 'Yape'], ['cash', 'Efectivo'], ['card', 'Tarjeta']].map(([value, label]) => <button key={value} onClick={() => setPayment(value as typeof payment)} className={`rounded-xl border px-2 py-3 text-xs font-bold ${payment === value ? 'border-primary bg-primary text-white' : 'border-border text-muted-foreground'}`} data-testid={`button-payment-${value}`}>{value === 'yape' ? <Wallet className="mx-auto mb-1 h-4 w-4" /> : value === 'cash' ? <span className="mb-1 block text-center">S/</span> : <CreditCard className="mx-auto mb-1 h-4 w-4" />}{label}</button>)}</div></div></div><div className="my-5 border-t border-border pt-5 font-mono-app text-xs"><div className="flex justify-between text-muted-foreground"><span>Subtotal</span><span>{money(subtotal)}</span></div><div className="mt-3 flex justify-between text-muted-foreground"><span>Envío</span><span>{delivery ? money(delivery) : 'Gratis'}</span></div><div className="mt-4 flex justify-between text-base font-bold text-primary"><span>Total</span><span>{money(total)}</span></div></div>{notice && <p className={`mb-3 rounded-lg px-3 py-2 text-xs font-bold ${notice.type === 'error' ? 'bg-red-50 text-red-700' : 'bg-violet-50 text-violet-700'}`} data-testid="status-cart-feedback">{notice.text}</p>}<button onClick={submit} disabled={createOrder.isPending || !cart.cart.length} className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-primary text-sm font-extrabold text-white transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50" data-testid="button-place-order">{createOrder.isPending ? 'Confirmando...' : 'Confirmar pedido'} <ArrowRight className="h-4 w-4 text-secondary" /></button><p className="mt-3 text-center text-[10px] leading-4 text-muted-foreground">Al confirmar aceptas nuestras condiciones de servicio.</p></div></div></main></>;
 }
@@ -262,15 +291,21 @@ function OrdersPage() {
 function OrderRow({ order }: { order: Order }) { return <Link href={`/orders/${order.id}`} className="group flex flex-col gap-4 rounded-2xl bg-card p-5 ring-1 ring-border transition hover:-translate-y-0.5 hover:ring-secondary sm:flex-row sm:items-center" data-testid={`row-order-${order.id}`}><div className="flex h-11 w-11 items-center justify-center rounded-xl bg-secondary text-primary"><ShoppingBag className="h-5 w-5" /></div><div className="min-w-0 flex-1"><div className="flex items-center gap-2"><h3 className="truncate font-display text-lg font-bold text-primary">{order.restaurantName}</h3><Badge tone={order.status === 'cancelled' ? 'red' : order.status === 'delivered' ? 'green' : 'orange'}>{statusLabel[order.status]}</Badge></div><p className="mt-1 font-mono-app text-[10px] text-muted-foreground">Pedido #{String(order.id).padStart(4, '0')} · {dateLabel(order.createdAt)} · {order.items.length} productos</p></div><p className="font-mono-app text-sm font-bold text-primary">{money(order.total)}</p><ArrowRight className="hidden h-4 w-4 text-muted-foreground transition group-hover:translate-x-1 sm:block" /></Link>; }
 
 function ServiceRating({ orderId }: { orderId: number }) {
-  const storageKey = `quillayaa-rating-${orderId}`;
-  const [rating, setRating] = useState(() => Number(localStorage.getItem(storageKey) || 0));
+  const orderQuery=useGetOrder(orderId,{query:{queryKey:getGetOrderQueryKey(orderId)}});
+  const rating=orderQuery.data?.rating || 0;
   const [saved, setSaved] = useState(false);
-  const rate = (value: number) => {
-    localStorage.setItem(storageKey, String(value));
-    setRating(value);
+  const [error,setError]=useState('');
+  const rate = async (value: number) => {
+    try {
+    await api(`/api/orders/${orderId}/rating`,'PUT',{rating:value});
+    await queryClient.invalidateQueries({queryKey:getGetOrderQueryKey(orderId)});
+    setError('');
     setSaved(true);
     window.setTimeout(() => setSaved(false), 2200);
+    }catch(e){setError(e instanceof Error?e.message:'No se pudo guardar.');}
   };
+  if(error)return <div className="mt-5 rounded-xl bg-red-50 p-4 text-red-700"><p role="alert">{error}</p><button onClick={()=>setError('')}>Volver a intentar</button></div>;
+  if(orderQuery.data?.status!=='delivered')return null;
   return <section className="mt-5 rounded-2xl bg-card p-6 ring-1 ring-border" data-testid="section-service-rating"><div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center"><div><p className="font-mono-app text-[10px] font-bold uppercase tracking-[.16em] text-accent">Tu experiencia</p><h2 className="mt-2 font-display text-xl font-bold text-primary">Califica el servicio</h2><p className="mt-1 text-xs text-muted-foreground">{rating ? `Registraste ${rating} de 5 estrellas.` : 'Tu opinión ayuda a mejorar la atención y el delivery.'}</p></div><div className="flex items-center gap-2">{[1, 2, 3, 4, 5].map((value) => <button key={value} onClick={() => rate(value)} className={`flex h-10 w-10 items-center justify-center rounded-xl ring-1 transition ${value <= rating ? 'bg-secondary text-primary ring-secondary' : 'bg-background text-muted-foreground ring-border hover:ring-accent'}`} aria-label={`Calificar con ${value} estrellas`} data-testid={`button-rating-${value}`}><Star className={`h-4 w-4 ${value <= rating ? 'fill-primary' : ''}`} /></button>)}</div></div>{saved && <p className="mt-4 rounded-xl bg-violet-50 px-3 py-2 text-xs font-bold text-violet-700">Calificación guardada. Gracias por ayudarnos a mejorar.</p>}</section>;
 }
 
@@ -394,21 +429,23 @@ function Router() {
       <Route path="/business"><RoleGate allowed={['administrador_negocio', 'administrador_sistema']}><BusinessPortalPage /></RoleGate></Route>
       <Route path="/admin/system"><RoleGate allowed={['administrador_sistema']}><SystemMapPage /></RoleGate></Route>
       <Route path="/admin/manage"><RoleGate allowed={['administrador_sistema']}><AdminManagementPage /></RoleGate></Route>
-      <Route path="/admin"><RoleGate allowed={['administrador_sistema']}><AdminDashboard /></RoleGate></Route>
-      <Route path="/admin/orders"><RoleGate allowed={['administrador_sistema']}><AdminOrders /></RoleGate></Route>
-      <Route path="/admin/restaurants"><RoleGate allowed={['administrador_sistema']}><AdminRestaurants /></RoleGate></Route>
-      <Route path="/admin/delivery"><RoleGate allowed={['administrador_sistema']}><AdminDelivery /></RoleGate></Route>
+      <Route path="/admin"><RoleGate allowed={['administrador_sistema']}><OperationsDashboard /></RoleGate></Route>
+      <Route path="/admin/orders"><RoleGate allowed={['administrador_sistema']}><AdminManagementPage initialTab="orders" /></RoleGate></Route>
+      <Route path="/admin/restaurants"><RoleGate allowed={['administrador_sistema']}><AdminManagementPage initialTab="businesses" /></RoleGate></Route>
+      <Route path="/admin/delivery"><RoleGate allowed={['administrador_sistema']}><AdminManagementPage initialTab="couriers" /></RoleGate></Route>
       <Route path="/delivery"><RoleGate allowed={['repartidor']}><EnhancedDeliveryPortalPage /></RoleGate></Route>
       <Route path="/login"><RoleAuthPage mode="login" /></Route>
       <Route path="/register"><RoleAuthPage mode="register" /></Route>
-      <Route path="/settings"><RoleGate allowed={['cliente']}><SettingsPage /></RoleGate></Route>
+      <Route path="/settings"><RoleGate allowed={['cliente']}><CustomerHeader cartCount={cart.cart.reduce((n,i)=>n+i.quantity,0)}/><AccountSettings /></RoleGate></Route>
       <Route component={NotFound} />
     </Switch>
   );
 }
 
 function LiveOrderLocation() {
-  const orderId = Number(window.location.pathname.match(/\/orders\/(\d+)/)?.[1]);
+  const [path]=useLocation();
+  const orderId = Number(path.match(/^\/orders\/(\d+)$/)?.[1]);
+  const orderQuery=useGetOrder(orderId,{query:{queryKey:getGetOrderQueryKey(orderId),enabled:!!orderId,refetchInterval:4000}});
   const [location, setLocation] = useState<{ latitude: number; longitude: number; updatedAt: string } | null>(null);
   useEffect(() => {
     if (!orderId) return;
@@ -426,13 +463,16 @@ function LiveOrderLocation() {
     const timer = window.setInterval(refresh, 5000);
     return () => { mounted = false; window.clearInterval(timer); };
   }, [orderId]);
-  if (!orderId) return null;
+  if (!orderId || !orderQuery.data) return null;
+  const order=orderQuery.data;
+  if(order.status==='delivered')return <section className="mx-auto mb-8 max-w-[960px] px-5"><div className="rounded-2xl bg-card p-5 ring-1 ring-border"><h2 className="font-display text-xl font-bold">Entrega confirmada</h2><p className="mt-2 text-sm">Repartidor: {order.deliveryPartnerName || 'No registrado'}</p>{order.proofUrl&&<a className="mt-4 inline-block text-sm font-bold underline" href={order.proofUrl} target="_blank" rel="noreferrer">Ver comprobante privado de entrega</a>}</div></section>;
   const mapUrl = location && `https://www.openstreetmap.org/export/embed.html?bbox=${location.longitude - 0.008}%2C${location.latitude - 0.008}%2C${location.longitude + 0.008}%2C${location.latitude + 0.008}&layer=mapnik&marker=${location.latitude}%2C${location.longitude}`;
   return <section className="mx-auto mb-8 max-w-[960px] px-5 lg:px-8" aria-live="polite" data-testid="section-live-courier-location"><div className="rounded-2xl bg-card p-5 ring-1 ring-border"><h2 className="font-display text-xl font-bold">Ubicación del repartidor</h2>{location && mapUrl ? <><p className="mt-1 text-xs text-muted-foreground">Actualizado {new Date(location.updatedAt).toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })}</p><iframe title="Ubicación en vivo del repartidor" src={mapUrl} className="mt-4 h-64 w-full rounded-xl border-0" loading="lazy" /><a href={`https://www.openstreetmap.org/?mlat=${location.latitude}&mlon=${location.longitude}#map=16/${location.latitude}/${location.longitude}`} target="_blank" rel="noreferrer" className="mt-3 inline-flex min-h-10 items-center rounded-lg bg-secondary px-3 py-2 text-xs font-bold">Abrir mapa</a></> : <p className="mt-2 text-sm text-muted-foreground">La ubicación aparecerá cuando el pedido esté en camino y el repartidor autorice compartirla.</p>}</div></section>;
 }
 
 // Proveedores globales: consultas, tooltips, manejo de errores y notificaciones.
 function App() {
+  useEffect(()=>{const clear=()=>queryClient.clear();window.addEventListener('quillayaa-auth-change',clear);return()=>window.removeEventListener('quillayaa-auth-change',clear);},[]);
   return <QueryClientProvider client={queryClient}><TooltipProvider><WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}><ErrorBoundary><Router /><LiveOrderLocation /></ErrorBoundary></WouterRouter><Toaster /></TooltipProvider></QueryClientProvider>;
 }
 

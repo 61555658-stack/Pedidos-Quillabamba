@@ -139,10 +139,17 @@ function OrderCard({
             <span className="rounded-full bg-secondary px-2.5 py-1 text-[10px] font-bold">{statusLabel(order.status)}</span>
           </div>
           <h3 className="mt-2 font-display text-lg font-bold">{order.customerName}</h3>
+          <div className="mt-3 rounded-xl bg-secondary/35 p-3 text-sm">
+            <p className="text-xs font-bold uppercase">Recoger en</p>
+            <p className="mt-1 font-bold">{order.restaurantName}</p>
+            <p>{order.businessAddress || 'El negocio aún no registró su dirección de recojo.'}</p>
+            {order.businessPhone&&<a href={`tel:${order.businessPhone.replace(/[^\d+]/g,'')}`} className="mt-1 inline-flex min-h-11 items-center text-xs font-bold underline">Llamar al negocio: {order.businessPhone}</a>}
+          </div>
           <p className="mt-2 flex items-start gap-2 text-sm leading-5">
             <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
             <span className="break-words">{order.deliveryAddress || 'Dirección no registrada'}</span>
           </p>
+          {order.customerPhone&&<a href={`tel:${order.customerPhone.replace(/[^\d+]/g,'')}`} className="mt-1 inline-flex min-h-11 items-center text-xs font-bold underline">Llamar al cliente: {order.customerPhone}</a>}
           <p className="mt-2 text-xs text-muted-foreground">
             {new Date(order.createdAt).toLocaleString('es-PE', { dateStyle: 'medium', timeStyle: 'short' })}
           </p>
@@ -184,6 +191,7 @@ export default function DeliveryPortalPage() {
   const queryClient = useQueryClient();
   const session = readSession();
   const [notice, setNotice] = useState('');
+  const [savingProof,setSavingProof]=useState(false);
   const [proofPhoto, setProofPhoto] = useState<{ orderId: number; file: File; url: string; sharpness: number } | null>(null);
   const [cameraOrderId, setCameraOrderId] = useState<number | null>(null);
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
@@ -357,8 +365,8 @@ export default function DeliveryPortalPage() {
         setNotice('No se pudo procesar la foto. Inténtalo nuevamente.');
         return;
       }
-      if (blob.size > 8 * 1024 * 1024) {
-        setNotice('La foto pesa más de 8 MB. Aléjate un poco e inténtalo nuevamente.');
+      if (blob.size > 5 * 1024 * 1024) {
+        setNotice('La foto pesa más de 5 MB. Aléjate un poco e inténtalo nuevamente.');
         return;
       }
       const file = new File([blob], `comprobante-${cameraOrderId}.jpg`, { type: 'image/jpeg' });
@@ -366,6 +374,21 @@ export default function DeliveryPortalPage() {
       setNotice('Nitidez verificada. El comprobante privado debe guardarse antes de marcar el pedido como realizado.');
       closeCamera();
     }, 'image/jpeg', 0.88);
+  };
+
+  const completeDelivery=async()=>{
+    if(!proofPhoto||savingProof)return;
+    setSavingProof(true);setNotice('');
+    try{
+      const form=new FormData();form.append('file',proofPhoto.file);
+      const response=await fetch(`/api/orders/${proofPhoto.orderId}/proof`,{method:'POST',credentials:'include',body:form});
+      const data=await response.json();
+      if(!response.ok)throw new Error(data.error||'No se pudo guardar el comprobante.');
+      await queryClient.invalidateQueries({queryKey:getListOrdersQueryKey()});
+      setProofPhoto(null);
+      setNotice('Comprobante guardado de forma privada. Pedido entregado.');
+    }catch(e){setNotice(e instanceof Error?e.message:'No se pudo confirmar la entrega.');}
+    finally{setSavingProof(false);}
   };
 
   const logout = () => {
@@ -490,6 +513,8 @@ export default function DeliveryPortalPage() {
                         <img src={proofPhoto.url} alt={`Vista previa de la foto del pedido ${order.id}`} className="max-h-72 w-full rounded-xl object-contain" />
                         <p className="mt-3 break-words text-xs font-bold">Nitidez verificada</p>
                         <p className="mt-1 text-xs leading-5 text-muted-foreground">La foto está lista en este dispositivo, pero todavía no se guardó como comprobante privado.</p>
+                        <button disabled={savingProof} onClick={()=>void completeDelivery()} data-testid={`button-confirm-delivery-${order.id}`} className="mt-4 min-h-11 w-full rounded-xl bg-primary px-4 py-2 text-sm font-bold text-white disabled:opacity-50">{savingProof?'Guardando…':'Guardar comprobante y confirmar entrega'}</button>
+                        <button disabled={savingProof} onClick={()=>setProofPhoto(null)} className="mt-2 min-h-11 w-full rounded-xl border border-border px-4 text-sm font-bold">Descartar foto</button>
                       </div>
                     )}
                   </div>

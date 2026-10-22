@@ -5,6 +5,40 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+export interface OperationalRecord { [key: string]: unknown }
+
+export interface CourierAssignmentInput {
+  /**
+     * @minimum 1
+     * @nullable
+     */
+  courierId: number | null;
+}
+
+export interface ImageUploadInput {
+  file: Blob;
+}
+
+export interface RatingInput {
+  /**
+     * @minimum 1
+     * @maximum 5
+     */
+  rating: number;
+}
+
+export interface AccountProfile {
+  /**
+     * @minLength 1
+     * @maxLength 250
+     */
+  name: string;
+  /** @maxLength 250 */
+  phone: string;
+  /** @maxLength 250 */
+  address: string;
+}
+
 export type AuthUserRole = typeof AuthUserRole[keyof typeof AuthUserRole];
 
 
@@ -196,6 +230,18 @@ export const OrderPaymentMethod = {
 } as const;
 
 export interface Order {
+  businessAddress?: string;
+  businessPhone?: string;
+  customerPhone?: string;
+  deliveryPartnerPhone?: string;
+  restaurantId?: number;
+  deliveryFee?: number;
+  deliveredAt?: string;
+  /** @nullable */
+  rating?: number | null;
+  proofUrl?: string;
+  customerUserId?: string;
+  deliveryPartnerUserId?: string;
   id: number;
   restaurantName: string;
   customerName: string;
@@ -262,4 +308,115 @@ export interface DashboardSummary {
   deliveryPartners: number;
   weeklySales: DashboardSummaryWeeklySalesItem[];
 }
+
+export type SalesReportBusinessesItemItemsItem = {
+  productId: number;
+  name: string;
+  quantity: number;
+  subtotal: number;
+};
+
+export type SalesReportBusinessesItem = {
+  businessId: number;
+  businessName: string;
+  orders: number;
+  units: number;
+  productSales: number;
+  deliveryFees: number;
+  total: number;
+  items: SalesReportBusinessesItemItemsItem[];
+};
+
+export type SalesReportTotals = {
+  orders: number;
+  units: number;
+  productSales: number;
+  deliveryFees: number;
+  total: number;
+};
+
+export interface SalesReport {
+  period: string;
+  date: string;
+  start: string;
+  end: string;
+  businesses: SalesReportBusinessesItem[];
+  totals: SalesReportTotals;
+}
+
+export type GetOperationsState200UsersItem = { [key: string]: unknown };
+
+export type GetOperationsState200BusinessesItem = { [key: string]: unknown };
+
+export type GetOperationsState200ProductsItem = { [key: string]: unknown };
+
+export type GetOperationsState200CategoriesItem = { [key: string]: unknown };
+
+export type GetOperationsState200Settings = {[key: string]: string};
+
+export type GetOperationsState200 = {
+  users: GetOperationsState200UsersItem[];
+  businesses: GetOperationsState200BusinessesItem[];
+  products: GetOperationsState200ProductsItem[];
+  categories: GetOperationsState200CategoriesItem[];
+  orders: Order[];
+  settings: GetOperationsState200Settings;
+  [key: string]: unknown;
+ };
+
+export type CreateOperationalEntity201 = { [key: string]: unknown };
+
+export type UpdateOperationalSettings200 = { [key: string]: unknown };
+
+export type UpdateOperationalEntity200 = { [key: string]: unknown };
+
+export type DeleteOperationalEntity200 = {
+  success: boolean;
+};
+
+export type GetSalesReportParams = {
+period?: GetSalesReportPeriod;
+/**
+ * @pattern ^\d{4}-\d{2}-\d{2}$
+ */
+date?: string;
+/**
+ * @minimum 1
+ */
+businessId?: number;
+};
+
+export type GetSalesReportPeriod = typeof GetSalesReportPeriod[keyof typeof GetSalesReportPeriod];
+
+
+export const GetSalesReportPeriod = {
+  day: 'day',
+  week: 'week',
+  month: 'month',
+} as const;
+
+export type DownloadSalesReportParams = {
+period?: DownloadSalesReportPeriod;
+/**
+ * @pattern ^\d{4}-\d{2}-\d{2}$
+ */
+date?: string;
+/**
+ * @minimum 1
+ */
+businessId?: number;
+};
+
+export type DownloadSalesReportPeriod = typeof DownloadSalesReportPeriod[keyof typeof DownloadSalesReportPeriod];
+
+
+export const DownloadSalesReportPeriod = {
+  day: 'day',
+  week: 'week',
+  month: 'month',
+} as const;
+
+export type UploadProductImage201 = {
+  path: string;
+};
 

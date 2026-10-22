@@ -104,10 +104,20 @@ export function readSession(): UserSession | null {
 function saveSession(session: UserSession) {
   localStorage.setItem(APP_AUTH_VERSION_KEY, '1');
   localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+  window.dispatchEvent(new Event('quillayaa-auth-change'));
+}
+
+export function updateSessionName(name:string) {
+  const session=readSession();
+  if(session)saveSession({...session,name});
 }
 
 export function clearSession() {
   localStorage.removeItem(SESSION_KEY);
+  localStorage.removeItem('pq-cart');
+  localStorage.removeItem('pq-name');
+  localStorage.removeItem('pq-address');
+  window.dispatchEvent(new Event('quillayaa-auth-change'));
   void fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => undefined);
 }
 
@@ -531,6 +541,29 @@ function apiErrorMessage(error: unknown, fallback: string) {
 export function RoleGate({ allowed, children }: { allowed: UserRole[]; children: ReactNode }) {
   const [, setLocation] = useLocation();
   const session = readSession();
+  const [verified,setVerified]=useState(false);
+  const [checkError,setCheckError]=useState(false);
+  const email=session?.email;
+
+  useEffect(()=>{
+    let live=true;setVerified(false);
+    const check=async()=>{
+      try{
+        const response=await fetch('/api/auth/user',{credentials:'include'});
+        if(!response.ok)throw new Error('No se pudo verificar la sesión.');
+        const data=await response.json();
+        if(!live)return;
+        const role=normalizeRole(data.user?.role);
+        if(!role){clearSession();setLocation('/login');return;}
+        if(role!==readSession()?.role||data.user.email!==readSession()?.email) {
+          saveSession({name:data.user.firstName,email:data.user.email,role});
+        }
+        setVerified(true);setCheckError(false);
+      }catch{if(live)setCheckError(true);}
+    };
+    void check();const timer=window.setInterval(()=>void check(),15_000);
+    return()=>{live=false;window.clearInterval(timer);};
+  },[email,setLocation]);
 
   useEffect(() => {
     if (!session) setLocation('/login');
@@ -538,6 +571,7 @@ export function RoleGate({ allowed, children }: { allowed: UserRole[]; children:
   }, [allowed, session, setLocation]);
 
   if (!session) return <AccessNotice title="Necesitas iniciar sesión" text="Ingresa con tu cuenta para acceder a esta plataforma." />;
+  if(!verified)return <AccessNotice title={checkError?'No se pudo verificar tu sesión':'Verificando acceso'} text={checkError?'Revisa la conexión y vuelve a intentar.':'Estamos comprobando los permisos de tu cuenta.'}/>;
   if (!allowed.includes(session.role)) return <AccessNotice title="Acceso restringido" text={`Esta sección es para ${allowed.map((role) => roleLabels[role]).join(' o ')}.`} />;
   return <>{children}</>;
 }

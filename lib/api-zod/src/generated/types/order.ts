@@ -10,6 +10,18 @@ import type { OrderPaymentMethod } from './orderPaymentMethod';
 import type { OrderStatus } from './orderStatus';
 
 export interface Order {
+  businessAddress?: string;
+  businessPhone?: string;
+  customerPhone?: string;
+  deliveryPartnerPhone?: string;
+  restaurantId?: number;
+  deliveryFee?: number;
+  deliveredAt?: string;
+  /** @nullable */
+  rating?: number | null;
+  proofUrl?: string;
+  customerUserId?: string;
+  deliveryPartnerUserId?: string;
   id: number;
   restaurantName: string;
   customerName: string;

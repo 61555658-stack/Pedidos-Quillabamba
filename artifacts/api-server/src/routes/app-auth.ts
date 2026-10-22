@@ -10,10 +10,29 @@ import {
 } from "@workspace/api-zod";
 import { consumeVerifiedRegistration } from "./registration-verification";
 import type { AppRole } from "../middlewares/appAuthMiddleware";
+import { requireUser } from "../lib/operations-data";
+import { SaveAccountProfileBody, GetAccountProfileResponse } from "@workspace/api-zod";
 
 const scrypt = promisify(scryptCallback);
 const router: IRouter = Router();
 const sessionTtlMs = 7 * 24 * 60 * 60 * 1000;
+
+router.get("/auth/user", (req, res) => {
+  res.setHeader("Cache-Control","no-store");
+  res.json({user:req.isAuthenticated() ? req.user : null});
+});
+router.get("/account",async(req,res)=>{
+  const user=requireUser(req);
+  const result=await pool.query("SELECT name,COALESCE(phone,'') AS phone,COALESCE(address,'') AS address FROM public.users WHERE id=$1",[Number(user.id)]);
+  res.json(GetAccountProfileResponse.parse(result.rows[0]));
+});
+router.patch("/account",async(req,res)=>{
+  const user=requireUser(req);
+  const d=SaveAccountProfileBody.parse(req.body);
+  if(!d.name.trim()) {res.status(400).json({error:"Ingresa tu nombre."});return;}
+  await pool.query("UPDATE public.users SET name=$1,phone=$2,address=$3,updated_at=now() WHERE id=$4",[d.name.trim(),d.phone,d.address,Number(user.id)]);
+  res.json(GetAccountProfileResponse.parse({...d,name:d.name.trim()}));
+});
 
 function setSessionCookie(res: Response, sid: string) {
   res.cookie("sid", sid, { httpOnly: true, secure: true, sameSite: "lax", path: "/", maxAge: sessionTtlMs });
@@ -88,7 +107,7 @@ router.post("/auth/login", async (req, res) => {
   if (!email || !password) return res.status(400).json({ error: "Ingresa correo y contraseña." });
   try {
     const result = await pool.query(
-      "SELECT id, name, email, role, password_hash FROM public.users WHERE lower(email) = $1 LIMIT 1",
+       "SELECT id, name, email, role, password_hash FROM public.users WHERE lower(email) = $1 AND active LIMIT 1",
       [email],
     );
     const user = result.rows[0] as { id: number; name: string; email: string; role: AppRole; password_hash: string } | undefined;

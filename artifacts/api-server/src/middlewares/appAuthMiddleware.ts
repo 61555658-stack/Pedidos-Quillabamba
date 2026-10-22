@@ -30,7 +30,8 @@ export async function appAuthMiddleware(req: Request, res: Response, next: NextF
     const result = await pool.query(
       `SELECT u.id, u.name, u.email, u.role
        FROM public.sessions s JOIN public.users u ON u.id = s.user_id
-       WHERE s.id = $1 AND s.expires_at > NOW()`,
+       WHERE s.id = $1 AND s.expires_at > NOW() AND u.active
+       AND u.role IN ('cliente','repartidor','administrador_negocio','administrador_sistema')`,
       [sid],
     );
     const row = result.rows[0] as { id: number; name: string; email: string; role: AppRole } | undefined;
