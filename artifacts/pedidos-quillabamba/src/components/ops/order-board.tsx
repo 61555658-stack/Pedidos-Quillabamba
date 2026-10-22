@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Bike, MapPin } from 'lucide-react';
+import { Bike, Camera, MapPin } from 'lucide-react';
 import { api, fmtDate, money, paymentLabels, statusLabels, type OpsOrder, type OpsUser, type OrderStatus } from '@/lib/operations-api';
 import { Empty, Field, inputCls, btnDanger, btnPrimary, btnGhost } from './ui';
 
@@ -74,6 +74,11 @@ function OrderCard({ o, couriers, isAdmin, run, busy }: { o: OpsOrder; couriers?
           {o.deliveryPartnerPhone&&<a className="flex min-h-11 items-center font-bold underline" href={`tel:${o.deliveryPartnerPhone.replace(/[^\d+]/g,'')}`}>Llamar al repartidor</a>}
         </dl>
       </div>
+      {o.status === 'delivered' && o.proofUrl && (
+        <a href={o.proofUrl} target="_blank" rel="noopener noreferrer" className={`${btnGhost} mt-4`} data-testid={`button-order-proof-${o.id}`} aria-label={`Ver foto de entrega del pedido #${o.id} (abre en otra pestaña)`}>
+          <Camera className="h-4 w-4" /> Ver foto de entrega
+        </a>
+      )}
       {isAdmin && o.status === 'ready' && (
         <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-end">
           <div className="flex-1"><Field label="Asignar repartidor">

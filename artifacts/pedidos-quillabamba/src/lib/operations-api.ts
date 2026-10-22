@@ -10,7 +10,7 @@ export type OpsOrder = {
   paymentMethod: 'cash' | 'yape' | 'card'; createdAt: string; deliveryAddress: string;
   deliveryPartnerUserId?: string; deliveryPartnerName?: string; deliveryPartnerEmail?: string;
   businessPhone?: string; businessAddress?: string; customerPhone?: string; deliveryPartnerPhone?: string;
-  items: { id: number; name: string; price: number; quantity: number }[]; deliveryFee: number; deliveredAt?: string;
+  items: { id: number; name: string; price: number; quantity: number }[]; deliveryFee: number; deliveredAt?: string; proofUrl?: string;
 };
 export type OpsState = { users: OpsUser[]; businesses: OpsBusiness[]; products: OpsProduct[]; categories: OpsCategory[]; orders: OpsOrder[]; settings: { platformName: string; minimumOrder: string } };
 
