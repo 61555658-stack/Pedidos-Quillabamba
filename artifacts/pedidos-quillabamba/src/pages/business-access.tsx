@@ -74,7 +74,7 @@ export function BusinessAccessPage() {
           <LoadError error={errText(access.error, 'No se pudo verificar tu acceso.')} onRetry={() => void access.refetch()} />
         ) : !data || businesses.length === 0 ? (
           <Empty title="Aún no tienes un negocio asignado" text="Pide al administrador del sistema que te asigne un negocio para abrir caja o administrarlo." />
-        ) : data.mode === 'cashier' ? <Skeleton /> : step === 'choose' ? (
+        ) : data.mode === 'cashier' ? <Skeleton /> : step === 'choose' && data.mode !== 'cashier_login' ? (
           <div className="grid gap-4 sm:grid-cols-[1.2fr_1fr]">
             <button onClick={() => { setStep('cashier'); setMessage(null); }} data-testid="access-choice-cashier"
               className="group flex min-h-48 flex-col justify-between rounded-2xl bg-primary p-6 text-left text-white transition hover:-translate-y-0.5">
@@ -95,7 +95,7 @@ export function BusinessAccessPage() {
           </div>
         ) : (
           <form onSubmit={submitCashier} className="space-y-4 rounded-2xl bg-card p-5 ring-1 ring-border sm:p-6 animate-rise">
-            <button type="button" onClick={() => setStep('choose')} className={btnGhost}><ArrowLeft className="h-4 w-4" /> Volver</button>
+            {data.mode !== 'cashier_login' && <button type="button" onClick={() => setStep('choose')} className={btnGhost} data-testid="cashier-back"><ArrowLeft className="h-4 w-4" /> Volver</button>}
             <div>
               <h2 className="font-display text-xl font-bold">Abrir caja</h2>
               <p className="mt-1 text-sm text-muted-foreground">Turno mañana: <b className="font-mono-app">caja1m</b> · Turno tarde: <b className="font-mono-app">caja1t</b>. La hora de apertura la registra el servidor.</p>

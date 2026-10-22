@@ -662,7 +662,7 @@ components:
       type: object
       required: [mode, businesses, shift]
       properties:
-        mode: { type: string, enum: [choose, administrator, cashier] }
+        mode: { type: string, enum: [choose, administrator, cashier, cashier_login] }
         businesses:
           type: array
           items:

@@ -8,7 +8,7 @@ export interface AppUser {
   firstName: string;
   lastName: string | null;
   role: AppRole;
-  businessMode?: "choose" | "administrator" | "cashier";
+  businessMode?: "choose" | "administrator" | "cashier" | "cashier_login";
   cashShiftId?: number | null;
 }
 

@@ -43,6 +43,7 @@ export const BusinessAccessMode = {
   choose: 'choose',
   administrator: 'administrator',
   cashier: 'cashier',
+  cashier_login: 'cashier_login',
 } as const;
 
 export type BusinessAccessBusinessesItem = {

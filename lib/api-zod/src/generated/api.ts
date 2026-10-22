@@ -9,7 +9,7 @@ import * as zod from 'zod';
 
 
 export const GetBusinessAccessResponse = zod.object({
-  "mode": zod.enum(['choose', 'administrator', 'cashier']),
+  "mode": zod.enum(['choose', 'administrator', 'cashier', 'cashier_login']),
   "businesses": zod.array(zod.object({
   "id": zod.number(),
   "name": zod.string()
@@ -28,7 +28,7 @@ export const GetBusinessAccessResponse = zod.object({
 
 
 export const EnterBusinessAdministratorResponse = zod.object({
-  "mode": zod.enum(['choose', 'administrator', 'cashier']),
+  "mode": zod.enum(['choose', 'administrator', 'cashier', 'cashier_login']),
   "businesses": zod.array(zod.object({
   "id": zod.number(),
   "name": zod.string()

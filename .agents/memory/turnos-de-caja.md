@@ -7,7 +7,9 @@ Después del inicio de sesión del negocio, ofrecer Cajero o Administrador del n
 
 **Why:** El usuario pidió separar la operación de caja de la administración y que el administrador conozca quién atendió cada turno, sus horarios, productos, métodos de pago y repartidores.
 
-**How to apply:** Mantener los permisos de caja en la sesión del servidor y limitarla al negocio elegido. No permitir recuperar funciones administrativas cambiando una ruta o datos del navegador; al cerrar caja, finalizar esa sesión y exigir el inicio de sesión habitual.
+**How to apply:** Mantener los permisos de caja en la sesión del servidor y limitarla al negocio elegido. No permitir recuperar funciones administrativas cambiando una ruta o datos del navegador. Al cerrar caja, terminar el turno y volver directamente a «Abrir caja», conservando solo acceso para abrir otro turno, sin «Volver» ni elección de administrador. Ese botón solo aparece al entrar inicialmente desde la elección de modo. La restricción debe sobrevivir a recargas; para administrar, usar «Salir» e iniciar sesión de nuevo.
+
+**Why:** El usuario pidió volver al formulario de apertura después del cierre, sin el botón «Volver», y conservarlo solo al entrar inicialmente.
 
 La venta de un pedido se atribuye al turno que lo liberó por primera vez, pero solo cuenta cuando se entrega. Los turnos posteriores que intervengan conservan trazabilidad sin duplicar ingresos; cerrar caja no cancela repartos pendientes.
 

@@ -52,7 +52,7 @@ export async function closeCashShift(user:AppUser,id:number) {
     await client.query("BEGIN");
     const updated=await client.query("UPDATE public.cash_shifts SET closed_at=now(),closed_by=$1 WHERE id=$2 AND closed_at IS NULL RETURNING id",[Number(user.id),id]);
     if(!updated.rowCount)throw new AppError(409,"Esta caja ya está cerrada.");
-    await client.query("DELETE FROM public.sessions WHERE cash_shift_id=$1",[id]);
+    await client.query("UPDATE public.sessions SET business_mode='cashier_login',cash_shift_id=NULL WHERE cash_shift_id=$1",[id]);
     await client.query("COMMIT");
     return toShift((await pool.query(`${shiftSelect} WHERE s.id=$1`,[id])).rows[0]);
   }catch(e){await client.query("ROLLBACK");throw e;}finally{client.release();}

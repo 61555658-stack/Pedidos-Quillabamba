@@ -5,7 +5,6 @@ import { Bike, KeyRound, LogOut, Send } from 'lucide-react';
 import {
   getGetCashierStateQueryKey, useCloseOwnCashShift, useGetCashierState, useReleaseCashierOrder, type Order,
 } from '@workspace/api-client-react';
-import { clearSession } from '@/pages/role-access';
 import { Banner, Empty, LoadError, Skeleton, btnGhost, btnPrimary, inputCls } from '@/components/ops/ui';
 import { money, paymentLabels, statusLabels } from '@/lib/operations-api';
 import { errStatus, errText, limaTime, shiftLabel } from '@/lib/cash-format';
@@ -68,7 +67,7 @@ export default function CashierPortalPage() {
   const doClose = () => {
     if (!window.confirm('¿Estás seguro de cerrar caja?')) return;
     close.mutate(undefined, {
-      onSuccess: () => { qc.clear(); clearSession(); setLocation('/login'); },
+      onSuccess: () => { qc.clear(); setLocation('/business/access', { replace: true }); },
       onError: (e) => setMessage({ kind: 'error', text: errText(e, 'No se pudo cerrar caja.') }),
     });
   };

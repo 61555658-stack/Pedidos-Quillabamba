@@ -23,7 +23,7 @@ router.get("/business/access",async(req,res)=>{
 });
 router.post("/business/access/administrator",async(req,res)=>{
   const user=requireUser(req,["administrador_negocio","administrador_sistema"],true);
-  const result=await pool.query("UPDATE public.sessions SET business_mode='administrator' WHERE id=$1 AND business_mode<>'cashier' RETURNING id",[req.cookies.sid]);
+  const result=await pool.query("UPDATE public.sessions SET business_mode='administrator' WHERE id=$1 AND business_mode IN ('choose','administrator') RETURNING id",[req.cookies.sid]);
   if(!result.rowCount)throw new AppError(403,"Cierra caja e inicia sesión nuevamente para administrar el negocio.");
   res.json(await accessContext({...user,businessMode:"administrator"}));
 });
@@ -96,7 +96,7 @@ router.post("/cashier/close",async(req,res)=>{
   const user=requireUser(req,["administrador_negocio"],true);
   const shift=await activeCashShift(user);
   const closed=await closeCashShift(user,shift.id);
-  res.clearCookie("sid",{path:"/"});res.json(closed);
+  res.json(closed);
 });
 router.get("/business/cash-shifts",async(req,res)=>{
   const user=requireUser(req,["administrador_negocio","administrador_sistema"]);
