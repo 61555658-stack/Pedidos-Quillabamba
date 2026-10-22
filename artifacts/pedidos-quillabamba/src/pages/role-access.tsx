@@ -56,7 +56,7 @@ const APP_AUTH_VERSION_KEY = 'quillayaa-app-auth-v1';
 
 export const roleHome: Record<UserRole, string> = {
   cliente: '/',
-  administrador_negocio: '/business',
+  administrador_negocio: '/business/access',
   repartidor: '/delivery',
   administrador_sistema: '/admin',
 };
@@ -301,7 +301,7 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
             </div>
           </div>
         </div>
-        <div className="p-5 min-[360px]:p-6 sm:p-12">
+        <form className="p-5 min-[360px]:p-6 sm:p-12" onSubmit={event=>{event.preventDefault();if(!submitting)void (pendingVerification?.mode===mode?verifyCode():submit());}}>
           <p className="font-mono-app text-[10px] font-bold uppercase tracking-[.18em] text-accent">{mode === 'login' ? 'Bienvenido de vuelta' : 'Crea tu acceso'}</p>
           <h2 className="mt-3 font-display text-3xl font-bold tracking-[-.04em] text-primary">{mode === 'login' ? 'Ingresa a tu plataforma' : 'Regístrate según tu cargo'}</h2>
           <p className="mt-2 text-sm leading-6 text-muted-foreground">Selecciona tu rol para abrir únicamente las herramientas que necesitas.</p>
@@ -346,11 +346,11 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
             <button type="button" disabled={submitting} onClick={() => { setPendingVerification(null); setVerificationCode(''); setNotice(''); }} className="mt-3 min-h-11 text-left text-xs font-bold text-accent underline">Cambiar correo o solicitar otro código</button>
           </div>}
           {notice && <p role="alert" className="mt-4 rounded-xl bg-red-50 px-3 py-2.5 text-xs font-bold text-red-700" data-testid="status-role-auth-feedback">{notice}</p>}
-          <button disabled={submitting} onClick={pendingVerification?.mode === mode ? verifyCode : submit} className="mt-7 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-primary text-sm font-extrabold text-white disabled:opacity-60" data-testid="button-role-auth-submit">{submitting ? 'Procesando...' : pendingVerification?.mode === 'register' && mode === 'register' ? 'Verificar y crear cuenta' : mode === 'login' ? 'Iniciar sesión' : 'Enviar código a mi correo'} <ArrowRight className="h-4 w-4 text-secondary" /></button>
+          <button type="submit" disabled={submitting} className="mt-7 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-primary text-sm font-extrabold text-white disabled:opacity-60" data-testid="button-role-auth-submit">{submitting ? 'Procesando...' : pendingVerification?.mode === 'register' && mode === 'register' ? 'Verificar y crear cuenta' : mode === 'login' ? 'Iniciar sesión' : 'Enviar código a mi correo'} <ArrowRight className="h-4 w-4 text-secondary" /></button>
           <p className="mt-6 text-center text-xs text-muted-foreground">{mode === 'login' ? '¿Aún no tienes cuenta? ' : '¿Ya tienes cuenta? '}<Link href={mode === 'login' ? '/register' : '/login'} className="font-bold text-accent" data-testid="link-role-auth-switch">{mode === 'login' ? 'Regístrate' : 'Inicia sesión'}</Link></p>
           </>
           )}
-        </div>
+        </form>
       </div>
     </div>
   );

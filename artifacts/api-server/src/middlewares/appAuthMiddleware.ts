@@ -8,6 +8,8 @@ export interface AppUser {
   firstName: string;
   lastName: string | null;
   role: AppRole;
+  businessMode?: "choose" | "administrator" | "cashier";
+  cashShiftId?: number | null;
 }
 
 declare global {
@@ -28,14 +30,14 @@ export async function appAuthMiddleware(req: Request, res: Response, next: NextF
   if (!sid || typeof sid !== "string") return next();
   try {
     const result = await pool.query(
-      `SELECT u.id, u.name, u.email, u.role
+      `SELECT u.id, u.name, u.email, u.role, s.business_mode, s.cash_shift_id
        FROM public.sessions s JOIN public.users u ON u.id = s.user_id
        WHERE s.id = $1 AND s.expires_at > NOW() AND u.active
        AND u.role IN ('cliente','repartidor','administrador_negocio','administrador_sistema')`,
       [sid],
     );
-    const row = result.rows[0] as { id: number; name: string; email: string; role: AppRole } | undefined;
-    if (row) req.user = { id: String(row.id), email: row.email, firstName: row.name, lastName: null, role: row.role };
+    const row = result.rows[0] as { id: number; name: string; email: string; role: AppRole; business_mode: AppUser["businessMode"]; cash_shift_id: number | null } | undefined;
+    if (row) req.user = { id: String(row.id), email: row.email, firstName: row.name, lastName: null, role: row.role, businessMode:row.business_mode, cashShiftId:row.cash_shift_id };
     return next();
   } catch (error) {
     return next(error);

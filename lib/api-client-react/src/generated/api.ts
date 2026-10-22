@@ -22,9 +22,15 @@ import type {
 import type {
   AccountProfile,
   AuthUserEnvelope,
+  BusinessAccess,
   BusinessAdminRegistrationDecision,
   BusinessAdminRegistrationDecisionResult,
   BusinessAdminRegistrationRequests,
+  CashOpenRequest,
+  CashReleaseRequest,
+  CashShift,
+  CashShiftReport,
+  CashierState,
   CourierAssignmentInput,
   CourierClaimInput,
   CreateOperationalEntity201,
@@ -35,6 +41,8 @@ import type {
   GetSalesReportParams,
   HealthStatus,
   ImageUploadInput,
+  ListBusinessCashShifts200,
+  ListBusinessCashShiftsParams,
   LogoutSuccess,
   MobileTokenExchangeRequest,
   MobileTokenExchangeSuccess,
@@ -81,6 +89,623 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   }
   return result;
 };
+
+export const getGetBusinessAccessUrl = () => {
+
+
+
+
+  return `/api/business/access`
+}
+
+export const getBusinessAccess = async ( options?: Parameters<typeof customFetch>[1]): Promise<BusinessAccess> => {
+
+  return customFetch<BusinessAccess>(getGetBusinessAccessUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetBusinessAccessQueryKey = () => {
+    return [
+    `/api/business/access`
+    ] as const;
+    }
+
+
+export const getGetBusinessAccessQueryOptions = <TData = Awaited<ReturnType<typeof getBusinessAccess>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getBusinessAccess>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetBusinessAccessQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getBusinessAccess>>> = ({ signal }) => getBusinessAccess({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getBusinessAccess>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetBusinessAccessQueryResult = NonNullable<Awaited<ReturnType<typeof getBusinessAccess>>>
+export type GetBusinessAccessQueryError = ErrorType<unknown>
+
+
+
+export function useGetBusinessAccess<TData = Awaited<ReturnType<typeof getBusinessAccess>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getBusinessAccess>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetBusinessAccessQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getEnterBusinessAdministratorUrl = () => {
+
+
+
+
+  return `/api/business/access/administrator`
+}
+
+export const enterBusinessAdministrator = async ( options?: Parameters<typeof customFetch>[1]): Promise<BusinessAccess> => {
+
+  return customFetch<BusinessAccess>(getEnterBusinessAdministratorUrl(),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getEnterBusinessAdministratorMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof enterBusinessAdministrator>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof enterBusinessAdministrator>>, TError,void, TContext> => {
+
+const mutationKey = ['enterBusinessAdministrator'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof enterBusinessAdministrator>>, void> = () => {
+
+
+          return  enterBusinessAdministrator(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type EnterBusinessAdministratorMutationResult = NonNullable<Awaited<ReturnType<typeof enterBusinessAdministrator>>>
+
+    export type EnterBusinessAdministratorMutationError = ErrorType<unknown>
+
+    export const useEnterBusinessAdministrator = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof enterBusinessAdministrator>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof enterBusinessAdministrator>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getEnterBusinessAdministratorMutationOptions(options));
+    }
+
+export const getOpenCashShiftUrl = () => {
+
+
+
+
+  return `/api/cashier/open`
+}
+
+export const openCashShift = async (cashOpenRequest: CashOpenRequest, options?: Parameters<typeof customFetch>[1]): Promise<CashShift> => {
+
+  return customFetch<CashShift>(getOpenCashShiftUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(cashOpenRequest)
+  }
+);}
+
+
+
+
+
+export const getOpenCashShiftMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof openCashShift>>, TError,{data: BodyType<CashOpenRequest>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof openCashShift>>, TError,{data: BodyType<CashOpenRequest>}, TContext> => {
+
+const mutationKey = ['openCashShift'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof openCashShift>>, {data: BodyType<CashOpenRequest>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  openCashShift(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type OpenCashShiftMutationResult = NonNullable<Awaited<ReturnType<typeof openCashShift>>>
+    export type OpenCashShiftMutationBody = BodyType<CashOpenRequest>
+    export type OpenCashShiftMutationError = ErrorType<unknown>
+
+    export const useOpenCashShift = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof openCashShift>>, TError,{data: BodyType<CashOpenRequest>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof openCashShift>>,
+        TError,
+        {data: BodyType<CashOpenRequest>},
+        TContext
+      > => {
+      return useMutation(getOpenCashShiftMutationOptions(options));
+    }
+
+export const getGetCashierStateUrl = () => {
+
+
+
+
+  return `/api/cashier/state`
+}
+
+export const getCashierState = async ( options?: Parameters<typeof customFetch>[1]): Promise<CashierState> => {
+
+  return customFetch<CashierState>(getGetCashierStateUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetCashierStateQueryKey = () => {
+    return [
+    `/api/cashier/state`
+    ] as const;
+    }
+
+
+export const getGetCashierStateQueryOptions = <TData = Awaited<ReturnType<typeof getCashierState>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCashierState>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetCashierStateQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCashierState>>> = ({ signal }) => getCashierState({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCashierState>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetCashierStateQueryResult = NonNullable<Awaited<ReturnType<typeof getCashierState>>>
+export type GetCashierStateQueryError = ErrorType<unknown>
+
+
+
+export function useGetCashierState<TData = Awaited<ReturnType<typeof getCashierState>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCashierState>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetCashierStateQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getReleaseCashierOrderUrl = (orderId: number,) => {
+
+
+
+
+  return `/api/cashier/orders/${orderId}/release`
+}
+
+export const releaseCashierOrder = async (orderId: number,
+    cashReleaseRequest: CashReleaseRequest, options?: Parameters<typeof customFetch>[1]): Promise<Order> => {
+
+  return customFetch<Order>(getReleaseCashierOrderUrl(orderId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(cashReleaseRequest)
+  }
+);}
+
+
+
+
+
+export const getReleaseCashierOrderMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof releaseCashierOrder>>, TError,{orderId: number;data: BodyType<CashReleaseRequest>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof releaseCashierOrder>>, TError,{orderId: number;data: BodyType<CashReleaseRequest>}, TContext> => {
+
+const mutationKey = ['releaseCashierOrder'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof releaseCashierOrder>>, {orderId: number;data: BodyType<CashReleaseRequest>}> = (props) => {
+          const {orderId,data} = props ?? {};
+
+          return  releaseCashierOrder(orderId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ReleaseCashierOrderMutationResult = NonNullable<Awaited<ReturnType<typeof releaseCashierOrder>>>
+    export type ReleaseCashierOrderMutationBody = BodyType<CashReleaseRequest>
+    export type ReleaseCashierOrderMutationError = ErrorType<unknown>
+
+    export const useReleaseCashierOrder = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof releaseCashierOrder>>, TError,{orderId: number;data: BodyType<CashReleaseRequest>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof releaseCashierOrder>>,
+        TError,
+        {orderId: number;data: BodyType<CashReleaseRequest>},
+        TContext
+      > => {
+      return useMutation(getReleaseCashierOrderMutationOptions(options));
+    }
+
+export const getCloseOwnCashShiftUrl = () => {
+
+
+
+
+  return `/api/cashier/close`
+}
+
+export const closeOwnCashShift = async ( options?: Parameters<typeof customFetch>[1]): Promise<CashShift> => {
+
+  return customFetch<CashShift>(getCloseOwnCashShiftUrl(),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getCloseOwnCashShiftMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof closeOwnCashShift>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof closeOwnCashShift>>, TError,void, TContext> => {
+
+const mutationKey = ['closeOwnCashShift'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof closeOwnCashShift>>, void> = () => {
+
+
+          return  closeOwnCashShift(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CloseOwnCashShiftMutationResult = NonNullable<Awaited<ReturnType<typeof closeOwnCashShift>>>
+
+    export type CloseOwnCashShiftMutationError = ErrorType<unknown>
+
+    export const useCloseOwnCashShift = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof closeOwnCashShift>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof closeOwnCashShift>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getCloseOwnCashShiftMutationOptions(options));
+    }
+
+export const getListBusinessCashShiftsUrl = (params: ListBusinessCashShiftsParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/business/cash-shifts?${stringifiedParams}` : `/api/business/cash-shifts`
+}
+
+export const listBusinessCashShifts = async (params: ListBusinessCashShiftsParams, options?: Parameters<typeof customFetch>[1]): Promise<ListBusinessCashShifts200> => {
+
+  return customFetch<ListBusinessCashShifts200>(getListBusinessCashShiftsUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListBusinessCashShiftsQueryKey = (params?: ListBusinessCashShiftsParams,) => {
+    return [
+    `/api/business/cash-shifts`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getListBusinessCashShiftsQueryOptions = <TData = Awaited<ReturnType<typeof listBusinessCashShifts>>, TError = ErrorType<unknown>>(params: ListBusinessCashShiftsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listBusinessCashShifts>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListBusinessCashShiftsQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listBusinessCashShifts>>> = ({ signal }) => listBusinessCashShifts(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listBusinessCashShifts>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListBusinessCashShiftsQueryResult = NonNullable<Awaited<ReturnType<typeof listBusinessCashShifts>>>
+export type ListBusinessCashShiftsQueryError = ErrorType<unknown>
+
+
+
+export function useListBusinessCashShifts<TData = Awaited<ReturnType<typeof listBusinessCashShifts>>, TError = ErrorType<unknown>>(
+ params: ListBusinessCashShiftsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listBusinessCashShifts>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListBusinessCashShiftsQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetBusinessCashShiftUrl = (shiftId: number,) => {
+
+
+
+
+  return `/api/business/cash-shifts/${shiftId}`
+}
+
+export const getBusinessCashShift = async (shiftId: number, options?: Parameters<typeof customFetch>[1]): Promise<CashShiftReport> => {
+
+  return customFetch<CashShiftReport>(getGetBusinessCashShiftUrl(shiftId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetBusinessCashShiftQueryKey = (shiftId: number,) => {
+    return [
+    `/api/business/cash-shifts/${shiftId}`
+    ] as const;
+    }
+
+
+export const getGetBusinessCashShiftQueryOptions = <TData = Awaited<ReturnType<typeof getBusinessCashShift>>, TError = ErrorType<unknown>>(shiftId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getBusinessCashShift>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetBusinessCashShiftQueryKey(shiftId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getBusinessCashShift>>> = ({ signal }) => getBusinessCashShift(shiftId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: shiftId !== null && shiftId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getBusinessCashShift>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetBusinessCashShiftQueryResult = NonNullable<Awaited<ReturnType<typeof getBusinessCashShift>>>
+export type GetBusinessCashShiftQueryError = ErrorType<unknown>
+
+
+
+export function useGetBusinessCashShift<TData = Awaited<ReturnType<typeof getBusinessCashShift>>, TError = ErrorType<unknown>>(
+ shiftId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getBusinessCashShift>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetBusinessCashShiftQueryOptions(shiftId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCloseBusinessCashShiftUrl = (shiftId: number,) => {
+
+
+
+
+  return `/api/business/cash-shifts/${shiftId}/close`
+}
+
+export const closeBusinessCashShift = async (shiftId: number, options?: Parameters<typeof customFetch>[1]): Promise<CashShift> => {
+
+  return customFetch<CashShift>(getCloseBusinessCashShiftUrl(shiftId),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getCloseBusinessCashShiftMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof closeBusinessCashShift>>, TError,{shiftId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof closeBusinessCashShift>>, TError,{shiftId: number}, TContext> => {
+
+const mutationKey = ['closeBusinessCashShift'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof closeBusinessCashShift>>, {shiftId: number}> = (props) => {
+          const {shiftId} = props ?? {};
+
+          return  closeBusinessCashShift(shiftId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CloseBusinessCashShiftMutationResult = NonNullable<Awaited<ReturnType<typeof closeBusinessCashShift>>>
+
+    export type CloseBusinessCashShiftMutationError = ErrorType<unknown>
+
+    export const useCloseBusinessCashShift = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof closeBusinessCashShift>>, TError,{shiftId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof closeBusinessCashShift>>,
+        TError,
+        {shiftId: number},
+        TContext
+      > => {
+      return useMutation(getCloseBusinessCashShiftMutationOptions(options));
+    }
 
 export const getGetAccountProfileUrl = () => {
 

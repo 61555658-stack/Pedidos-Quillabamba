@@ -8,6 +8,256 @@
 import * as zod from 'zod';
 
 
+export const GetBusinessAccessResponse = zod.object({
+  "mode": zod.enum(['choose', 'administrator', 'cashier']),
+  "businesses": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string()
+})),
+  "shift": zod.union([zod.object({
+  "id": zod.number(),
+  "businessId": zod.number(),
+  "businessName": zod.string(),
+  "username": zod.string(),
+  "shift": zod.enum(['morning', 'afternoon']),
+  "openedAt": zod.string(),
+  "closedAt": zod.string().nullable(),
+  "openedByName": zod.string()
+}),zod.null()])
+})
+
+
+export const EnterBusinessAdministratorResponse = zod.object({
+  "mode": zod.enum(['choose', 'administrator', 'cashier']),
+  "businesses": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string()
+})),
+  "shift": zod.union([zod.object({
+  "id": zod.number(),
+  "businessId": zod.number(),
+  "businessName": zod.string(),
+  "username": zod.string(),
+  "shift": zod.enum(['morning', 'afternoon']),
+  "openedAt": zod.string(),
+  "closedAt": zod.string().nullable(),
+  "openedByName": zod.string()
+}),zod.null()])
+})
+
+
+export const OpenCashShiftBody = zod.object({
+  "businessId": zod.number(),
+  "username": zod.string(),
+  "password": zod.string()
+})
+
+export const OpenCashShiftResponse = zod.object({
+  "id": zod.number(),
+  "businessId": zod.number(),
+  "businessName": zod.string(),
+  "username": zod.string(),
+  "shift": zod.enum(['morning', 'afternoon']),
+  "openedAt": zod.string(),
+  "closedAt": zod.string().nullable(),
+  "openedByName": zod.string()
+})
+
+
+export const GetCashierStateResponse = zod.object({
+  "shift": zod.object({
+  "id": zod.number(),
+  "businessId": zod.number(),
+  "businessName": zod.string(),
+  "username": zod.string(),
+  "shift": zod.enum(['morning', 'afternoon']),
+  "openedAt": zod.string(),
+  "closedAt": zod.string().nullable(),
+  "openedByName": zod.string()
+}),
+  "orders": zod.array(zod.object({
+  "businessAddress": zod.string().optional(),
+  "businessPhone": zod.string().optional(),
+  "customerPhone": zod.string().optional(),
+  "deliveryPartnerPhone": zod.string().optional(),
+  "restaurantId": zod.number().optional(),
+  "deliveryFee": zod.number().optional(),
+  "deliveredAt": zod.string().optional(),
+  "rating": zod.number().nullish(),
+  "proofUrl": zod.string().optional(),
+  "customerUserId": zod.string().optional(),
+  "deliveryPartnerUserId": zod.string().optional(),
+  "id": zod.number(),
+  "restaurantName": zod.string(),
+  "customerName": zod.string(),
+  "total": zod.number(),
+  "status": zod.enum(['received', 'preparing', 'ready', 'on_the_way', 'delivered', 'cancelled']),
+  "paymentMethod": zod.enum(['cash', 'yape', 'card']),
+  "createdAt": zod.string(),
+  "deliveryAddress": zod.string().optional(),
+  "deliveryPartnerEmail": zod.string().optional(),
+  "deliveryPartnerName": zod.string().optional(),
+  "items": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "quantity": zod.number(),
+  "price": zod.number()
+}))
+})),
+  "couriers": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string()
+}))
+})
+
+
+export const ReleaseCashierOrderParams = zod.object({
+  "orderId": zod.coerce.number()
+})
+
+export const ReleaseCashierOrderBody = zod.object({
+  "courierId": zod.number().nullable()
+})
+
+export const ReleaseCashierOrderResponse = zod.object({
+  "businessAddress": zod.string().optional(),
+  "businessPhone": zod.string().optional(),
+  "customerPhone": zod.string().optional(),
+  "deliveryPartnerPhone": zod.string().optional(),
+  "restaurantId": zod.number().optional(),
+  "deliveryFee": zod.number().optional(),
+  "deliveredAt": zod.string().optional(),
+  "rating": zod.number().nullish(),
+  "proofUrl": zod.string().optional(),
+  "customerUserId": zod.string().optional(),
+  "deliveryPartnerUserId": zod.string().optional(),
+  "id": zod.number(),
+  "restaurantName": zod.string(),
+  "customerName": zod.string(),
+  "total": zod.number(),
+  "status": zod.enum(['received', 'preparing', 'ready', 'on_the_way', 'delivered', 'cancelled']),
+  "paymentMethod": zod.enum(['cash', 'yape', 'card']),
+  "createdAt": zod.string(),
+  "deliveryAddress": zod.string().optional(),
+  "deliveryPartnerEmail": zod.string().optional(),
+  "deliveryPartnerName": zod.string().optional(),
+  "items": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "quantity": zod.number(),
+  "price": zod.number()
+}))
+})
+
+
+export const CloseOwnCashShiftResponse = zod.object({
+  "id": zod.number(),
+  "businessId": zod.number(),
+  "businessName": zod.string(),
+  "username": zod.string(),
+  "shift": zod.enum(['morning', 'afternoon']),
+  "openedAt": zod.string(),
+  "closedAt": zod.string().nullable(),
+  "openedByName": zod.string()
+})
+
+
+export const ListBusinessCashShiftsQueryParams = zod.object({
+  "businessId": zod.coerce.number()
+})
+
+export const ListBusinessCashShiftsResponse = zod.object({
+  "shifts": zod.array(zod.object({
+  "id": zod.number(),
+  "businessId": zod.number(),
+  "businessName": zod.string(),
+  "username": zod.string(),
+  "shift": zod.enum(['morning', 'afternoon']),
+  "openedAt": zod.string(),
+  "closedAt": zod.string().nullable(),
+  "openedByName": zod.string()
+}))
+})
+
+
+export const GetBusinessCashShiftParams = zod.object({
+  "shiftId": zod.coerce.number()
+})
+
+export const GetBusinessCashShiftResponse = zod.object({
+  "shift": zod.object({
+  "id": zod.number(),
+  "businessId": zod.number(),
+  "businessName": zod.string(),
+  "username": zod.string(),
+  "shift": zod.enum(['morning', 'afternoon']),
+  "openedAt": zod.string(),
+  "closedAt": zod.string().nullable(),
+  "openedByName": zod.string()
+}),
+  "orders": zod.array(zod.object({
+  "businessAddress": zod.string().optional(),
+  "businessPhone": zod.string().optional(),
+  "customerPhone": zod.string().optional(),
+  "deliveryPartnerPhone": zod.string().optional(),
+  "restaurantId": zod.number().optional(),
+  "deliveryFee": zod.number().optional(),
+  "deliveredAt": zod.string().optional(),
+  "rating": zod.number().nullish(),
+  "proofUrl": zod.string().optional(),
+  "customerUserId": zod.string().optional(),
+  "deliveryPartnerUserId": zod.string().optional(),
+  "id": zod.number(),
+  "restaurantName": zod.string(),
+  "customerName": zod.string(),
+  "total": zod.number(),
+  "status": zod.enum(['received', 'preparing', 'ready', 'on_the_way', 'delivered', 'cancelled']),
+  "paymentMethod": zod.enum(['cash', 'yape', 'card']),
+  "createdAt": zod.string(),
+  "deliveryAddress": zod.string().optional(),
+  "deliveryPartnerEmail": zod.string().optional(),
+  "deliveryPartnerName": zod.string().optional(),
+  "items": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "quantity": zod.number(),
+  "price": zod.number()
+}))
+})),
+  "events": zod.array(zod.object({
+  "id": zod.number(),
+  "orderId": zod.number(),
+  "action": zod.string(),
+  "createdAt": zod.string(),
+  "courierName": zod.string().nullable()
+})),
+  "totals": zod.object({
+  "handledOrders": zod.number(),
+  "deliveredOrders": zod.number(),
+  "units": zod.number(),
+  "productSales": zod.number(),
+  "deliveryFees": zod.number(),
+  "total": zod.number()
+})
+})
+
+
+export const CloseBusinessCashShiftParams = zod.object({
+  "shiftId": zod.coerce.number()
+})
+
+export const CloseBusinessCashShiftResponse = zod.object({
+  "id": zod.number(),
+  "businessId": zod.number(),
+  "businessName": zod.string(),
+  "username": zod.string(),
+  "shift": zod.enum(['morning', 'afternoon']),
+  "openedAt": zod.string(),
+  "closedAt": zod.string().nullable(),
+  "openedByName": zod.string()
+})
+
+
 export const getAccountProfileResponseNameMax = 250;
 
 export const getAccountProfileResponsePhoneMax = 250;

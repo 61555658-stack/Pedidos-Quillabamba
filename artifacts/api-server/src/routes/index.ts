@@ -6,6 +6,7 @@ import appAuthRouter from "./app-auth";
 import operationsRouter from "./operations";
 import reportsRouter from "./reports";
 import filesRouter from "./files";
+import cashRegisterRouter from "./cash-register";
 
 const router: IRouter = Router();
 
@@ -16,5 +17,6 @@ router.use(appAuthRouter);
 router.use(operationsRouter);
 router.use(reportsRouter);
 router.use(filesRouter);
+router.use(cashRegisterRouter);
 
 export default router;

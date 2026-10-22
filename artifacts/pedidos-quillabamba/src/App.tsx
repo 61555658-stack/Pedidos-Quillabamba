@@ -26,6 +26,7 @@ import { clearSession, RoleAuthPage, RoleGate, roleHome, readSession } from '@/p
 import AdminManagementPage from '@/pages/admin-management';
 import EnhancedDeliveryPortalPage from '@/pages/delivery-portal';
 import BusinessPortalPage from '@/pages/business-portal';
+import { BusinessAccessPage, BusinessModeGate, CashierPortalPage } from '@/pages/business-access';
 import { OperationsDashboard } from '@/components/ops/dashboard';
 import { AccountSettings } from '@/components/account-settings';
 import { api } from '@/lib/operations-api';
@@ -426,7 +427,9 @@ function Router() {
       <Route path="/cart"><RoleGate allowed={['cliente']}><CartPage cart={cart} /></RoleGate></Route>
       <Route path="/orders"><RoleGate allowed={['cliente']}><OrdersPage /></RoleGate></Route>
       <Route path="/orders/:id"><RoleGate allowed={['cliente']}><OrderDetailPage /></RoleGate></Route>
-      <Route path="/business"><RoleGate allowed={['administrador_negocio', 'administrador_sistema']}><BusinessPortalPage /></RoleGate></Route>
+      <Route path="/business/access"><RoleGate allowed={['administrador_negocio', 'administrador_sistema']}><BusinessAccessPage /></RoleGate></Route>
+      <Route path="/business/cashier"><RoleGate allowed={['administrador_negocio']}><BusinessModeGate mode="cashier"><CashierPortalPage /></BusinessModeGate></RoleGate></Route>
+      <Route path="/business"><RoleGate allowed={['administrador_negocio', 'administrador_sistema']}><BusinessModeGate mode="administrator"><BusinessPortalPage /></BusinessModeGate></RoleGate></Route>
       <Route path="/admin/system"><RoleGate allowed={['administrador_sistema']}><SystemMapPage /></RoleGate></Route>
       <Route path="/admin/manage"><RoleGate allowed={['administrador_sistema']}><AdminManagementPage /></RoleGate></Route>
       <Route path="/admin"><RoleGate allowed={['administrador_sistema']}><OperationsDashboard /></RoleGate></Route>

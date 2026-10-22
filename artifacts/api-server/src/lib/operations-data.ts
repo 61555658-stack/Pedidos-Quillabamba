@@ -5,9 +5,12 @@ import type { Request } from "express";
 export class AppError extends Error {
   constructor(public status: number, message: string) { super(message); }
 }
-export function requireUser(req: Request, roles?: string[]): AppUser {
+export function requireUser(req: Request, roles?: string[], allowCashier = false): AppUser {
   if (!req.isAuthenticated()) throw new AppError(401, "Inicia sesión.");
   if (roles && !roles.includes(req.user.role)) throw new AppError(403, "No tienes permiso para esta acción.");
+  if (!allowCashier && req.user.role === "administrador_negocio" && req.user.businessMode !== "administrator") {
+    throw new AppError(403, req.user.businessMode === "cashier" ? "La caja no tiene permisos de administración. Cierra caja e inicia sesión de nuevo para administrar." : "Selecciona cómo deseas ingresar al negocio.");
+  }
   return req.user;
 }
 export async function ownsBusiness(user: AppUser, id: number, client = pool) {

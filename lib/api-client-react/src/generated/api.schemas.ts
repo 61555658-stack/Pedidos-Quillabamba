@@ -5,6 +5,147 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+export interface CashOpenRequest {
+  businessId: number;
+  username: string;
+  password: string;
+}
+
+export interface CashReleaseRequest {
+  /** @nullable */
+  courierId: number | null;
+}
+
+export type CashShiftShift = typeof CashShiftShift[keyof typeof CashShiftShift];
+
+
+export const CashShiftShift = {
+  morning: 'morning',
+  afternoon: 'afternoon',
+} as const;
+
+export interface CashShift {
+  id: number;
+  businessId: number;
+  businessName: string;
+  username: string;
+  shift: CashShiftShift;
+  openedAt: string;
+  /** @nullable */
+  closedAt: string | null;
+  openedByName: string;
+}
+
+export type BusinessAccessMode = typeof BusinessAccessMode[keyof typeof BusinessAccessMode];
+
+
+export const BusinessAccessMode = {
+  choose: 'choose',
+  administrator: 'administrator',
+  cashier: 'cashier',
+} as const;
+
+export type BusinessAccessBusinessesItem = {
+  id: number;
+  name: string;
+};
+
+export interface BusinessAccess {
+  mode: BusinessAccessMode;
+  businesses: BusinessAccessBusinessesItem[];
+  shift: CashShift | null;
+}
+
+export type CashierStateCouriersItem = {
+  id: number;
+  name: string;
+};
+
+export type OrderStatus = typeof OrderStatus[keyof typeof OrderStatus];
+
+
+export const OrderStatus = {
+  received: 'received',
+  preparing: 'preparing',
+  ready: 'ready',
+  on_the_way: 'on_the_way',
+  delivered: 'delivered',
+  cancelled: 'cancelled',
+} as const;
+
+export type OrderPaymentMethod = typeof OrderPaymentMethod[keyof typeof OrderPaymentMethod];
+
+
+export const OrderPaymentMethod = {
+  cash: 'cash',
+  yape: 'yape',
+  card: 'card',
+} as const;
+
+export interface OrderItem {
+  id: number;
+  name: string;
+  quantity: number;
+  price: number;
+}
+
+export interface Order {
+  businessAddress?: string;
+  businessPhone?: string;
+  customerPhone?: string;
+  deliveryPartnerPhone?: string;
+  restaurantId?: number;
+  deliveryFee?: number;
+  deliveredAt?: string;
+  /** @nullable */
+  rating?: number | null;
+  proofUrl?: string;
+  customerUserId?: string;
+  deliveryPartnerUserId?: string;
+  id: number;
+  restaurantName: string;
+  customerName: string;
+  total: number;
+  status: OrderStatus;
+  paymentMethod: OrderPaymentMethod;
+  createdAt: string;
+  deliveryAddress?: string;
+  deliveryPartnerEmail?: string;
+  deliveryPartnerName?: string;
+  items: OrderItem[];
+}
+
+export interface CashierState {
+  shift: CashShift;
+  orders: Order[];
+  couriers: CashierStateCouriersItem[];
+}
+
+export type CashShiftReportEventsItem = {
+  id: number;
+  orderId: number;
+  action: string;
+  createdAt: string;
+  /** @nullable */
+  courierName: string | null;
+};
+
+export type CashShiftReportTotals = {
+  handledOrders: number;
+  deliveredOrders: number;
+  units: number;
+  productSales: number;
+  deliveryFees: number;
+  total: number;
+};
+
+export interface CashShiftReport {
+  shift: CashShift;
+  orders: Order[];
+  events: CashShiftReportEventsItem[];
+  totals: CashShiftReportTotals;
+}
+
 export interface OperationalRecord { [key: string]: unknown }
 
 export interface CourierAssignmentInput {
@@ -201,60 +342,6 @@ export interface Product {
   popular: boolean;
 }
 
-export interface OrderItem {
-  id: number;
-  name: string;
-  quantity: number;
-  price: number;
-}
-
-export type OrderStatus = typeof OrderStatus[keyof typeof OrderStatus];
-
-
-export const OrderStatus = {
-  received: 'received',
-  preparing: 'preparing',
-  ready: 'ready',
-  on_the_way: 'on_the_way',
-  delivered: 'delivered',
-  cancelled: 'cancelled',
-} as const;
-
-export type OrderPaymentMethod = typeof OrderPaymentMethod[keyof typeof OrderPaymentMethod];
-
-
-export const OrderPaymentMethod = {
-  cash: 'cash',
-  yape: 'yape',
-  card: 'card',
-} as const;
-
-export interface Order {
-  businessAddress?: string;
-  businessPhone?: string;
-  customerPhone?: string;
-  deliveryPartnerPhone?: string;
-  restaurantId?: number;
-  deliveryFee?: number;
-  deliveredAt?: string;
-  /** @nullable */
-  rating?: number | null;
-  proofUrl?: string;
-  customerUserId?: string;
-  deliveryPartnerUserId?: string;
-  id: number;
-  restaurantName: string;
-  customerName: string;
-  total: number;
-  status: OrderStatus;
-  paymentMethod: OrderPaymentMethod;
-  createdAt: string;
-  deliveryAddress?: string;
-  deliveryPartnerEmail?: string;
-  deliveryPartnerName?: string;
-  items: OrderItem[];
-}
-
 export interface CourierClaimInput {
   /** @minLength 3 */
   courierEmail: string;
@@ -343,6 +430,14 @@ export interface SalesReport {
   businesses: SalesReportBusinessesItem[];
   totals: SalesReportTotals;
 }
+
+export type ListBusinessCashShiftsParams = {
+businessId: number;
+};
+
+export type ListBusinessCashShifts200 = {
+  shifts: CashShift[];
+};
 
 export type GetOperationsState200UsersItem = { [key: string]: unknown };
 

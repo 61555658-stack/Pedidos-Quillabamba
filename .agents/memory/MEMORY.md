@@ -5,3 +5,4 @@
 - [Acceso de usuarios de QUILLAYAA](quillayaa-auth.md) — los usuarios se registran en la app, nunca se les debe exigir una cuenta Replit.
 - [Ventas y cobros](ventas-y-cobros.md) — informes por entregas en hora de Perú; separar delivery y no confundir entrega con cobro verificado.
 - [Visibilidad para repartidores](disponibilidad-repartidores.md) — mostrar pedidos desde la confirmación del cliente; diferenciar ver un pedido de poder recogerlo.
+- [Turnos de caja](turnos-de-caja.md) — separar caja y administración; registrar horarios y trazabilidad sin duplicar ventas entre turnos.

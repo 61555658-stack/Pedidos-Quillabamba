@@ -1,19 +1,21 @@
 import { useState } from 'react';
-import { BarChart3, LogOut, PackageCheck, Settings, Store, Tag } from 'lucide-react';
-import { useLocation } from 'wouter';
+import { ArrowLeftRight, BarChart3, LogOut, Wallet, PackageCheck, Settings, Store, Tag } from 'lucide-react';
+import { Link, useLocation } from 'wouter';
 import { clearSession, readSession } from '@/pages/role-access';
 import { api, useMutationRunner, useOperationsState } from '@/lib/operations-api';
 import { Banner, Empty, LoadError, Panel, SelectInput, Skeleton } from '@/components/ops/ui';
 import { OrderBoard } from '@/components/ops/order-board';
 import { SalesReport } from '@/components/ops/sales-report';
+import { CashShiftsPanel } from '@/components/ops/cash-shifts';
 import { BusinessForm, CategoriesManager, ProductsManager, bizDraftFrom } from '@/components/ops/catalog';
 
-type BusinessTab = 'orders' | 'products' | 'categories' | 'sales' | 'profile';
+type BusinessTab = 'orders' | 'products' | 'categories' | 'sales' | 'cash-shifts' | 'profile';
 const menu: Array<{ id: BusinessTab; label: string; icon: typeof Store }> = [
   { id: 'orders', label: 'Pedidos', icon: PackageCheck },
   { id: 'products', label: 'Productos', icon: Store },
   { id: 'categories', label: 'Categorías', icon: Tag },
   { id: 'sales', label: 'Ventas', icon: BarChart3 },
+  { id: 'cash-shifts', label: 'Cajas', icon: Wallet },
   { id: 'profile', label: 'Perfil del negocio', icon: Settings },
 ];
 
@@ -41,6 +43,7 @@ export default function BusinessPortalPage() {
           </div>
           <div className="ml-auto flex items-center gap-3">
             <span className="hidden text-xs font-semibold text-muted-foreground sm:block">{session?.email}</span>
+            <Link href="/business/access" className="flex min-h-11 items-center gap-2 rounded-full border border-border bg-card px-3.5 text-xs font-bold" data-testid="link-business-access"><ArrowLeftRight className="h-3.5 w-3.5" /> Cambiar modo</Link>
             <button onClick={logout} className="flex min-h-11 items-center gap-2 rounded-full bg-primary px-3.5 text-xs font-bold text-white" data-testid="button-business-logout"><LogOut className="h-3.5 w-3.5" /> Salir</button>
           </div>
         </div>
@@ -50,7 +53,7 @@ export default function BusinessPortalPage() {
           <p className="px-3 pb-3 pt-2 font-mono-app text-[10px] uppercase tracking-[.16em] text-white/45">Establecimiento</p>
           <nav aria-label="Secciones del negocio" className="flex gap-1 overflow-x-auto pb-1 md:block md:space-y-1 md:pb-0">
             {menu.map(({ id, label, icon: Icon }) => (
-              <button key={id} onClick={() => { setTab(id); setMessage(null); }} data-testid={`button-business-tab-${id}`}
+              <button key={id} onClick={() => { setTab(id); setMessage(null); }} data-testid={id === 'cash-shifts' ? 'business-tab-cash-shifts' : `button-business-tab-${id}`}
                 className={`flex min-h-11 shrink-0 items-center gap-3 whitespace-nowrap rounded-xl px-3 text-left text-xs font-bold transition md:w-full ${tab === id ? 'bg-secondary text-primary' : 'text-white/65 hover:bg-white/10 hover:text-white'}`}>
                 <Icon className="h-4 w-4 shrink-0" />{label}
                 {id === 'orders' && activeCount > 0 && <span className="ml-auto rounded-full bg-accent px-2 py-0.5 font-mono-app text-[10px] text-white">{activeCount}</span>}
@@ -79,6 +82,7 @@ export default function BusinessPortalPage() {
               {tab === 'products' && <ProductsManager key={biz.id} business={biz} products={state.products} categories={state.categories} run={run} busy={busy} onError={onError} />}
               {tab === 'categories' && <CategoriesManager key={biz.id} business={biz} categories={state.categories} products={state.products} run={run} busy={busy} onError={onError} />}
               {tab === 'sales' && <SalesReport key={biz.id} businesses={businesses} lockedBusinessId={biz.id} />}
+              {tab === 'cash-shifts' && <CashShiftsPanel key={biz.id} businessId={biz.id} />}
               {tab === 'profile' && (
                 <Panel kicker="Perfil" title={biz.name}>
                   <BusinessForm key={biz.id} initial={bizDraftFrom(biz)} isSystemAdmin={false} saving={busy === 'biz-save'} onError={onError} submitLabel="Guardar perfil"

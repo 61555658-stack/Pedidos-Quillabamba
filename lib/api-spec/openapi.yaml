@@ -23,6 +23,118 @@ tags:
   - name: Auth
     description: Browser and mobile authentication endpoints
 paths:
+  /business/access:
+    get:
+      operationId: getBusinessAccess
+      tags: [dashboard]
+      responses:
+        "200":
+          description: Current server-side business mode
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BusinessAccess" }
+  /business/access/administrator:
+    post:
+      operationId: enterBusinessAdministrator
+      tags: [dashboard]
+      responses:
+        "200":
+          description: Administrator mode selected
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BusinessAccess" }
+  /cashier/open:
+    post:
+      operationId: openCashShift
+      tags: [dashboard]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CashOpenRequest" }
+      responses:
+        "201":
+          description: Cash register opened with server timestamp
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CashShift" }
+  /cashier/state:
+    get:
+      operationId: getCashierState
+      tags: [dashboard]
+      responses:
+        "200":
+          description: Restricted cash register workspace
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CashierState" }
+  /cashier/orders/{orderId}/release:
+    post:
+      operationId: releaseCashierOrder
+      tags: [orders]
+      parameters:
+        - { name: orderId, in: path, required: true, schema: { type: number } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CashReleaseRequest" }
+      responses:
+        "200":
+          description: Order released for pickup or assigned atomically
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Order" }
+  /cashier/close:
+    post:
+      operationId: closeOwnCashShift
+      tags: [dashboard]
+      responses:
+        "200":
+          description: Closed cash shift and ended cashier session
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CashShift" }
+  /business/cash-shifts:
+    get:
+      operationId: listBusinessCashShifts
+      tags: [dashboard]
+      parameters:
+        - { name: businessId, in: query, required: true, schema: { type: number } }
+      responses:
+        "200":
+          description: Owned business cash shifts, newest first
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [shifts]
+                properties:
+                  shifts: { type: array, items: { $ref: "#/components/schemas/CashShift" } }
+  /business/cash-shifts/{shiftId}:
+    get:
+      operationId: getBusinessCashShift
+      tags: [dashboard]
+      parameters:
+        - { name: shiftId, in: path, required: true, schema: { type: number } }
+      responses:
+        "200":
+          description: Shift detail including exact order and delivery timestamps
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CashShiftReport" }
+  /business/cash-shifts/{shiftId}/close:
+    post:
+      operationId: closeBusinessCashShift
+      tags: [dashboard]
+      parameters:
+        - { name: shiftId, in: path, required: true, schema: { type: number } }
+      responses:
+        "200":
+          description: Administrator closed an abandoned register
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CashShift" }
   /account:
     get:
       operationId: getAccountProfile
@@ -522,6 +634,88 @@ paths:
           description: Pending request not found
 components:
   schemas:
+    CashOpenRequest:
+      type: object
+      required: [businessId, username, password]
+      properties:
+        businessId: { type: number }
+        username: { type: string }
+        password: { type: string }
+    CashReleaseRequest:
+      type: object
+      required: [courierId]
+      properties:
+        courierId: { type: [number, "null"] }
+    CashShift:
+      type: object
+      required: [id, businessId, businessName, username, shift, openedAt, closedAt, openedByName]
+      properties:
+        id: { type: number }
+        businessId: { type: number }
+        businessName: { type: string }
+        username: { type: string }
+        shift: { type: string, enum: [morning, afternoon] }
+        openedAt: { type: string }
+        closedAt: { type: [string, "null"] }
+        openedByName: { type: string }
+    BusinessAccess:
+      type: object
+      required: [mode, businesses, shift]
+      properties:
+        mode: { type: string, enum: [choose, administrator, cashier] }
+        businesses:
+          type: array
+          items:
+            type: object
+            required: [id, name]
+            properties:
+              id: { type: number }
+              name: { type: string }
+        shift:
+          anyOf:
+            - { $ref: "#/components/schemas/CashShift" }
+            - { type: "null" }
+    CashierState:
+      type: object
+      required: [shift, orders, couriers]
+      properties:
+        shift: { $ref: "#/components/schemas/CashShift" }
+        orders: { type: array, items: { $ref: "#/components/schemas/Order" } }
+        couriers:
+          type: array
+          items:
+            type: object
+            required: [id, name]
+            properties:
+              id: { type: number }
+              name: { type: string }
+    CashShiftReport:
+      type: object
+      required: [shift, orders, events, totals]
+      properties:
+        shift: { $ref: "#/components/schemas/CashShift" }
+        orders: { type: array, items: { $ref: "#/components/schemas/Order" } }
+        events:
+          type: array
+          items:
+            type: object
+            required: [id, orderId, action, createdAt, courierName]
+            properties:
+              id: { type: number }
+              orderId: { type: number }
+              action: { type: string }
+              createdAt: { type: string }
+              courierName: { type: [string, "null"] }
+        totals:
+          type: object
+          required: [handledOrders, deliveredOrders, units, productSales, deliveryFees, total]
+          properties:
+            handledOrders: { type: number }
+            deliveredOrders: { type: number }
+            units: { type: number }
+            productSales: { type: number }
+            deliveryFees: { type: number }
+            total: { type: number }
     OperationalRecord:
       type: object
       additionalProperties: true
