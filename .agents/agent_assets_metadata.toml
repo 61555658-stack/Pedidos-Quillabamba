@@ -14,3 +14,17 @@ mtime_ms = 1788268453252
 storage_uri = "gcs://replit-rams-assets-worf/rams/assets/repl:5bf7870e-c303-4bf7-b1d5-8b3ff45a024c/a013c537-95c1-4a49-8401-02a39a5a2138/fcb9b5bd-7a6e-4471-aae4-1bfa9e66f54f"
 storage_version_token = "1788268458500019"
 content_type = "application/octet-stream"
+
+[[outputs]]
+id = "bZaxxeTdm8Te3fmK9eT-c"
+uri = "file://generated-artifacts/reports/informe-ventas-formal-2026-10-22.pdf"
+type = "pdf"
+title = "Informe de ventas — formato formal"
+description = "Informe del 22/10/2026 con los mismos datos del PDF adjunto: encabezado QUILLAYAA, resumen de importes, tablas por negocio y producto, fecha de emisión y paginación."
+logical_id = "8cf99a8a-c3be-47ac-b31d-93c6bb1f3ff6"
+content_hash = "sha256:93a9d36672a805419ac0c3150e3bdbe5a6f330360a0ae0c1a6b43b5226855936"
+size = 3295
+mtime_ms = 1792684498237
+storage_uri = "gcs://replit-rams-assets-worf/rams/assets/repl:5bf7870e-c303-4bf7-b1d5-8b3ff45a024c/8cf99a8a-c3be-47ac-b31d-93c6bb1f3ff6/5c7b6e74-3d30-4f49-b655-89f10ff8d2f6"
+storage_version_token = "1792684603467691"
+content_type = "application/pdf"

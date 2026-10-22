@@ -14,3 +14,7 @@ Un método de pago declarado o una entrega confirmada no demuestran que el cobro
 **Why:** No hay conciliación bancaria ni confirmación de pasarela en este flujo; llamarlo «cobrado» daría una garantía financiera que la aplicación no tiene.
 
 **How to apply:** Diferenciar venta entregada de pago confirmado en etiquetas e informes. Cualquier futura confirmación de pagos debe ser un estado separado, con evidencia o verificación, no inferido del estado de entrega.
+
+Los informes de ventas descargables deben mantener una presentación formal.
+
+**Why:** El usuario pidió que su informe de ventas fuera más formal.
