@@ -41,7 +41,7 @@ export function toOrder(o: Record<string, any>) {
 export async function visibleOrders(user: AppUser) {
   const scope = user.role === "administrador_sistema" ? "TRUE"
     : user.role === "administrador_negocio" ? "r.administrator_id=$1 AND r.active"
-    : user.role === "repartidor" ? "(o.delivery_partner_id=$1 OR (o.status='ready' AND o.delivery_partner_id IS NULL))"
+    : user.role === "repartidor" ? "(o.delivery_partner_id=$1 OR (o.status IN ('received','preparing','ready') AND o.delivery_partner_id IS NULL))"
     : "o.customer_id=$1";
   const result = await pool.query(`${orderSelect} WHERE ${scope} ORDER BY o.created_at DESC, o.id DESC`, scope === "TRUE" ? [] : [Number(user.id)]);
   return result.rows.map(toOrder);
@@ -52,7 +52,7 @@ export async function visibleOrder(user: AppUser, id: number, allowUnclaimed = f
   if (!row) throw new AppError(404, "Pedido no encontrado.");
   if (user.role === "administrador_sistema"
     || user.role === "cliente" && row.customer_id === Number(user.id)
-    || user.role === "repartidor" && (row.delivery_partner_id === Number(user.id) || allowUnclaimed && row.status === "ready" && !row.delivery_partner_id)) return row;
+    || user.role === "repartidor" && (row.delivery_partner_id === Number(user.id) || allowUnclaimed && ["received","preparing","ready"].includes(row.status) && !row.delivery_partner_id)) return row;
   if (user.role === "administrador_negocio") {
     await ownsBusiness(user, row.restaurant_id);
     return row;

@@ -206,8 +206,9 @@ export default function DeliveryPortalPage() {
   const courierEmail = session?.email.trim().toLowerCase() ?? '';
   const orders = ordersQuery.data ?? [];
   const availableOrders = orders.filter((order) => (
-    !order.deliveryPartnerEmail && order.status !== 'delivered' && order.status !== 'cancelled'
+    !order.deliveryPartnerUserId && ['received', 'preparing', 'ready'].includes(order.status)
   ));
+  const readyCount = availableOrders.filter((order) => order.status === 'ready').length;
   const myActiveOrders = orders.filter((order) => (
     order.deliveryPartnerEmail?.toLowerCase() === courierEmail
     && order.status !== 'delivered'
@@ -456,7 +457,7 @@ export default function DeliveryPortalPage() {
         {notice && <p role="status" className="mt-4 rounded-xl bg-violet-50 px-4 py-3 text-sm font-bold text-violet-800" data-testid="status-delivery-feedback">{notice}</p>}
         <div className="mt-6 grid gap-3 min-[520px]:grid-cols-3">
           <div className="rounded-2xl bg-card p-4 ring-1 ring-border sm:p-5"><PackageCheck className="h-5 w-5 text-accent" /><p className="mt-3 font-mono-app text-2xl font-bold">{pendingCount}</p><p className="mt-1 text-xs font-bold">Pedidos asignados</p></div>
-          <div className="rounded-2xl bg-card p-4 ring-1 ring-border sm:p-5"><MapPin className="h-5 w-5 text-accent" /><p className="mt-3 font-mono-app text-2xl font-bold">{availableOrders.length}</p><p className="mt-1 text-xs font-bold">Disponibles para tomar</p></div>
+          <div className="rounded-2xl bg-card p-4 ring-1 ring-border sm:p-5"><MapPin className="h-5 w-5 text-accent" /><p className="mt-3 font-mono-app text-2xl font-bold">{readyCount}</p><p className="mt-1 text-xs font-bold">Listos para tomar</p><p className="mt-1 text-xs text-muted-foreground">{availableOrders.length - readyCount} pendientes del negocio</p></div>
           <div className="rounded-2xl bg-card p-4 ring-1 ring-border sm:p-5"><ClipboardList className="h-5 w-5 text-accent" /><p className="mt-3 font-mono-app text-2xl font-bold">{completedCount}</p><p className="mt-1 text-xs font-bold">Entregados por ti</p></div>
         </div>
 
@@ -471,8 +472,8 @@ export default function DeliveryPortalPage() {
           <>
             <section className="mt-8">
               <div className="flex flex-wrap items-end justify-between gap-2">
-                <div><h2 className="font-display text-xl font-bold">Pedidos disponibles</h2><p className="mt-1 text-xs text-muted-foreground">Actualización automática cada pocos segundos.</p></div>
-                <span className="font-mono-app text-[10px] uppercase tracking-wide text-muted-foreground">{availableOrders.length} disponibles</span>
+                <div><h2 className="font-display text-xl font-bold">Pedidos disponibles</h2><p className="mt-1 text-xs text-muted-foreground">Los pedidos aparecen desde que el cliente confirma. Puedes tomarlos cuando el negocio los marque listos. Actualización automática cada pocos segundos.</p></div>
+                <span className="font-mono-app text-[10px] uppercase tracking-wide text-muted-foreground">{availableOrders.length} pedidos · {readyCount} listos</span>
               </div>
               <div className="mt-4 grid gap-4">
                 {availableOrders.map((order) => (
@@ -480,12 +481,12 @@ export default function DeliveryPortalPage() {
                     key={order.id}
                     order={order}
                     action={() => claim(order.id)}
-                    actionLabel={claimOrder.isPending ? 'Tomando pedido…' : 'Tomar pedido'}
-                    disabled={claimOrder.isPending}
+                    actionLabel={order.status === 'received' ? 'Esperando confirmación del negocio' : order.status === 'preparing' ? 'El negocio está preparando el pedido' : claimOrder.isPending ? 'Tomando pedido…' : 'Tomar pedido'}
+                    disabled={claimOrder.isPending || order.status !== 'ready'}
                     actionTestId={`button-claim-order-${order.id}`}
                   />
                 ))}
-                {!availableOrders.length && <div className="rounded-2xl border border-dashed border-border bg-card p-6 text-center text-sm text-muted-foreground">No hay pedidos nuevos por tomar. Esta lista se actualizará automáticamente.</div>}
+                {!availableOrders.length && <div className="rounded-2xl border border-dashed border-border bg-card p-6 text-center text-sm text-muted-foreground">No hay pedidos nuevos sin asignar. Esta lista se actualizará automáticamente.</div>}
               </div>
             </section>
 
