@@ -5,7 +5,7 @@ import { Link, Route, Router as WouterRouter, Switch, useLocation, useParams } f
 import {
   ArrowLeft, ArrowRight, Banknote, BarChart3, Bike, Check, ChevronDown, CircleUserRound, Clock3, CreditCard, LogOut,
   Flame, MapPin, Menu, Minus, MoreHorizontal, PackageCheck, Plus, Search,
-  ShoppingBag, SlidersHorizontal, Star, Store, Tag, TrendingUp, UserRound, Users, Utensils, Wallet,
+  ShoppingBag, SlidersHorizontal, Star, Store, Tag, TrendingUp, UserRound, Users, Wallet,
 } from 'lucide-react';
 import {
   getGetDashboardSummaryQueryKey, getGetOrderQueryKey, getListOrdersQueryKey,
@@ -17,6 +17,7 @@ import type {
   DashboardSummary, Order, OrderItem, OrderStatus, OrderStatusInputStatus, Product, Restaurant,
 } from '@workspace/api-client-react';
 import { ErrorBoundary } from '@/components/error-boundary';
+import { BrandLogo } from '@/components/brand-logo';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
@@ -92,7 +93,7 @@ function useCart() {
 }
 
 function Mark() {
-  return <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-secondary text-primary shadow-sm"><Utensils className="h-4 w-4" strokeWidth={2.5} /></span>;
+  return <BrandLogo />;
 }
 
 // Encabezado público usado por las pantallas del cliente.

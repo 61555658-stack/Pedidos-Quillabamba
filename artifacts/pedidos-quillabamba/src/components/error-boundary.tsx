@@ -5,7 +5,8 @@ import {
   type ReactNode,
 } from 'react';
 import { Link } from 'wouter';
-import { RotateCcw, Utensils } from 'lucide-react';
+import { RotateCcw } from 'lucide-react';
+import { BrandLogo } from '@/components/brand-logo';
 
 export interface ErrorFallbackProps {
   error: Error;
@@ -41,7 +42,7 @@ function DefaultFallback({ error, resetError }: ErrorFallbackProps) {
   return (
     <div className="paper-grid flex min-h-[100dvh] w-full items-center justify-center bg-background p-6">
       <div className="w-full max-w-lg rounded-3xl bg-card p-8 text-center ring-1 ring-border warm-shadow">
-        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-accent text-white"><Utensils className="h-6 w-6" /></div>
+        <BrandLogo className="mx-auto h-16 w-16" />
         <p className="mt-6 font-mono-app text-[10px] font-bold uppercase tracking-[.18em] text-accent">Pausa inesperada</p>
         <h1 className="mt-2 font-display text-2xl font-bold text-primary">
           Algo no salió como esperábamos.

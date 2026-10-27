@@ -1,7 +1,8 @@
 import { useEffect, useState, type InputHTMLAttributes, type ReactNode } from 'react';
-import { ArrowRight, Bike, Building2, Check, ClipboardList, Eye, EyeOff, LogOut, MapPin, PackageCheck, ShieldCheck, Store, Users, Utensils } from 'lucide-react';
+import { ArrowRight, Bike, Building2, Check, ClipboardList, Eye, EyeOff, LogOut, MapPin, PackageCheck, ShieldCheck, Store, Users } from 'lucide-react';
 import { Link, useLocation } from 'wouter';
 import { confirmRegistrationCode, sendRegistrationCode } from '@workspace/api-client-react';
+import { BrandLogo } from '@/components/brand-logo';
 
 export type UserRole = 'cliente' | 'administrador_negocio' | 'repartidor' | 'administrador_sistema';
 
@@ -283,7 +284,7 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
   return (
     <div className="paper-grid min-h-[100dvh] bg-background px-4 py-5 sm:px-5 sm:py-6">
       <Link href="/" className="mx-auto flex max-w-[1100px] items-center gap-3" data-testid="link-role-auth-brand">
-        <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-secondary text-primary"><Utensils className="h-4 w-4" /></span>
+        <BrandLogo />
         <span className="font-display text-lg font-bold text-primary">QUILLAYAA<span className="text-accent">.</span></span>
       </Link>
       <div className="mx-auto mt-6 max-w-[1080px] overflow-hidden rounded-3xl bg-card ring-1 ring-border warm-shadow sm:mt-10 md:grid md:grid-cols-[.8fr_1.2fr]">
@@ -452,7 +453,7 @@ export function PasswordRecoveryPage() {
   return (
     <div className="paper-grid min-h-[100dvh] bg-background px-4 py-5 sm:px-5 sm:py-6">
       <Link href="/" className="mx-auto flex max-w-[1100px] items-center gap-3" data-testid="link-password-recovery-brand">
-        <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-secondary text-primary"><Utensils className="h-4 w-4" /></span>
+        <BrandLogo />
         <span className="font-display text-lg font-bold text-primary">QUILLAYAA<span className="text-accent">.</span></span>
       </Link>
       <main className="mx-auto mt-8 max-w-xl rounded-3xl bg-card p-6 ring-1 ring-border warm-shadow sm:mt-12 sm:p-10">

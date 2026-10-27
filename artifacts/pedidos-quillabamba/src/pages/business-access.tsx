@@ -8,6 +8,7 @@ import {
 import { clearSession, readSession } from '@/pages/role-access';
 import { Banner, Empty, LoadError, SelectInput, Skeleton, TextInput, btnGhost, btnPrimary } from '@/components/ops/ui';
 import { errText } from '@/lib/cash-format';
+import { BrandLogo } from '@/components/brand-logo';
 export { default as CashierPortalPage } from '@/pages/cashier-portal';
 
 function Shell({ children, onLogout }: { children: ReactNode; onLogout: () => void }) {
@@ -15,7 +16,7 @@ function Shell({ children, onLogout }: { children: ReactNode; onLogout: () => vo
     <main className="min-h-[100dvh] bg-[#f1efe7] text-primary">
       <header className="border-b border-border/70 bg-[#f7f5ee]">
         <div className="mx-auto flex h-16 max-w-3xl items-center gap-3 px-4">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-secondary"><Store className="h-4 w-4" /></span>
+          <BrandLogo />
           <div>
             <p className="font-display font-bold">QUILLAYAA</p>
             <p className="font-mono-app text-[9px] uppercase tracking-[.14em] text-muted-foreground">Acceso al negocio</p>

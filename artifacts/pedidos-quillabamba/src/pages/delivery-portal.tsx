@@ -5,6 +5,7 @@ import { getListOrdersQueryKey, useClaimOrder, useListOrders, useUpdateOrderStat
 import type { Order, OrderStatusInputStatus } from '@workspace/api-client-react';
 import { useLocation } from 'wouter';
 import { clearSession, readSession } from '@/pages/role-access';
+import { BrandLogo } from '@/components/brand-logo';
 
 function statusLabel(status: Order['status']) {
   return ({
@@ -423,7 +424,7 @@ export default function DeliveryPortalPage() {
       )}
       <header className="border-b border-border/70 bg-[#f7f5ee]">
         <div className="mx-auto flex min-h-16 max-w-[1200px] items-center gap-3 px-4 py-2 sm:px-5 md:px-8">
-          <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-secondary"><Bike className="h-4 w-4" /></span>
+          <BrandLogo />
           <div>
             <p className="font-display font-bold">QUILLAYAA</p>
             <p className="font-mono-app text-[9px] uppercase tracking-[.14em] text-muted-foreground">Panel de repartidor</p>

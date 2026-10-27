@@ -1,4 +1,5 @@
-import { Banknote, BarChart3, Bike, Building2, PackageCheck, ShieldCheck, Users, Utensils } from 'lucide-react';
+import { Banknote, BarChart3, Bike, Building2, PackageCheck, ShieldCheck, Users } from 'lucide-react';
+import { BrandLogo } from '@/components/brand-logo';
 import { Link } from 'wouter';
 
 type Role = {
@@ -57,9 +58,7 @@ export default function SystemMapPage() {
 
         <section className="mt-8 rounded-3xl bg-primary p-6 text-white shadow-[0_18px_50px_hsl(266_76%_25%/.15)] sm:p-9">
           <div className="mx-auto max-w-md text-center">
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-secondary text-primary">
-              <Utensils className="h-6 w-6" />
-            </div>
+            <BrandLogo className="mx-auto h-16 w-16" />
             <h2 className="mt-4 font-display text-2xl font-bold tracking-[-.03em]">QUILLAYAA</h2>
             <p className="mt-1 text-sm text-white/60">Plataforma de pedidos de comida y bebidas</p>
           </div>

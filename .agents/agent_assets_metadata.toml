@@ -42,3 +42,17 @@ mtime_ms = 1793119395130
 storage_uri = "gcs://replit-rams-assets-worf/rams/assets/repl:5bf7870e-c303-4bf7-b1d5-8b3ff45a024c/8c81f5bd-74b8-4a90-a1c2-2e4a535a088e/3351e40b-41ae-4d0c-b352-b31578ac20e1"
 storage_version_token = "1793119446936233"
 content_type = "application/octet-stream"
+
+[[outputs]]
+id = "7T_gXyf5IjvIywkAsjUPy"
+uri = "file://generated-artifacts/android/QUILLAYAA-logo.apk"
+type = "unspecified"
+title = "QUILLAYAA — APK con tu logo"
+description = "APK de prueba para Android 10 o superior, con la imagen elegida como icono. Requiere internet y el entorno de Replit activo. Si ya instalaste el APK anterior, desinstálalo primero porque esta compilación usa otra firma temporal."
+logical_id = "04e9f860-21a1-4ae8-99b7-247aa993af06"
+content_hash = "sha256:0b7a1cdd424375f15bab3faf6dd416b414a6f0c54eb94b45e90570e65fdeac75"
+size = 238066
+mtime_ms = 1793120013402
+storage_uri = "gcs://replit-rams-assets-worf/rams/assets/repl:5bf7870e-c303-4bf7-b1d5-8b3ff45a024c/04e9f860-21a1-4ae8-99b7-247aa993af06/58410dd9-6cca-4d8f-ba72-190038dde1d4"
+storage_version_token = "1793120056449502"
+content_type = "application/octet-stream"

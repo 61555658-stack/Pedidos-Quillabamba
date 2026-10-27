@@ -7,3 +7,4 @@
 - [Visibilidad para repartidores](disponibilidad-repartidores.md) — mostrar pedidos desde la confirmación del cliente; diferenciar ver un pedido de poder recogerlo.
 - [Turnos de caja](turnos-de-caja.md) — separar caja y administración; registrar horarios y trazabilidad sin duplicar ventas entre turnos.
 - [Verificación de APK](verificacion-apk.md) — validar con herramientas Android; unzip antiguo puede rechazar extras de alineación válidos.
+- [Logo de QUILLAYAA](logo-quillayaa.md) — conservar la imagen elegida por el usuario como identidad de la aplicación y del APK.
