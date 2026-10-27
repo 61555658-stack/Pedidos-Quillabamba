@@ -293,7 +293,7 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
             <p className="font-mono-app text-[10px] uppercase tracking-[.18em] text-white drop-shadow-md">Acceso por roles</p>
             <div>
               <h1 className="font-display text-3xl font-bold leading-tight text-white drop-shadow-md md:text-4xl">Una plataforma,<br /><span className="text-secondary">cuatro formas</span><br />de trabajar.</h1>
-              <p className="mt-5 max-w-xs text-sm leading-6 text-white/90 drop-shadow-md">Cada persona entra al espacio que corresponde a su cargo dentro de QUILLAYAA.</p>
+              <p className="mt-5 max-w-xs text-sm leading-6 text-white/90 drop-shadow-md">Juntos impulsamos los negocios de Quillabamba y acercamos cada pedido a su destino.</p>
             </div>
           </div>
         </div>
