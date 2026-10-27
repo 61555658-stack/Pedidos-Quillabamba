@@ -68,13 +68,6 @@ export const roleLabels: Record<UserRole, string> = {
   administrador_sistema: 'Administrador del sistema',
 };
 
-export const roleDescriptions: Record<UserRole, string> = {
-  cliente: 'Compra, carrito y seguimiento de pedidos.',
-  administrador_negocio: 'Negocio, productos y pedidos recibidos.',
-  repartidor: 'Entregas asignadas y estados de delivery.',
-  administrador_sistema: 'Usuarios, negocios, operaciones y reportes.',
-};
-
 function normalizeRole(role: unknown): UserRole | null {
   if (role === 'administrador') return 'administrador_sistema';
   if (role === 'cliente' || role === 'administrador_negocio' || role === 'repartidor' || role === 'administrador_sistema') return role;
@@ -324,7 +317,6 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
               {roleOptions.filter(({ value }) => mode === 'login' || value !== 'administrador_sistema').map(({ value, icon: Icon }) => <button type="button" key={value} disabled={!!pendingVerification || submitting} aria-pressed={role === value} onClick={() => { setRole(value); clearFieldError('role'); setNotice(''); }} className={`rounded-xl p-3 text-left ring-1 transition disabled:cursor-not-allowed ${role === value ? 'bg-secondary/35 text-primary ring-accent' : 'bg-background text-muted-foreground ring-border hover:ring-secondary'}`} data-testid={`button-role-${value}`}>
                 <Icon className="h-4 w-4" />
                 <span className="mt-2 block text-xs font-extrabold">{roleLabels[value]}</span>
-                <span className="mt-1 block text-[10px] leading-4">{roleDescriptions[value]}</span>
               </button>)}
             </div>
             {fieldErrors.role && <FieldError id="role-choice-error" message={fieldErrors.role} />}
