@@ -70,3 +70,17 @@ mtime_ms = 1793120251910
 storage_uri = "gcs://replit-rams-assets-worf/rams/assets/repl:5bf7870e-c303-4bf7-b1d5-8b3ff45a024c/52cb29c3-6b41-4fee-a86b-910d6a3b39fc/2e920db2-a4cd-46cf-b2ec-aa54552f8a1e"
 storage_version_token = "1793120256613000"
 content_type = "application/octet-stream"
+
+[[outputs]]
+id = "6uq2ozUjh9sUE60MSimUu"
+uri = "file://generated-artifacts/android/Quilla-Yaa!.apk"
+type = "unspecified"
+title = "Quilla-Yaa!"
+description = "APK de prueba con el nombre solicitado: Quilla-Yaa!.apk."
+logical_id = "a0523391-acb3-497f-98d5-13dbab59fb71"
+content_hash = "sha256:0b7a1cdd424375f15bab3faf6dd416b414a6f0c54eb94b45e90570e65fdeac75"
+size = 238066
+mtime_ms = 1793120293542
+storage_uri = "gcs://replit-rams-assets-worf/rams/assets/repl:5bf7870e-c303-4bf7-b1d5-8b3ff45a024c/a0523391-acb3-497f-98d5-13dbab59fb71/92eaa798-76f8-4695-a454-f20176983882"
+storage_version_token = "1793120298280153"
+content_type = "application/octet-stream"
