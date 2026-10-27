@@ -28,3 +28,17 @@ mtime_ms = 1792684498237
 storage_uri = "gcs://replit-rams-assets-worf/rams/assets/repl:5bf7870e-c303-4bf7-b1d5-8b3ff45a024c/8cf99a8a-c3be-47ac-b31d-93c6bb1f3ff6/5c7b6e74-3d30-4f49-b655-89f10ff8d2f6"
 storage_version_token = "1792684603467691"
 content_type = "application/pdf"
+
+[[outputs]]
+id = "x8MIZnqH4z-SeURLX8JDl"
+uri = "file://generated-artifacts/android/QUILLAYAA-pruebas.apk"
+type = "unspecified"
+title = "QUILLAYAA — APK de prueba"
+description = "Instalable en Android 10 o superior. Abre la versión actual de prueba; requiere internet y que el entorno de Replit esté activo. Firma verificada; aún no probado en un dispositivo Android."
+logical_id = "8c81f5bd-74b8-4a90-a1c2-2e4a535a088e"
+content_hash = "sha256:c4c76e27db07f23415695df81cf451a14cf2ad1303bf105f598e2a3fbe9f5057"
+size = 20978
+mtime_ms = 1793119395130
+storage_uri = "gcs://replit-rams-assets-worf/rams/assets/repl:5bf7870e-c303-4bf7-b1d5-8b3ff45a024c/8c81f5bd-74b8-4a90-a1c2-2e4a535a088e/3351e40b-41ae-4d0c-b352-b31578ac20e1"
+storage_version_token = "1793119446936233"
+content_type = "application/octet-stream"
