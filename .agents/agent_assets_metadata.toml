@@ -84,3 +84,17 @@ mtime_ms = 1793120293542
 storage_uri = "gcs://replit-rams-assets-worf/rams/assets/repl:5bf7870e-c303-4bf7-b1d5-8b3ff45a024c/a0523391-acb3-497f-98d5-13dbab59fb71/92eaa798-76f8-4695-a454-f20176983882"
 storage_version_token = "1793120298280153"
 content_type = "application/octet-stream"
+
+[[outputs]]
+id = "7ZKu_9VTLhguhjnag_4Y_"
+uri = "file://generated-artifacts/capturas/interfaz-quilla-yaa.jpg"
+type = "image"
+title = "Interfaz de Quilla-Yaa!"
+description = "Vista actual de la pantalla de acceso en celular, con tu logo y las cuatro opciones de ingreso."
+logical_id = "5ed2864e-4f4f-4b37-af05-e5b5f0df4aa7"
+content_hash = "sha256:4bbf3ddec59f3715a5d339b08af9cc68311139451123d9c9f119f6df6176d649"
+size = 54876
+mtime_ms = 1793193631228
+storage_uri = "gcs://replit-rams-assets-worf/rams/assets/repl:5bf7870e-c303-4bf7-b1d5-8b3ff45a024c/5ed2864e-4f4f-4b37-af05-e5b5f0df4aa7/bddb643f-2060-4ed2-bf3c-39dbf06d3f53"
+storage_version_token = "1793193637128852"
+content_type = "image/jpeg"
