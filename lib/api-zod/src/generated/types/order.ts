@@ -5,6 +5,7 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { DeliveryLocation } from './deliveryLocation';
 import type { OrderItem } from './orderItem';
 import type { OrderPaymentMethod } from './orderPaymentMethod';
 import type { OrderStatus } from './orderStatus';
@@ -31,6 +32,7 @@ export interface Order {
   createdAt: string;
   deliveryAddress?: string;
   deliveryPartnerEmail?: string;
+  deliveryLocation?: DeliveryLocation;
   deliveryPartnerName?: string;
   /** DNI del repartidor asignado; solo visible para el negocio autorizado y administración. */
   deliveryPartnerDni?: string;

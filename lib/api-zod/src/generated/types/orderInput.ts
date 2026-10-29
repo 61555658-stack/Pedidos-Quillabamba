@@ -5,6 +5,7 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { DeliveryLocation } from './deliveryLocation';
 import type { OrderInputPaymentMethod } from './orderInputPaymentMethod';
 import type { OrderItem } from './orderItem';
 
@@ -14,5 +15,6 @@ export interface OrderInput {
   total: number;
   paymentMethod: OrderInputPaymentMethod;
   deliveryAddress: string;
+  deliveryLocation?: DeliveryLocation;
   items: OrderItem[];
 }

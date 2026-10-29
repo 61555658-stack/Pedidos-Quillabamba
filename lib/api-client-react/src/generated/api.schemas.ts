@@ -201,6 +201,30 @@ export const OrderPaymentMethod = {
   card: 'card',
 } as const;
 
+export type DeliveryLocationSource = typeof DeliveryLocationSource[keyof typeof DeliveryLocationSource];
+
+
+export const DeliveryLocationSource = {
+  gps: 'gps',
+  map: 'map',
+} as const;
+
+export interface DeliveryLocation {
+  /**
+     * @minimum -90
+     * @maximum 90
+     */
+  latitude: number;
+  /**
+     * @minimum -180
+     * @maximum 180
+     */
+  longitude: number;
+  source: DeliveryLocationSource;
+  /** @minimum 0 */
+  accuracy?: number;
+}
+
 export interface OrderItem {
   id: number;
   name: string;
@@ -230,6 +254,7 @@ export interface Order {
   createdAt: string;
   deliveryAddress?: string;
   deliveryPartnerEmail?: string;
+  deliveryLocation?: DeliveryLocation;
   deliveryPartnerName?: string;
   /** DNI del repartidor asignado; solo visible para el negocio autorizado y administración. */
   deliveryPartnerDni?: string;
@@ -506,6 +531,7 @@ export interface OrderInput {
   total: number;
   paymentMethod: OrderInputPaymentMethod;
   deliveryAddress: string;
+  deliveryLocation?: DeliveryLocation;
   items: OrderItem[];
 }
 

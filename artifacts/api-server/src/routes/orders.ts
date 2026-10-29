@@ -34,7 +34,7 @@ router.get("/orders",async(req,res)=>{
 router.post("/orders",async(req,res)=>{
   const user=requireUser(req,["cliente"]);
   const data=CreateOrderBody.parse(req.body);
-  if(!data.deliveryAddress?.trim() || !data.items.length || data.items.length>100) throw new AppError(400,"Completa la dirección y agrega productos al carrito.");
+  if((!data.deliveryLocation&&!data.deliveryAddress?.trim()) || !data.items.length || data.items.length>100) throw new AppError(400,"Selecciona el punto de entrega y agrega productos al carrito.");
   const quantities=new Map<number,number>();
   for(const item of data.items) {
     if(!Number.isSafeInteger(item.id)||!Number.isSafeInteger(item.quantity)||item.quantity<1||item.quantity>1000) throw new AppError(400,"Cantidad de producto inválida.");
@@ -63,9 +63,12 @@ router.post("/orders",async(req,res)=>{
     if(subtotal<cents(minimum)) throw new AppError(400,`El pedido mínimo de productos es S/ ${minimum.toFixed(2)}.`);
     const fee=cents(Number(restaurant.delivery_fee));
     if(cents(data.total)!==subtotal+fee) throw new AppError(409,"Los precios o el costo de delivery cambiaron. Actualiza el carrito antes de confirmar.");
-    const created=await client.query(`INSERT INTO public.orders(restaurant_id,restaurant_name,customer_id,customer_name,total,status,payment_method,delivery_address,items,delivery_fee)
-      VALUES($1,$2,$3,$4,$5,'received',$6,$7,$8,$9) RETURNING id`,
-      [restaurant.restaurant_id,restaurant.restaurant_name,Number(user.id),user.firstName,(subtotal+fee)/100,data.paymentMethod,data.deliveryAddress.trim(),JSON.stringify(items),fee/100]);
+    const deliveryAddress=data.deliveryLocation
+      ? `Ubicación de entrega: ${data.deliveryLocation.latitude.toFixed(6)}, ${data.deliveryLocation.longitude.toFixed(6)}`
+      : data.deliveryAddress.trim();
+    const created=await client.query(`INSERT INTO public.orders(restaurant_id,restaurant_name,customer_id,customer_name,total,status,payment_method,delivery_address,items,delivery_fee,delivery_location)
+      VALUES($1,$2,$3,$4,$5,'received',$6,$7,$8,$9,$10) RETURNING id`,
+      [restaurant.restaurant_id,restaurant.restaurant_name,Number(user.id),user.firstName,(subtotal+fee)/100,data.paymentMethod,deliveryAddress,JSON.stringify(items),fee/100,data.deliveryLocation?JSON.stringify(data.deliveryLocation):null]);
     orderId=created.rows[0].id;
     for(const item of items) await client.query("UPDATE public.products SET stock=stock-$1,updated_at=now() WHERE id=$2",[item.quantity,item.id]);
     await client.query("COMMIT");

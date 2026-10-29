@@ -66,6 +66,10 @@ function OrderCard({ o, couriers, isAdmin, run, busy }: { o: OpsOrder; couriers?
           </div>
         </div>
         <dl className="space-y-2 text-xs">
+          {o.deliveryLocation && <div><dt className="sr-only">Ubicación de entrega</dt><dd><a
+            href={`https://www.google.com/maps?q=${o.deliveryLocation.latitude},${o.deliveryLocation.longitude}`}
+            target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center font-bold text-accent underline"
+            data-testid={`order-delivery-map-${o.id}`}>Ver punto de entrega en el mapa</a></dd></div>}
           <div className="flex gap-2"><MapPin className="h-4 w-4 shrink-0 text-accent" /><div><dt className="sr-only">Dirección</dt><dd>{o.deliveryAddress || 'Sin dirección'}</dd></div></div>
           <div><dt className="inline font-bold">Método de pago declarado: </dt><dd className="inline">{paymentLabels[o.paymentMethod]} · cobro no verificado</dd></div>
           <div className="flex min-w-0 gap-2"><Bike className="h-4 w-4 shrink-0 text-accent" /><div className="min-w-0 break-words"><dt className="sr-only">Repartidor asignado</dt><dd>{o.deliveryPartnerName ? `${o.deliveryPartnerName}${o.deliveryPartnerEmail ? ` · ${o.deliveryPartnerEmail}` : ''}` : 'Sin repartidor asignado'}</dd>

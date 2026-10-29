@@ -42,6 +42,8 @@ export * from './createOperationalEntity201';
 export * from './dashboardSummary';
 export * from './dashboardSummaryWeeklySalesItem';
 export * from './deleteOperationalEntity200';
+export * from './deliveryLocation';
+export * from './deliveryLocationSource';
 export * from './downloadSalesReportParams';
 export * from './downloadSalesReportPeriod';
 export * from './errorEnvelope';

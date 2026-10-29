@@ -150,6 +150,9 @@ function OrderCard({
             <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
             <span className="break-words">{order.deliveryAddress || 'Dirección no registrada'}</span>
           </p>
+          {order.deliveryLocation && <a href={`https://www.google.com/maps/dir/?api=1&destination=${order.deliveryLocation.latitude},${order.deliveryLocation.longitude}`}
+            target="_blank" rel="noopener noreferrer" className="mt-1 inline-flex min-h-11 items-center text-xs font-bold text-accent underline"
+            data-testid={`delivery-destination-${order.id}`}>Cómo llegar al punto de entrega</a>}
           {order.customerPhone&&<a href={`tel:${order.customerPhone.replace(/[^\d+]/g,'')}`} className="mt-1 inline-flex min-h-11 items-center text-xs font-bold underline">Llamar al cliente: {order.customerPhone}</a>}
           <p className="mt-2 text-xs text-muted-foreground">
             {new Date(order.createdAt).toLocaleString('es-PE', { dateStyle: 'medium', timeStyle: 'short' })}

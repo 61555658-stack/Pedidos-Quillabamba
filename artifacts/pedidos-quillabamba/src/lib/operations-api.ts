@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { OpeningHours } from '@workspace/api-client-react';
+import type { DeliveryLocation, OpeningHours } from '@workspace/api-client-react';
 
 export type OpsUser = { id: number; name: string; email: string; role: string; active: boolean; phone: string; address: string };
 export type OpsBusiness = { id: number; name: string; ruc: string; address: string; phone: string; administratorId: number | null; administratorName: string; isOpen: boolean; openNow: boolean; openingHours: OpeningHours | null; active: boolean; cuisine: string; deliveryFee: number; image: string };
@@ -9,6 +9,7 @@ export type OrderStatus = 'received' | 'preparing' | 'ready' | 'on_the_way' | 'd
 export type OpsOrder = {
   id: number; restaurantId: number; restaurantName: string; customerName: string; total: number; status: OrderStatus;
   paymentMethod: 'cash' | 'yape' | 'card'; createdAt: string; deliveryAddress: string;
+  deliveryLocation?: DeliveryLocation;
   deliveryPartnerUserId?: string; deliveryPartnerName?: string; deliveryPartnerEmail?: string;
   deliveryPartnerDni?: string; deliveryPartnerVehiclePlate?: string;
   businessPhone?: string; businessAddress?: string; customerPhone?: string; deliveryPartnerPhone?: string;

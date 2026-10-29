@@ -33,6 +33,7 @@ export function toOrder(o: Record<string, any>, viewerRole?: string) {
     total: Number(o.total), deliveryFee: Number(o.delivery_fee),
     status: o.status, paymentMethod: o.payment_method,
     createdAt: new Date(o.created_at).toISOString(), deliveryAddress: o.delivery_address || "",
+    ...(o.delivery_location ? { deliveryLocation: o.delivery_location } : {}),
     items: o.items,
     businessAddress: o.business_address || "", businessPhone: o.business_phone || "",
     customerPhone: o.delivery_partner_id ? o.customer_phone || "" : "",

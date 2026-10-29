@@ -190,6 +190,16 @@ export const OpenCashShiftResponse = zod.object({
 })
 
 
+export const getCashierStateResponseOrdersItemDeliveryLocationLatitudeMin = -90;
+export const getCashierStateResponseOrdersItemDeliveryLocationLatitudeMax = 90;
+
+export const getCashierStateResponseOrdersItemDeliveryLocationLongitudeMin = -180;
+export const getCashierStateResponseOrdersItemDeliveryLocationLongitudeMax = 180;
+
+export const getCashierStateResponseOrdersItemDeliveryLocationAccuracyMin = 0;
+
+
+
 export const GetCashierStateResponse = zod.object({
   "shift": zod.object({
   "id": zod.number(),
@@ -222,6 +232,12 @@ export const GetCashierStateResponse = zod.object({
   "createdAt": zod.string(),
   "deliveryAddress": zod.string().optional(),
   "deliveryPartnerEmail": zod.string().optional(),
+  "deliveryLocation": zod.object({
+  "latitude": zod.number().min(getCashierStateResponseOrdersItemDeliveryLocationLatitudeMin).max(getCashierStateResponseOrdersItemDeliveryLocationLatitudeMax),
+  "longitude": zod.number().min(getCashierStateResponseOrdersItemDeliveryLocationLongitudeMin).max(getCashierStateResponseOrdersItemDeliveryLocationLongitudeMax),
+  "source": zod.enum(['gps', 'map']),
+  "accuracy": zod.number().min(getCashierStateResponseOrdersItemDeliveryLocationAccuracyMin).optional()
+}).optional(),
   "deliveryPartnerName": zod.string().optional(),
   "deliveryPartnerDni": zod.string().optional().describe('DNI del repartidor asignado; solo visible para el negocio autorizado y administración.'),
   "deliveryPartnerVehiclePlate": zod.string().optional().describe('Placa registrada del repartidor asignado; solo visible para el negocio autorizado y administración.'),
@@ -247,6 +263,16 @@ export const ReleaseCashierOrderBody = zod.object({
   "courierId": zod.number().nullable()
 })
 
+export const releaseCashierOrderResponseDeliveryLocationLatitudeMin = -90;
+export const releaseCashierOrderResponseDeliveryLocationLatitudeMax = 90;
+
+export const releaseCashierOrderResponseDeliveryLocationLongitudeMin = -180;
+export const releaseCashierOrderResponseDeliveryLocationLongitudeMax = 180;
+
+export const releaseCashierOrderResponseDeliveryLocationAccuracyMin = 0;
+
+
+
 export const ReleaseCashierOrderResponse = zod.object({
   "businessAddress": zod.string().optional(),
   "businessPhone": zod.string().optional(),
@@ -268,6 +294,12 @@ export const ReleaseCashierOrderResponse = zod.object({
   "createdAt": zod.string(),
   "deliveryAddress": zod.string().optional(),
   "deliveryPartnerEmail": zod.string().optional(),
+  "deliveryLocation": zod.object({
+  "latitude": zod.number().min(releaseCashierOrderResponseDeliveryLocationLatitudeMin).max(releaseCashierOrderResponseDeliveryLocationLatitudeMax),
+  "longitude": zod.number().min(releaseCashierOrderResponseDeliveryLocationLongitudeMin).max(releaseCashierOrderResponseDeliveryLocationLongitudeMax),
+  "source": zod.enum(['gps', 'map']),
+  "accuracy": zod.number().min(releaseCashierOrderResponseDeliveryLocationAccuracyMin).optional()
+}).optional(),
   "deliveryPartnerName": zod.string().optional(),
   "deliveryPartnerDni": zod.string().optional().describe('DNI del repartidor asignado; solo visible para el negocio autorizado y administración.'),
   "deliveryPartnerVehiclePlate": zod.string().optional().describe('Placa registrada del repartidor asignado; solo visible para el negocio autorizado y administración.'),
@@ -314,6 +346,16 @@ export const GetBusinessCashShiftParams = zod.object({
   "shiftId": zod.coerce.number()
 })
 
+export const getBusinessCashShiftResponseOrdersItemDeliveryLocationLatitudeMin = -90;
+export const getBusinessCashShiftResponseOrdersItemDeliveryLocationLatitudeMax = 90;
+
+export const getBusinessCashShiftResponseOrdersItemDeliveryLocationLongitudeMin = -180;
+export const getBusinessCashShiftResponseOrdersItemDeliveryLocationLongitudeMax = 180;
+
+export const getBusinessCashShiftResponseOrdersItemDeliveryLocationAccuracyMin = 0;
+
+
+
 export const GetBusinessCashShiftResponse = zod.object({
   "shift": zod.object({
   "id": zod.number(),
@@ -346,6 +388,12 @@ export const GetBusinessCashShiftResponse = zod.object({
   "createdAt": zod.string(),
   "deliveryAddress": zod.string().optional(),
   "deliveryPartnerEmail": zod.string().optional(),
+  "deliveryLocation": zod.object({
+  "latitude": zod.number().min(getBusinessCashShiftResponseOrdersItemDeliveryLocationLatitudeMin).max(getBusinessCashShiftResponseOrdersItemDeliveryLocationLatitudeMax),
+  "longitude": zod.number().min(getBusinessCashShiftResponseOrdersItemDeliveryLocationLongitudeMin).max(getBusinessCashShiftResponseOrdersItemDeliveryLocationLongitudeMax),
+  "source": zod.enum(['gps', 'map']),
+  "accuracy": zod.number().min(getBusinessCashShiftResponseOrdersItemDeliveryLocationAccuracyMin).optional()
+}).optional(),
   "deliveryPartnerName": zod.string().optional(),
   "deliveryPartnerDni": zod.string().optional().describe('DNI del repartidor asignado; solo visible para el negocio autorizado y administración.'),
   "deliveryPartnerVehiclePlate": zod.string().optional().describe('Placa registrada del repartidor asignado; solo visible para el negocio autorizado y administración.'),
@@ -434,6 +482,16 @@ export const SaveAccountProfileResponse = zod.object({
 })
 
 
+export const getOperationsStateResponseOrdersItemDeliveryLocationLatitudeMin = -90;
+export const getOperationsStateResponseOrdersItemDeliveryLocationLatitudeMax = 90;
+
+export const getOperationsStateResponseOrdersItemDeliveryLocationLongitudeMin = -180;
+export const getOperationsStateResponseOrdersItemDeliveryLocationLongitudeMax = 180;
+
+export const getOperationsStateResponseOrdersItemDeliveryLocationAccuracyMin = 0;
+
+
+
 export const GetOperationsStateResponse = zod.object({
   "users": zod.array(zod.record(zod.string(), zod.unknown())),
   "businesses": zod.array(zod.record(zod.string(), zod.unknown())),
@@ -460,6 +518,12 @@ export const GetOperationsStateResponse = zod.object({
   "createdAt": zod.string(),
   "deliveryAddress": zod.string().optional(),
   "deliveryPartnerEmail": zod.string().optional(),
+  "deliveryLocation": zod.object({
+  "latitude": zod.number().min(getOperationsStateResponseOrdersItemDeliveryLocationLatitudeMin).max(getOperationsStateResponseOrdersItemDeliveryLocationLatitudeMax),
+  "longitude": zod.number().min(getOperationsStateResponseOrdersItemDeliveryLocationLongitudeMin).max(getOperationsStateResponseOrdersItemDeliveryLocationLongitudeMax),
+  "source": zod.enum(['gps', 'map']),
+  "accuracy": zod.number().min(getOperationsStateResponseOrdersItemDeliveryLocationAccuracyMin).optional()
+}).optional(),
   "deliveryPartnerName": zod.string().optional(),
   "deliveryPartnerDni": zod.string().optional().describe('DNI del repartidor asignado; solo visible para el negocio autorizado y administración.'),
   "deliveryPartnerVehiclePlate": zod.string().optional().describe('Placa registrada del repartidor asignado; solo visible para el negocio autorizado y administración.'),
@@ -635,6 +699,16 @@ export const AssignOrderCourierBody = zod.object({
   "courierId": zod.number().min(1).nullable()
 })
 
+export const assignOrderCourierResponseDeliveryLocationLatitudeMin = -90;
+export const assignOrderCourierResponseDeliveryLocationLatitudeMax = 90;
+
+export const assignOrderCourierResponseDeliveryLocationLongitudeMin = -180;
+export const assignOrderCourierResponseDeliveryLocationLongitudeMax = 180;
+
+export const assignOrderCourierResponseDeliveryLocationAccuracyMin = 0;
+
+
+
 export const AssignOrderCourierResponse = zod.object({
   "businessAddress": zod.string().optional(),
   "businessPhone": zod.string().optional(),
@@ -656,6 +730,12 @@ export const AssignOrderCourierResponse = zod.object({
   "createdAt": zod.string(),
   "deliveryAddress": zod.string().optional(),
   "deliveryPartnerEmail": zod.string().optional(),
+  "deliveryLocation": zod.object({
+  "latitude": zod.number().min(assignOrderCourierResponseDeliveryLocationLatitudeMin).max(assignOrderCourierResponseDeliveryLocationLatitudeMax),
+  "longitude": zod.number().min(assignOrderCourierResponseDeliveryLocationLongitudeMin).max(assignOrderCourierResponseDeliveryLocationLongitudeMax),
+  "source": zod.enum(['gps', 'map']),
+  "accuracy": zod.number().min(assignOrderCourierResponseDeliveryLocationAccuracyMin).optional()
+}).optional(),
   "deliveryPartnerName": zod.string().optional(),
   "deliveryPartnerDni": zod.string().optional().describe('DNI del repartidor asignado; solo visible para el negocio autorizado y administración.'),
   "deliveryPartnerVehiclePlate": zod.string().optional().describe('Placa registrada del repartidor asignado; solo visible para el negocio autorizado y administración.'),
@@ -679,6 +759,16 @@ export const SaveDeliveryProofBody = zod.object({
   "file": zod.instanceof(File)
 })
 
+export const saveDeliveryProofResponseDeliveryLocationLatitudeMin = -90;
+export const saveDeliveryProofResponseDeliveryLocationLatitudeMax = 90;
+
+export const saveDeliveryProofResponseDeliveryLocationLongitudeMin = -180;
+export const saveDeliveryProofResponseDeliveryLocationLongitudeMax = 180;
+
+export const saveDeliveryProofResponseDeliveryLocationAccuracyMin = 0;
+
+
+
 export const SaveDeliveryProofResponse = zod.object({
   "businessAddress": zod.string().optional(),
   "businessPhone": zod.string().optional(),
@@ -700,6 +790,12 @@ export const SaveDeliveryProofResponse = zod.object({
   "createdAt": zod.string(),
   "deliveryAddress": zod.string().optional(),
   "deliveryPartnerEmail": zod.string().optional(),
+  "deliveryLocation": zod.object({
+  "latitude": zod.number().min(saveDeliveryProofResponseDeliveryLocationLatitudeMin).max(saveDeliveryProofResponseDeliveryLocationLatitudeMax),
+  "longitude": zod.number().min(saveDeliveryProofResponseDeliveryLocationLongitudeMin).max(saveDeliveryProofResponseDeliveryLocationLongitudeMax),
+  "source": zod.enum(['gps', 'map']),
+  "accuracy": zod.number().min(saveDeliveryProofResponseDeliveryLocationAccuracyMin).optional()
+}).optional(),
   "deliveryPartnerName": zod.string().optional(),
   "deliveryPartnerDni": zod.string().optional().describe('DNI del repartidor asignado; solo visible para el negocio autorizado y administración.'),
   "deliveryPartnerVehiclePlate": zod.string().optional().describe('Placa registrada del repartidor asignado; solo visible para el negocio autorizado y administración.'),
@@ -727,6 +823,16 @@ export const RateOrderBody = zod.object({
   "rating": zod.number().min(1).max(rateOrderBodyRatingMax)
 })
 
+export const rateOrderResponseDeliveryLocationLatitudeMin = -90;
+export const rateOrderResponseDeliveryLocationLatitudeMax = 90;
+
+export const rateOrderResponseDeliveryLocationLongitudeMin = -180;
+export const rateOrderResponseDeliveryLocationLongitudeMax = 180;
+
+export const rateOrderResponseDeliveryLocationAccuracyMin = 0;
+
+
+
 export const RateOrderResponse = zod.object({
   "businessAddress": zod.string().optional(),
   "businessPhone": zod.string().optional(),
@@ -748,6 +854,12 @@ export const RateOrderResponse = zod.object({
   "createdAt": zod.string(),
   "deliveryAddress": zod.string().optional(),
   "deliveryPartnerEmail": zod.string().optional(),
+  "deliveryLocation": zod.object({
+  "latitude": zod.number().min(rateOrderResponseDeliveryLocationLatitudeMin).max(rateOrderResponseDeliveryLocationLatitudeMax),
+  "longitude": zod.number().min(rateOrderResponseDeliveryLocationLongitudeMin).max(rateOrderResponseDeliveryLocationLongitudeMax),
+  "source": zod.enum(['gps', 'map']),
+  "accuracy": zod.number().min(rateOrderResponseDeliveryLocationAccuracyMin).optional()
+}).optional(),
   "deliveryPartnerName": zod.string().optional(),
   "deliveryPartnerDni": zod.string().optional().describe('DNI del repartidor asignado; solo visible para el negocio autorizado y administración.'),
   "deliveryPartnerVehiclePlate": zod.string().optional().describe('Placa registrada del repartidor asignado; solo visible para el negocio autorizado y administración.'),
@@ -876,6 +988,16 @@ export const ListRestaurantProductsResponse = zod.array(ListRestaurantProductsRe
 /**
  * @summary List recent orders
  */
+export const listOrdersResponseDeliveryLocationLatitudeMin = -90;
+export const listOrdersResponseDeliveryLocationLatitudeMax = 90;
+
+export const listOrdersResponseDeliveryLocationLongitudeMin = -180;
+export const listOrdersResponseDeliveryLocationLongitudeMax = 180;
+
+export const listOrdersResponseDeliveryLocationAccuracyMin = 0;
+
+
+
 export const ListOrdersResponseItem = zod.object({
   "businessAddress": zod.string().optional(),
   "businessPhone": zod.string().optional(),
@@ -897,6 +1019,12 @@ export const ListOrdersResponseItem = zod.object({
   "createdAt": zod.string(),
   "deliveryAddress": zod.string().optional(),
   "deliveryPartnerEmail": zod.string().optional(),
+  "deliveryLocation": zod.object({
+  "latitude": zod.number().min(listOrdersResponseDeliveryLocationLatitudeMin).max(listOrdersResponseDeliveryLocationLatitudeMax),
+  "longitude": zod.number().min(listOrdersResponseDeliveryLocationLongitudeMin).max(listOrdersResponseDeliveryLocationLongitudeMax),
+  "source": zod.enum(['gps', 'map']),
+  "accuracy": zod.number().min(listOrdersResponseDeliveryLocationAccuracyMin).optional()
+}).optional(),
   "deliveryPartnerName": zod.string().optional(),
   "deliveryPartnerDni": zod.string().optional().describe('DNI del repartidor asignado; solo visible para el negocio autorizado y administración.'),
   "deliveryPartnerVehiclePlate": zod.string().optional().describe('Placa registrada del repartidor asignado; solo visible para el negocio autorizado y administración.'),
@@ -913,12 +1041,28 @@ export const ListOrdersResponse = zod.array(ListOrdersResponseItem)
 /**
  * @summary Create an order
  */
+export const createOrderBodyDeliveryLocationLatitudeMin = -90;
+export const createOrderBodyDeliveryLocationLatitudeMax = 90;
+
+export const createOrderBodyDeliveryLocationLongitudeMin = -180;
+export const createOrderBodyDeliveryLocationLongitudeMax = 180;
+
+export const createOrderBodyDeliveryLocationAccuracyMin = 0;
+
+
+
 export const CreateOrderBody = zod.object({
   "restaurantName": zod.string(),
   "customerName": zod.string(),
   "total": zod.number(),
   "paymentMethod": zod.enum(['cash', 'yape', 'card']),
   "deliveryAddress": zod.string(),
+  "deliveryLocation": zod.object({
+  "latitude": zod.number().min(createOrderBodyDeliveryLocationLatitudeMin).max(createOrderBodyDeliveryLocationLatitudeMax),
+  "longitude": zod.number().min(createOrderBodyDeliveryLocationLongitudeMin).max(createOrderBodyDeliveryLocationLongitudeMax),
+  "source": zod.enum(['gps', 'map']),
+  "accuracy": zod.number().min(createOrderBodyDeliveryLocationAccuracyMin).optional()
+}).optional(),
   "items": zod.array(zod.object({
   "id": zod.number(),
   "name": zod.string(),
@@ -926,6 +1070,16 @@ export const CreateOrderBody = zod.object({
   "price": zod.number()
 }))
 })
+
+export const createOrderResponseDeliveryLocationLatitudeMin = -90;
+export const createOrderResponseDeliveryLocationLatitudeMax = 90;
+
+export const createOrderResponseDeliveryLocationLongitudeMin = -180;
+export const createOrderResponseDeliveryLocationLongitudeMax = 180;
+
+export const createOrderResponseDeliveryLocationAccuracyMin = 0;
+
+
 
 export const CreateOrderResponse = zod.object({
   "businessAddress": zod.string().optional(),
@@ -948,6 +1102,12 @@ export const CreateOrderResponse = zod.object({
   "createdAt": zod.string(),
   "deliveryAddress": zod.string().optional(),
   "deliveryPartnerEmail": zod.string().optional(),
+  "deliveryLocation": zod.object({
+  "latitude": zod.number().min(createOrderResponseDeliveryLocationLatitudeMin).max(createOrderResponseDeliveryLocationLatitudeMax),
+  "longitude": zod.number().min(createOrderResponseDeliveryLocationLongitudeMin).max(createOrderResponseDeliveryLocationLongitudeMax),
+  "source": zod.enum(['gps', 'map']),
+  "accuracy": zod.number().min(createOrderResponseDeliveryLocationAccuracyMin).optional()
+}).optional(),
   "deliveryPartnerName": zod.string().optional(),
   "deliveryPartnerDni": zod.string().optional().describe('DNI del repartidor asignado; solo visible para el negocio autorizado y administración.'),
   "deliveryPartnerVehiclePlate": zod.string().optional().describe('Placa registrada del repartidor asignado; solo visible para el negocio autorizado y administración.'),
@@ -977,6 +1137,16 @@ export const ClaimOrderBody = zod.object({
   "courierName": zod.string().min(1)
 })
 
+export const claimOrderResponseDeliveryLocationLatitudeMin = -90;
+export const claimOrderResponseDeliveryLocationLatitudeMax = 90;
+
+export const claimOrderResponseDeliveryLocationLongitudeMin = -180;
+export const claimOrderResponseDeliveryLocationLongitudeMax = 180;
+
+export const claimOrderResponseDeliveryLocationAccuracyMin = 0;
+
+
+
 export const ClaimOrderResponse = zod.object({
   "businessAddress": zod.string().optional(),
   "businessPhone": zod.string().optional(),
@@ -998,6 +1168,12 @@ export const ClaimOrderResponse = zod.object({
   "createdAt": zod.string(),
   "deliveryAddress": zod.string().optional(),
   "deliveryPartnerEmail": zod.string().optional(),
+  "deliveryLocation": zod.object({
+  "latitude": zod.number().min(claimOrderResponseDeliveryLocationLatitudeMin).max(claimOrderResponseDeliveryLocationLatitudeMax),
+  "longitude": zod.number().min(claimOrderResponseDeliveryLocationLongitudeMin).max(claimOrderResponseDeliveryLocationLongitudeMax),
+  "source": zod.enum(['gps', 'map']),
+  "accuracy": zod.number().min(claimOrderResponseDeliveryLocationAccuracyMin).optional()
+}).optional(),
   "deliveryPartnerName": zod.string().optional(),
   "deliveryPartnerDni": zod.string().optional().describe('DNI del repartidor asignado; solo visible para el negocio autorizado y administración.'),
   "deliveryPartnerVehiclePlate": zod.string().optional().describe('Placa registrada del repartidor asignado; solo visible para el negocio autorizado y administración.'),
@@ -1016,6 +1192,16 @@ export const ClaimOrderResponse = zod.object({
 export const GetOrderParams = zod.object({
   "orderId": zod.coerce.number()
 })
+
+export const getOrderResponseDeliveryLocationLatitudeMin = -90;
+export const getOrderResponseDeliveryLocationLatitudeMax = 90;
+
+export const getOrderResponseDeliveryLocationLongitudeMin = -180;
+export const getOrderResponseDeliveryLocationLongitudeMax = 180;
+
+export const getOrderResponseDeliveryLocationAccuracyMin = 0;
+
+
 
 export const GetOrderResponse = zod.object({
   "businessAddress": zod.string().optional(),
@@ -1038,6 +1224,12 @@ export const GetOrderResponse = zod.object({
   "createdAt": zod.string(),
   "deliveryAddress": zod.string().optional(),
   "deliveryPartnerEmail": zod.string().optional(),
+  "deliveryLocation": zod.object({
+  "latitude": zod.number().min(getOrderResponseDeliveryLocationLatitudeMin).max(getOrderResponseDeliveryLocationLatitudeMax),
+  "longitude": zod.number().min(getOrderResponseDeliveryLocationLongitudeMin).max(getOrderResponseDeliveryLocationLongitudeMax),
+  "source": zod.enum(['gps', 'map']),
+  "accuracy": zod.number().min(getOrderResponseDeliveryLocationAccuracyMin).optional()
+}).optional(),
   "deliveryPartnerName": zod.string().optional(),
   "deliveryPartnerDni": zod.string().optional().describe('DNI del repartidor asignado; solo visible para el negocio autorizado y administración.'),
   "deliveryPartnerVehiclePlate": zod.string().optional().describe('Placa registrada del repartidor asignado; solo visible para el negocio autorizado y administración.'),
@@ -1061,6 +1253,16 @@ export const UpdateOrderStatusBody = zod.object({
   "status": zod.enum(['received', 'preparing', 'ready', 'on_the_way', 'delivered', 'cancelled'])
 })
 
+export const updateOrderStatusResponseDeliveryLocationLatitudeMin = -90;
+export const updateOrderStatusResponseDeliveryLocationLatitudeMax = 90;
+
+export const updateOrderStatusResponseDeliveryLocationLongitudeMin = -180;
+export const updateOrderStatusResponseDeliveryLocationLongitudeMax = 180;
+
+export const updateOrderStatusResponseDeliveryLocationAccuracyMin = 0;
+
+
+
 export const UpdateOrderStatusResponse = zod.object({
   "businessAddress": zod.string().optional(),
   "businessPhone": zod.string().optional(),
@@ -1082,6 +1284,12 @@ export const UpdateOrderStatusResponse = zod.object({
   "createdAt": zod.string(),
   "deliveryAddress": zod.string().optional(),
   "deliveryPartnerEmail": zod.string().optional(),
+  "deliveryLocation": zod.object({
+  "latitude": zod.number().min(updateOrderStatusResponseDeliveryLocationLatitudeMin).max(updateOrderStatusResponseDeliveryLocationLatitudeMax),
+  "longitude": zod.number().min(updateOrderStatusResponseDeliveryLocationLongitudeMin).max(updateOrderStatusResponseDeliveryLocationLongitudeMax),
+  "source": zod.enum(['gps', 'map']),
+  "accuracy": zod.number().min(updateOrderStatusResponseDeliveryLocationAccuracyMin).optional()
+}).optional(),
   "deliveryPartnerName": zod.string().optional(),
   "deliveryPartnerDni": zod.string().optional().describe('DNI del repartidor asignado; solo visible para el negocio autorizado y administración.'),
   "deliveryPartnerVehiclePlate": zod.string().optional().describe('Placa registrada del repartidor asignado; solo visible para el negocio autorizado y administración.'),

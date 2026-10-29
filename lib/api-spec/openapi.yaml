@@ -1032,6 +1032,7 @@ components:
         createdAt: { type: string }
         deliveryAddress: { type: string }
         deliveryPartnerEmail: { type: string }
+        deliveryLocation: { $ref: "#/components/schemas/DeliveryLocation" }
         deliveryPartnerName: { type: string }
         deliveryPartnerDni: { type: string, description: "DNI del repartidor asignado; solo visible para el negocio autorizado y administración." }
         deliveryPartnerVehiclePlate: { type: string, description: "Placa registrada del repartidor asignado; solo visible para el negocio autorizado y administración." }
@@ -1044,6 +1045,14 @@ components:
       properties:
         courierEmail: { type: string, minLength: 3 }
         courierName: { type: string, minLength: 1 }
+    DeliveryLocation:
+      type: object
+      required: [latitude, longitude, source]
+      properties:
+        latitude: { type: number, minimum: -90, maximum: 90 }
+        longitude: { type: number, minimum: -180, maximum: 180 }
+        source: { type: string, enum: [gps, map] }
+        accuracy: { type: number, minimum: 0 }
     OrderInput:
       type: object
       required: [restaurantName, customerName, total, paymentMethod, deliveryAddress, items]
@@ -1055,6 +1064,7 @@ components:
           type: string
           enum: [cash, yape, card]
         deliveryAddress: { type: string }
+        deliveryLocation: { $ref: "#/components/schemas/DeliveryLocation" }
         items:
           type: array
           items: { $ref: "#/components/schemas/OrderItem" }
