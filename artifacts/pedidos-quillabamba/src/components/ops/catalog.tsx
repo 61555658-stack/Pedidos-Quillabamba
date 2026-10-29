@@ -161,12 +161,12 @@ export function BusinessForm({ initial, admins, isSystemAdmin, saving, onSubmit,
   const [d, setD] = useState<BizDraft>(initial);
   const submit = async () => {
     if (!d.name.trim()) return onError('El nombre del negocio es obligatorio.');
-    if (d.openingHours && (!d.openingHours.days.length || !/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(d.openingHours.opensAt) || !/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(d.openingHours.closesAt) || d.openingHours.opensAt === d.openingHours.closesAt)) return onError('Selecciona al menos un día y horas de apertura y cierre válidas y diferentes.');
+    if (isSystemAdmin && d.openingHours && (!d.openingHours.days.length || !/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(d.openingHours.opensAt) || !/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(d.openingHours.closesAt) || d.openingHours.opensAt === d.openingHours.closesAt)) return onError('Selecciona al menos un día y horas de apertura y cierre válidas y diferentes.');
     if (d.ruc.trim() && !/^\d{11}$/.test(d.ruc.trim())) return onError('El RUC debe tener exactamente 11 dígitos.');
     const fee = Number(d.deliveryFee);
     if (!Number.isFinite(fee) || fee < 0) return onError('La tarifa de delivery debe ser mayor o igual a cero.');
-    const body: Record<string, unknown> = { name: d.name.trim(), ruc: d.ruc.trim(), address: d.address.trim(), phone: d.phone.trim(), cuisine: d.cuisine.trim(), deliveryFee: fee, image: d.image.trim(), isOpen: d.isOpen, openingHours: d.openingHours };
-    if (isSystemAdmin) { body.active = d.active; body.administratorId = d.administratorId ? Number(d.administratorId) : null; }
+    const body: Record<string, unknown> = { name: d.name.trim(), ruc: d.ruc.trim(), address: d.address.trim(), phone: d.phone.trim(), cuisine: d.cuisine.trim(), deliveryFee: fee, image: d.image.trim(), isOpen: d.isOpen };
+    if (isSystemAdmin) { body.openingHours = d.openingHours; body.active = d.active; body.administratorId = d.administratorId ? Number(d.administratorId) : null; }
     if (await onSubmit(body) && !initial.name) setD(bizDraftFrom());
   };
   return (
@@ -184,7 +184,7 @@ export function BusinessForm({ initial, admins, isSystemAdmin, saving, onSubmit,
         </SelectInput>
       )}
       <div className="sm:col-span-2"><ImageField value={d.image} onChange={(image) => setD((x) => ({ ...x, image }))} onError={onError} /></div>
-      <OpeningHoursEditor value={d.openingHours} onChange={openingHours => setD(current => ({ ...current, openingHours }))} />
+      {isSystemAdmin && <OpeningHoursEditor value={d.openingHours} onChange={openingHours => setD(current => ({ ...current, openingHours }))} />}
       <div className="flex flex-wrap items-center gap-4 sm:col-span-2 lg:col-span-3">
         <label className="flex min-h-11 items-center gap-2 text-sm font-semibold"><input type="checkbox" checked={d.isOpen} onChange={(e) => setD({ ...d, isOpen: e.target.checked })} data-testid="checkbox-business-open" /> {d.openingHours ? 'Permitir pedidos dentro del horario (desmarca para cerrar temporalmente)' : 'Abierto para pedidos'}</label>
         {isSystemAdmin && <label className="flex min-h-11 items-center gap-2 text-sm font-semibold"><input type="checkbox" checked={d.active} onChange={(e) => setD({ ...d, active: e.target.checked })} data-testid="checkbox-business-active" /> Negocio habilitado en la plataforma</label>}

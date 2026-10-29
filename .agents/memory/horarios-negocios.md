@@ -3,7 +3,7 @@ name: Horarios de negocios
 description: Criterios de apertura automática, compatibilidad con cierre manual y horarios nocturnos.
 ---
 
-Cada negocio configura sus días de atención y horas de apertura y cierre desde su perfil. Calcular la disponibilidad en America/Lima, tanto para mostrar el estado al cliente como para aceptar pedidos en el servidor.
+Cada negocio configura sus días de atención y horas de apertura y cierre desde la sección «Horario de atención», no desde «Perfil del negocio». Calcular la disponibilidad en America/Lima, tanto para mostrar el estado al cliente como para aceptar pedidos en el servidor.
 
 **Why:** El usuario pidió que cada negocio indique cuándo atiende y que los clientes puedan ver si está abierto o cerrado. El dispositivo del cliente no debe decidir si se permite comprar.
 
@@ -13,7 +13,7 @@ El panel del negocio debe ofrecer una opción visible de horario, con hora de ap
 
 **Why:** El usuario reiteró que quiere una opción en esa parte del panel para indicar explícitamente de qué hora a qué hora y de qué día a qué día atiende.
 
-**How to apply:** No dejar esta configuración únicamente entre los demás datos del perfil. Conservar también la selección de días específicos para negocios que no atienden todos los días de un intervalo.
+**How to apply:** El usuario pidió quitar el editor de horarios de «Perfil del negocio» y mantenerlo en su sección propia. Guardar el perfil no debe modificar el horario. Conservar la selección de días específicos para negocios que no atienden todos los días de un intervalo.
 
 Un cierre manual prevalece sobre el horario. Los negocios sin horario configurado mantienen su estado manual, sin asumir horas de atención.
 
