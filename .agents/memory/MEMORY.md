@@ -9,3 +9,4 @@
 - [Verificación de APK](verificacion-apk.md) — validar con herramientas Android; unzip antiguo puede rechazar extras de alineación válidos.
 - [Logo de QUILLAYAA](logo-quillayaa.md) — conservar la imagen elegida por el usuario como identidad de la aplicación y del APK.
 - [Horarios de negocios](horarios-negocios.md) — apertura en hora de Perú; el cierre manual prevalece y la madrugada pertenece al día de apertura.
+- [Registro de repartidores](registro-repartidores.md) — exigir nombre completo, DNI, licencia y placa; verificar por API que el SOAT esté activo antes de registrar.
