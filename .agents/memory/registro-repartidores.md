@@ -9,6 +9,12 @@ Al registrarse, un repartidor debe proporcionar nombre completo, DNI, número de
 
 **How to apply:** Comprobar el SOAT en el servidor antes de crear la cuenta, no confiar en un estado enviado por el navegador. Si la consulta no permite confirmar la vigencia, no considerar aprobado el requisito. No aplicar esta exigencia a otros roles.
 
+En el formulario de registro, «Nombre completo» debe aparecer después del correo y la contraseña.
+
+**Why:** El usuario pidió ese orden al mostrar el campo de nombre.
+
+**How to apply:** Mantener los datos personales y del vehículo después de los campos de acceso.
+
 Usar Croma como proveedor de consulta de SOAT, no JSON.pe.
 
 **Why:** El usuario indicó que ya tiene otra API y proporcionó https://api.croma.run.
