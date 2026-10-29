@@ -112,7 +112,6 @@ export function BusinessAccessPage() {
               <KeyRound className="h-6 w-6 text-secondary" />
               <span>
                 <span className="block font-display text-2xl font-bold">Cajero</span>
-                <span className="mt-1 block text-sm text-white/65">Abre caja con el usuario del turno. Ves pedidos y los entregas a repartidores.</span>
               </span>
             </button>
             <button onClick={chooseAdmin} disabled={enterAdmin.isPending} data-testid="access-choice-administrator"
@@ -120,7 +119,6 @@ export function BusinessAccessPage() {
               <Briefcase className="h-6 w-6 text-accent" />
               <span>
                 <span className="block font-display text-2xl font-bold">Administrador del negocio</span>
-                <span className="mt-1 block text-sm text-muted-foreground">{enterAdmin.isPending ? 'Entrando…' : 'Catálogo, ventas, perfil y reportes de caja.'}</span>
               </span>
             </button>
           </div>
