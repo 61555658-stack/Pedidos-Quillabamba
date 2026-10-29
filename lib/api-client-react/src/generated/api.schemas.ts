@@ -147,7 +147,25 @@ export interface CashShiftReport {
   totals: CashShiftReportTotals;
 }
 
-export interface OperationalRecord { [key: string]: unknown }
+export interface OpeningHours {
+  /**
+     * @minItems 1
+     * @maxItems 7
+     * @items.minimum 0
+     * @items.maximum 6
+     */
+  days: number[];
+  /** @pattern ^(?:[01][0-9]|2[0-3]):[0-5][0-9]$ */
+  opensAt: string;
+  /** @pattern ^(?:[01][0-9]|2[0-3]):[0-5][0-9]$ */
+  closesAt: string;
+}
+
+export interface OperationalRecord {
+  /** Business weekly schedule; null restores manual opening control. */
+  openingHours?: OpeningHours | null;
+  [key: string]: unknown;
+ }
 
 export interface CourierAssignmentInput {
   /**
@@ -328,6 +346,7 @@ export interface Restaurant {
   deliveryMinutes: number;
   deliveryFee: number;
   isOpen: boolean;
+  openingHours?: OpeningHours | null;
   image: string;
   featured?: boolean;
 }

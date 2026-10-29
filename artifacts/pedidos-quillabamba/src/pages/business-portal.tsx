@@ -66,7 +66,7 @@ export default function BusinessPortalPage() {
             <div>
               <p className="font-mono-app text-[10px] font-bold uppercase tracking-[.18em] text-accent">Datos en vivo · cada 10 s</p>
               <h1 className="mt-2 font-display text-3xl font-bold tracking-[-.04em]">{menu.find((m) => m.id === tab)?.label}</h1>
-              {biz && <p className="mt-1 text-sm text-muted-foreground">{biz.name} · {biz.isOpen ? 'abierto' : 'cerrado'}{biz.active ? '' : ' · suspendido por la plataforma'}</p>}
+              {biz && <p className="mt-1 text-sm text-muted-foreground">{biz.name} · {biz.openNow ? 'abierto' : 'cerrado'}{biz.active ? '' : ' · suspendido por la plataforma'}</p>}
             </div>
             {businesses.length > 1 && biz && (
               <div className="w-full sm:w-64"><SelectInput label="Negocio" value={biz.id} onChange={(e) => setBizId(Number(e.target.value))} data-testid="select-business-scope">{businesses.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}</SelectInput></div>

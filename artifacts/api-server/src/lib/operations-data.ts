@@ -64,7 +64,7 @@ export async function visibleOrder(user: AppUser, id: number, allowUnclaimed = f
 }
 export const businessSelect = `SELECT r.id,r.name,r.ruc,r.address,r.phone,r.administrator_id AS "administratorId",
   COALESCE(u.name,'Sin asignar') AS "administratorName",r.is_open AS "isOpen",r.active,r.cuisine,
-  r.delivery_fee::float8 AS "deliveryFee",r.image
+  r.delivery_fee::float8 AS "deliveryFee",r.image,r.opening_hours AS "openingHours"
   FROM public.restaurants r LEFT JOIN public.users u ON u.id=r.administrator_id`;
 export const productSelect = `SELECT p.id,p.restaurant_id AS "restaurantId",p.name,p.description,p.category,
   p.price::float8 AS price,p.stock,p.active,p.image,p.popular FROM public.products p`;

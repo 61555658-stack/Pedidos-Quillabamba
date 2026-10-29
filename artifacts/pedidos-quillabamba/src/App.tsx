@@ -18,6 +18,8 @@ import type {
 } from '@workspace/api-client-react';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { BrandLogo } from '@/components/brand-logo';
+import { OpeningHoursSummary } from '@/components/ops/opening-hours';
+import { getListRestaurantsQueryKey } from '@workspace/api-client-react';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
@@ -184,12 +186,16 @@ function RestaurantCard({ restaurant }: { restaurant: Restaurant }) {
   return <Link href={`/restaurant/${restaurant.id}`} className="group block overflow-hidden rounded-2xl bg-card ring-1 ring-border/80 transition duration-300 hover:-translate-y-1 hover:ring-secondary warm-shadow" data-testid={`card-restaurant-${restaurant.id}`}>
     <div className="relative h-[178px] overflow-hidden bg-primary"><img src={restaurant.image || '/restaurant-selva.jpg'} alt={restaurant.name} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" /><div className="absolute inset-0 bg-gradient-to-t from-primary/55 via-transparent to-transparent" />{restaurant.featured && <span className="absolute left-3 top-3 rounded-full bg-secondary px-2.5 py-1 font-mono-app text-[10px] font-bold uppercase tracking-wide text-primary">Recomendado</span>}{!restaurant.isOpen && <span className="absolute right-3 top-3 rounded-full bg-primary/85 px-2.5 py-1 font-mono-app text-[10px] font-bold uppercase tracking-wide text-primary-foreground">Cerrado</span>}<div className="absolute bottom-3 left-3 flex items-center gap-1 rounded-full bg-[#f6e6bc] px-2 py-1 text-xs font-extrabold text-primary"><Star className="h-3 w-3 fill-primary" /> {restaurant.rating.toFixed(1)}</div></div>
     <div className="p-4"><div className="flex items-start justify-between gap-2"><div><h3 className="font-display text-lg font-bold leading-tight text-primary">{restaurant.name}</h3><p className="mt-1 text-xs font-semibold text-muted-foreground">{restaurant.cuisine}</p></div><ArrowRight className="mt-1 h-4 w-4 shrink-0 text-muted-foreground transition group-hover:translate-x-1 group-hover:text-accent" /></div><div className="mt-4 flex items-center gap-3 border-t border-border/70 pt-3 font-mono-app text-[10px] font-medium uppercase tracking-wide text-muted-foreground"><span className="flex items-center gap-1"><Clock3 className="h-3.5 w-3.5 text-accent" /> {restaurant.deliveryMinutes} min</span><span className="text-border">•</span><span>{restaurant.deliveryFee === 0 ? 'Envío gratis' : `Envío ${money(restaurant.deliveryFee)}`}</span></div></div>
+    <div className="border-t border-border/70 px-4 pb-4 pt-3">
+      <Badge tone={restaurant.isOpen ? 'green' : 'red'}>{restaurant.isOpen ? 'Abierto' : 'Cerrado'}</Badge>
+      <OpeningHoursSummary hours={restaurant.openingHours} />
+    </div>
   </Link>;
 }
 
 // Inicio: consulta restaurantes, aplica búsqueda/filtros y abre cada menú.
 function HomePage({ cart }: { cart: ReturnType<typeof useCart> }) {
-  const restaurantsQuery = useListRestaurants();
+  const restaurantsQuery = useListRestaurants({ query: { queryKey: getListRestaurantsQueryKey(), refetchInterval: 30_000, staleTime: 0 } });
   const restaurants = restaurantsQuery.data || [];
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('Todos');
@@ -219,7 +225,7 @@ function HomePage({ cart }: { cart: ReturnType<typeof useCart> }) {
 function RestaurantPage({ cart }: { cart: ReturnType<typeof useCart> }) {
   const { id } = useParams<{ id: string }>();
   const restaurantId = Number(id);
-  const restaurantsQuery = useListRestaurants();
+  const restaurantsQuery = useListRestaurants({ query: { queryKey: getListRestaurantsQueryKey(), refetchInterval: 30_000, staleTime: 0 } });
   const productsQuery = useListRestaurantProducts(restaurantId, { query: { queryKey: getListRestaurantProductsQueryKey(restaurantId) } });
   const restaurant = restaurantsQuery.data?.find((r) => r.id === restaurantId);
   const products = productsQuery.data || [];
@@ -234,6 +240,11 @@ function RestaurantPage({ cart }: { cart: ReturnType<typeof useCart> }) {
   return <><CustomerHeader cartCount={cart.cart.reduce((a, b) => a + b.quantity, 0)} /><main className="mx-auto max-w-[1120px] px-5 pb-20 lg:px-8">
     <Link href="/" className="mt-7 inline-flex items-center gap-2 text-xs font-bold text-muted-foreground hover:text-primary" data-testid="link-back-restaurants"><ArrowLeft className="h-4 w-4" /> Todos los restaurantes</Link>
     <section className="mt-5 overflow-hidden rounded-3xl bg-card ring-1 ring-border warm-shadow"><div className="relative h-[220px] overflow-hidden sm:h-[280px]"><img src={restaurant.image || '/restaurant-selva.jpg'} alt={restaurant.name} className="h-full w-full object-cover" /><div className="absolute inset-0 bg-gradient-to-t from-primary/80 via-primary/10 to-transparent" /><div className="absolute bottom-6 left-6 right-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-end sm:left-9 sm:right-9"><div><Badge tone={restaurant.isOpen ? 'green' : 'red'}>{restaurant.isOpen ? 'Abierto ahora' : 'Cerrado'}</Badge><h1 className="mt-2 font-display text-3xl font-bold text-white sm:text-4xl">{restaurant.name}</h1><p className="mt-1 text-sm text-white/75">{restaurant.cuisine}</p></div><div className="flex gap-2 text-xs font-bold text-primary"><span className="flex items-center gap-1 rounded-full bg-[#f6e6bc] px-3 py-2"><Star className="h-3.5 w-3.5 fill-primary" /> {restaurant.rating.toFixed(1)}</span><span className="flex items-center gap-1 rounded-full bg-[#f6e6bc] px-3 py-2"><Clock3 className="h-3.5 w-3.5" /> {restaurant.deliveryMinutes} min</span></div></div></div><div className="flex items-center gap-2 overflow-x-auto px-6 py-4 sm:px-9">{['Todos', ...categories].map((cat) => <button key={cat} onClick={() => setSelectedCategory(cat === 'Todos' ? '' : cat)} className={`whitespace-nowrap rounded-full px-3.5 py-2 text-xs font-extrabold ${(!selectedCategory && cat === 'Todos') || selectedCategory === cat ? 'bg-primary text-white' : 'text-muted-foreground hover:bg-muted'}`} data-testid={`button-category-${cat}`}>{cat}</button>)}</div></section>
+    <div className="mt-4 rounded-2xl border border-border bg-card p-4">
+      <Badge tone={restaurant.isOpen ? 'green' : 'red'}>{restaurant.isOpen ? 'Abierto' : 'Cerrado'}</Badge>
+      <OpeningHoursSummary hours={restaurant.openingHours} />
+      {!restaurant.isOpen && <p className="mt-2 text-xs text-muted-foreground">Puedes consultar la carta, pero el negocio no recibe pedidos en este momento.</p>}
+    </div>
     {notice && <div className="fixed bottom-5 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2 rounded-full bg-primary px-4 py-3 text-xs font-bold text-white shadow-xl"><Check className="h-4 w-4 text-secondary" /> {notice.text}</div>}
     <div className="mt-10 flex items-end justify-between"><div><p className="font-mono-app text-[10px] font-bold uppercase tracking-[.16em] text-accent">Carta de hoy</p><h2 className="mt-2 font-display text-2xl font-bold text-primary">Lo que sale de cocina</h2></div><span className="hidden text-xs font-semibold text-muted-foreground sm:block">{products.length} opciones</span></div>
     <div className="mt-5 grid gap-4 md:grid-cols-2">{productsQuery.isLoading ? <LoadingCards count={4} /> : shown.length ? shown.map((product) => <ProductCard key={product.id} product={product} onAdd={() => add(product)} />) : <div className="md:col-span-2"><EmptyState title="Carta en pausa" text="Esta cocina está actualizando sus opciones. Vuelve en un ratito." /></div>}</div>
@@ -265,7 +276,7 @@ function CartPage({ cart }: { cart: ReturnType<typeof useCart> }) {
   const [payment, setPayment] = useState<'cash' | 'yape' | 'card'>('yape');
   const [notice, setNotice] = useState<Notice>(null);
   const createOrder = useCreateOrder();
-  const restaurantsQuery = useListRestaurants();
+  const restaurantsQuery = useListRestaurants({ query: { queryKey: getListRestaurantsQueryKey(), refetchInterval: 30_000, staleTime: 0 } });
   const restaurants = restaurantsQuery.data || [];
   const cartRestaurant = cart.cart[0] ? restaurants.find((restaurant) => restaurant.id === cart.cart[0].restaurantId) : undefined;
   const validCart = cart.cart.every((item) => Number.isFinite(item.price) && item.price >= 0 && Number.isInteger(item.quantity) && item.quantity > 0 && Number.isFinite(item.restaurantId));
@@ -382,7 +393,7 @@ function AdminOrders() {
 }
 
 function AdminRestaurants() {
-  const query = useListRestaurants();
+  const query = useListRestaurants({ query: { queryKey: getListRestaurantsQueryKey(), refetchInterval: 30_000, staleTime: 0 } });
   const restaurants = query.data || [];
   return <AdminShell><div className="animate-rise">
     <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-end"><div><p className="font-mono-app text-[10px] font-bold uppercase tracking-[.16em] text-accent">Red local</p><h1 className="mt-2 font-display text-3xl font-bold text-primary">Restaurantes</h1><p className="mt-2 text-sm text-muted-foreground">Los aliados que hacen posible cada pedido.</p></div><Link href="/admin/manage?tab=businesses" className="flex items-center gap-2 rounded-full bg-primary px-4 py-2.5 text-xs font-bold text-white" data-testid="button-add-restaurant"><Plus className="h-4 w-4 text-secondary" /> Gestionar negocios</Link></div>

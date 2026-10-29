@@ -52,6 +52,7 @@ export * from './listBusinessCashShiftsParams';
 export * from './logoutSuccess';
 export * from './mobileTokenExchangeRequest';
 export * from './mobileTokenExchangeSuccess';
+export * from './openingHours';
 export * from './operationalRecord';
 export * from './order';
 export * from './orderInput';

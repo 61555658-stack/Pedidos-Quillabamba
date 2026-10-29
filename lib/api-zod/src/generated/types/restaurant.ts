@@ -5,6 +5,7 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { OpeningHours } from './openingHours';
 
 export interface Restaurant {
   id: number;
@@ -14,6 +15,7 @@ export interface Restaurant {
   deliveryMinutes: number;
   deliveryFee: number;
   isOpen: boolean;
+  openingHours?: OpeningHours | null;
   image: string;
   featured?: boolean;
 }

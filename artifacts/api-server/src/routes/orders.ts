@@ -6,6 +6,7 @@ import {
   ListRestaurantsResponse, ListRestaurantProductsResponse, UpdateOrderStatusBody,
 } from "@workspace/api-zod";
 import { AppError, requireUser, visibleOrder, visibleOrders, toOrder, ownsBusiness } from "../lib/operations-data";
+import { isBusinessOpen } from "../lib/opening-hours";
 
 const router: IRouter = Router();
 const validId = (value: unknown) => z.number().int().positive().parse(Number(value));
@@ -13,9 +14,9 @@ const cents = (n: number) => Math.round(n * 100);
 
 router.get("/restaurants",async(_req,res)=>{
   const result=await pool.query(`SELECT r.id,r.name,r.cuisine,r.rating::float8 AS rating,r.delivery_minutes AS "deliveryMinutes",
-    r.delivery_fee::float8 AS "deliveryFee",r.is_open AS "isOpen",r.image,r.featured
+    r.delivery_fee::float8 AS "deliveryFee",r.is_open AS "isOpen",r.opening_hours AS "openingHours",r.image,r.featured
     FROM public.restaurants r WHERE r.active AND (r.administrator_id IS NULL OR EXISTS(SELECT 1 FROM public.users u WHERE u.id=r.administrator_id AND u.active AND u.role='administrador_negocio')) ORDER BY r.id`);
-  res.json(ListRestaurantsResponse.parse(result.rows));
+  res.json(ListRestaurantsResponse.parse(result.rows.map(r=>({...r,isOpen:isBusinessOpen(r.isOpen,r.openingHours)}))));
 });
 router.get("/restaurants/:restaurantId/products",async(req,res)=>{
   const restaurantId=validId(req.params.restaurantId);
@@ -43,7 +44,7 @@ router.post("/orders",async(req,res)=>{
   let orderId:number;
   try {
     await client.query("BEGIN");
-    const result=await client.query(`SELECT p.*,r.name AS restaurant_name,r.delivery_fee,r.is_open,r.active AS restaurant_active,
+    const result=await client.query(`SELECT p.*,r.name AS restaurant_name,r.delivery_fee,r.is_open,r.opening_hours,r.active AS restaurant_active,
       (r.administrator_id IS NULL OR EXISTS(SELECT 1 FROM public.users u WHERE u.id=r.administrator_id AND u.active AND u.role='administrador_negocio')) AS owner_active,
       EXISTS(SELECT 1 FROM public.categories c WHERE c.restaurant_id=r.id AND c.name=p.category AND c.active) AS category_active
       FROM public.products p JOIN public.restaurants r ON r.id=p.restaurant_id WHERE p.id=ANY($1::int[]) ORDER BY p.id FOR UPDATE OF p,r`,[[...quantities.keys()]]);
@@ -53,7 +54,7 @@ router.post("/orders",async(req,res)=>{
     const items=result.rows.map(p=>{
       const quantity=quantities.get(p.id)!;
       if(p.restaurant_id!==restaurant.restaurant_id) throw new AppError(400,"Cada pedido debe pertenecer a un solo negocio.");
-      if(!p.active||!p.is_open||!p.restaurant_active||!p.owner_active||!p.category_active||p.stock<quantity) throw new AppError(409,`${p.name}: producto sin stock o negocio no disponible.`);
+      if(!p.active||!isBusinessOpen(p.is_open,p.opening_hours)||!p.restaurant_active||!p.owner_active||!p.category_active||p.stock<quantity) throw new AppError(409,`${p.name}: producto sin stock o negocio cerrado o no disponible.`);
       subtotal+=cents(Number(p.price))*quantity;
       return {id:p.id,name:p.name,price:Number(p.price),quantity};
     });

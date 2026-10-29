@@ -344,7 +344,23 @@ export const CreateOperationalEntityParams = zod.object({
   "entity": zod.enum(['users', 'businesses', 'products', 'categories', 'settings'])
 })
 
-export const CreateOperationalEntityBody = zod.record(zod.string(), zod.unknown())
+export const createOperationalEntityBodyOpeningHoursOneDaysItemMin = 0;
+export const createOperationalEntityBodyOpeningHoursOneDaysItemMax = 6;
+export const createOperationalEntityBodyOpeningHoursOneDaysItemMultipleOf = 1;
+
+export const createOperationalEntityBodyOpeningHoursOneDaysMax = 7;
+
+export const createOperationalEntityBodyOpeningHoursOneOpensAtRegExp = new RegExp('^(?:[01][0-9]|2[0-3]):[0-5][0-9]$');
+export const createOperationalEntityBodyOpeningHoursOneClosesAtRegExp = new RegExp('^(?:[01][0-9]|2[0-3]):[0-5][0-9]$');
+
+
+export const CreateOperationalEntityBody = zod.object({
+  "openingHours": zod.union([zod.object({
+  "days": zod.array(zod.number().min(createOperationalEntityBodyOpeningHoursOneDaysItemMin).max(createOperationalEntityBodyOpeningHoursOneDaysItemMax).multipleOf(createOperationalEntityBodyOpeningHoursOneDaysItemMultipleOf)).min(1).max(createOperationalEntityBodyOpeningHoursOneDaysMax),
+  "opensAt": zod.string().regex(createOperationalEntityBodyOpeningHoursOneOpensAtRegExp),
+  "closesAt": zod.string().regex(createOperationalEntityBodyOpeningHoursOneClosesAtRegExp)
+}),zod.null()]).optional().describe('Business weekly schedule; null restores manual opening control.')
+})
 
 export const CreateOperationalEntityResponse = zod.record(zod.string(), zod.unknown())
 
@@ -353,7 +369,23 @@ export const UpdateOperationalSettingsParams = zod.object({
   "entity": zod.enum(['users', 'businesses', 'products', 'categories', 'settings'])
 })
 
-export const UpdateOperationalSettingsBody = zod.record(zod.string(), zod.unknown())
+export const updateOperationalSettingsBodyOpeningHoursOneDaysItemMin = 0;
+export const updateOperationalSettingsBodyOpeningHoursOneDaysItemMax = 6;
+export const updateOperationalSettingsBodyOpeningHoursOneDaysItemMultipleOf = 1;
+
+export const updateOperationalSettingsBodyOpeningHoursOneDaysMax = 7;
+
+export const updateOperationalSettingsBodyOpeningHoursOneOpensAtRegExp = new RegExp('^(?:[01][0-9]|2[0-3]):[0-5][0-9]$');
+export const updateOperationalSettingsBodyOpeningHoursOneClosesAtRegExp = new RegExp('^(?:[01][0-9]|2[0-3]):[0-5][0-9]$');
+
+
+export const UpdateOperationalSettingsBody = zod.object({
+  "openingHours": zod.union([zod.object({
+  "days": zod.array(zod.number().min(updateOperationalSettingsBodyOpeningHoursOneDaysItemMin).max(updateOperationalSettingsBodyOpeningHoursOneDaysItemMax).multipleOf(updateOperationalSettingsBodyOpeningHoursOneDaysItemMultipleOf)).min(1).max(updateOperationalSettingsBodyOpeningHoursOneDaysMax),
+  "opensAt": zod.string().regex(updateOperationalSettingsBodyOpeningHoursOneOpensAtRegExp),
+  "closesAt": zod.string().regex(updateOperationalSettingsBodyOpeningHoursOneClosesAtRegExp)
+}),zod.null()]).optional().describe('Business weekly schedule; null restores manual opening control.')
+})
 
 export const UpdateOperationalSettingsResponse = zod.record(zod.string(), zod.unknown())
 
@@ -366,7 +398,23 @@ export const UpdateOperationalEntityParams = zod.object({
   "id": zod.coerce.number().min(1)
 })
 
-export const UpdateOperationalEntityBody = zod.record(zod.string(), zod.unknown())
+export const updateOperationalEntityBodyOpeningHoursOneDaysItemMin = 0;
+export const updateOperationalEntityBodyOpeningHoursOneDaysItemMax = 6;
+export const updateOperationalEntityBodyOpeningHoursOneDaysItemMultipleOf = 1;
+
+export const updateOperationalEntityBodyOpeningHoursOneDaysMax = 7;
+
+export const updateOperationalEntityBodyOpeningHoursOneOpensAtRegExp = new RegExp('^(?:[01][0-9]|2[0-3]):[0-5][0-9]$');
+export const updateOperationalEntityBodyOpeningHoursOneClosesAtRegExp = new RegExp('^(?:[01][0-9]|2[0-3]):[0-5][0-9]$');
+
+
+export const UpdateOperationalEntityBody = zod.object({
+  "openingHours": zod.union([zod.object({
+  "days": zod.array(zod.number().min(updateOperationalEntityBodyOpeningHoursOneDaysItemMin).max(updateOperationalEntityBodyOpeningHoursOneDaysItemMax).multipleOf(updateOperationalEntityBodyOpeningHoursOneDaysItemMultipleOf)).min(1).max(updateOperationalEntityBodyOpeningHoursOneDaysMax),
+  "opensAt": zod.string().regex(updateOperationalEntityBodyOpeningHoursOneOpensAtRegExp),
+  "closesAt": zod.string().regex(updateOperationalEntityBodyOpeningHoursOneClosesAtRegExp)
+}),zod.null()]).optional().describe('Business weekly schedule; null restores manual opening control.')
+})
 
 export const UpdateOperationalEntityResponse = zod.record(zod.string(), zod.unknown())
 
@@ -636,6 +684,16 @@ export const HealthCheckResponse = zod.object({
 /**
  * @summary List restaurants
  */
+export const listRestaurantsResponseOpeningHoursOneDaysItemMin = 0;
+export const listRestaurantsResponseOpeningHoursOneDaysItemMax = 6;
+export const listRestaurantsResponseOpeningHoursOneDaysItemMultipleOf = 1;
+
+export const listRestaurantsResponseOpeningHoursOneDaysMax = 7;
+
+export const listRestaurantsResponseOpeningHoursOneOpensAtRegExp = new RegExp('^(?:[01][0-9]|2[0-3]):[0-5][0-9]$');
+export const listRestaurantsResponseOpeningHoursOneClosesAtRegExp = new RegExp('^(?:[01][0-9]|2[0-3]):[0-5][0-9]$');
+
+
 export const ListRestaurantsResponseItem = zod.object({
   "id": zod.number(),
   "name": zod.string(),
@@ -644,6 +702,11 @@ export const ListRestaurantsResponseItem = zod.object({
   "deliveryMinutes": zod.number(),
   "deliveryFee": zod.number(),
   "isOpen": zod.boolean(),
+  "openingHours": zod.union([zod.object({
+  "days": zod.array(zod.number().min(listRestaurantsResponseOpeningHoursOneDaysItemMin).max(listRestaurantsResponseOpeningHoursOneDaysItemMax).multipleOf(listRestaurantsResponseOpeningHoursOneDaysItemMultipleOf)).min(1).max(listRestaurantsResponseOpeningHoursOneDaysMax),
+  "opensAt": zod.string().regex(listRestaurantsResponseOpeningHoursOneOpensAtRegExp),
+  "closesAt": zod.string().regex(listRestaurantsResponseOpeningHoursOneClosesAtRegExp)
+}),zod.null()]).optional(),
   "image": zod.string(),
   "featured": zod.boolean().optional()
 })

@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import type { OpeningHours } from '@workspace/api-client-react';
 
 export type OpsUser = { id: number; name: string; email: string; role: string; active: boolean; phone: string; address: string };
-export type OpsBusiness = { id: number; name: string; ruc: string; address: string; phone: string; administratorId: number | null; administratorName: string; isOpen: boolean; active: boolean; cuisine: string; deliveryFee: number; image: string };
+export type OpsBusiness = { id: number; name: string; ruc: string; address: string; phone: string; administratorId: number | null; administratorName: string; isOpen: boolean; openNow: boolean; openingHours: OpeningHours | null; active: boolean; cuisine: string; deliveryFee: number; image: string };
 export type OpsProduct = { id: number; restaurantId: number; name: string; description: string; category: string; price: number; stock: number; active: boolean; image: string; popular: boolean };
 export type OpsCategory = { id: number; restaurantId: number; name: string; active: boolean };
 export type OrderStatus = 'received' | 'preparing' | 'ready' | 'on_the_way' | 'delivered' | 'cancelled';

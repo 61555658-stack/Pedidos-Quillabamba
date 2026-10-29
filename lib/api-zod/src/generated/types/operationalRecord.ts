@@ -5,5 +5,10 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { OpeningHours } from './openingHours';
 
-export interface OperationalRecord { [key: string]: unknown }
+export interface OperationalRecord {
+  /** Business weekly schedule; null restores manual opening control. */
+  openingHours?: OpeningHours | null;
+  [key: string]: unknown;
+ }

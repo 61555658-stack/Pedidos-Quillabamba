@@ -4,6 +4,7 @@ import { z } from "zod";
 import { GetOperationsStateResponse } from "@workspace/api-zod";
 import { AppError, requireUser, ownsBusiness, visibleOrders, businessSelect, productSelect, categorySelect } from "../lib/operations-data";
 import { createPasswordHash } from "../lib/password";
+import { isBusinessOpen, openingHoursSchema } from "../lib/opening-hours";
 
 const router: IRouter = Router();
 const roles = ["cliente", "repartidor", "administrador_negocio", "administrador_sistema"] as const;
@@ -12,7 +13,7 @@ const name = text.min(1);
 const id = z.number().int().positive();
 const image = z.string().max(2000).refine(v => v === "" || /^https?:\/\//.test(v) || /^\/api\/files\/[a-zA-Z0-9.-]+$/.test(v), "Usa una URL de imagen o un archivo subido.");
 const userSchema = z.object({ name, email: text.regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/).transform(v => v.toLowerCase()), role: z.enum(roles), password: z.string().min(8).max(128), active: z.boolean(), phone: text, address: text }).strict();
-const businessSchema = z.object({name, ruc: z.string().regex(/^(\d{11})?$/), address:text,phone:text,administratorId:id.nullable(),isOpen:z.boolean(),active:z.boolean(),cuisine:text,deliveryFee:z.number().finite().min(0).max(10000),image}).strict();
+const businessSchema = z.object({name, ruc: z.string().regex(/^(\d{11})?$/), address:text,phone:text,administratorId:id.nullable(),isOpen:z.boolean(),active:z.boolean(),cuisine:text,deliveryFee:z.number().finite().min(0).max(10000),image,openingHours:openingHoursSchema.nullable().optional()}).strict();
 const productSchema = z.object({restaurantId:id,name,description:z.string().max(2000),category:name,price:z.number().finite().min(0).max(100000),stock:z.number().int().min(0).max(1000000),active:z.boolean(),image,popular:z.boolean()}).strict();
 const categorySchema = z.object({restaurantId:id,name,active:z.boolean()}).strict();
 
@@ -28,7 +29,7 @@ router.get("/operations/state", async (req,res) => {
     visibleOrders(user),
     pool.query("SELECT key,value FROM public.settings WHERE key IN ('platformName','minimumOrder')"),
   ]);
-  res.json(GetOperationsStateResponse.parse({users:users.rows,businesses:businesses.rows,products:products.rows,categories:categories.rows,orders,
+  res.json(GetOperationsStateResponse.parse({users:users.rows,businesses:businesses.rows.map(b=>({...b,openNow:b.active && isBusinessOpen(b.isOpen,b.openingHours)})),products:products.rows,categories:categories.rows,orders,
     settings:{platformName:"QUILLAYAA",minimumOrder:"0",...Object.fromEntries(settings.rows.map(r=>[r.key,r.value]))}}));
 });
 
@@ -77,7 +78,7 @@ router.post("/operations/businesses", async(req,res)=>{
   requireUser(req,["administrador_sistema"]);
   const d=businessSchema.partial({ruc:true,address:true,phone:true,administratorId:true,isOpen:true,active:true,cuisine:true,deliveryFee:true,image:true}).parse(req.body);
   if(d.administratorId) await assertBusinessAdmin(d.administratorId);
-  const result=await pool.query("INSERT INTO public.restaurants(name,ruc,address,phone,administrator_id,is_open,active,cuisine,delivery_fee,image,rating,delivery_minutes,featured) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,0,30,false) RETURNING id",[d.name,d.ruc||"",d.address||"",d.phone||"",d.administratorId??null,d.isOpen??true,d.active??true,d.cuisine||"",d.deliveryFee??0,d.image||""]);
+  const result=await pool.query("INSERT INTO public.restaurants(name,ruc,address,phone,administrator_id,is_open,active,cuisine,delivery_fee,image,opening_hours,rating,delivery_minutes,featured) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,0,30,false) RETURNING id",[d.name,d.ruc||"",d.address||"",d.phone||"",d.administratorId??null,d.isOpen??true,d.active??true,d.cuisine||"",d.deliveryFee??0,d.image||"",d.openingHours?JSON.stringify(d.openingHours):null]);
   res.status(201).json(result.rows[0]);
 });
 async function assertBusinessAdmin(userId:number) {
@@ -91,10 +92,10 @@ router.patch("/operations/businesses/:id", async(req,res)=>{
   const d=businessSchema.partial().parse(req.body);
   if(user.role!=="administrador_sistema" && ("administratorId" in d || "active" in d)) throw new AppError(403,"Solo el administrador del sistema asigna o habilita negocios.");
   if(d.administratorId) await assertBusinessAdmin(d.administratorId);
-  const cols:Record<string,string>={name:"name",ruc:"ruc",address:"address",phone:"phone",administratorId:"administrator_id",isOpen:"is_open",active:"active",cuisine:"cuisine",deliveryFee:"delivery_fee",image:"image"};
+  const cols:Record<string,string>={name:"name",ruc:"ruc",address:"address",phone:"phone",administratorId:"administrator_id",isOpen:"is_open",active:"active",cuisine:"cuisine",deliveryFee:"delivery_fee",image:"image",openingHours:"opening_hours"};
   const fields=Object.entries(d);
   if(!fields.length) throw new AppError(400,"No hay cambios para guardar.");
-  await pool.query(`UPDATE public.restaurants SET ${fields.map(([k],i)=>`${cols[k]}=$${i+1}`).join(",")} WHERE id=$${fields.length+1}`,[...fields.map(([,v])=>v),businessId]);
+  await pool.query(`UPDATE public.restaurants SET ${fields.map(([k],i)=>`${cols[k]}=$${i+1}`).join(",")} WHERE id=$${fields.length+1}`,[...fields.map(([k,v])=>k==="openingHours" && v!==null?JSON.stringify(v):v),businessId]);
   res.json({success:true});
 });
 

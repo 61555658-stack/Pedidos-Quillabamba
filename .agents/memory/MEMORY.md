@@ -8,3 +8,4 @@
 - [Turnos de caja](turnos-de-caja.md) — separar caja y administración; registrar horarios y trazabilidad sin duplicar ventas entre turnos.
 - [Verificación de APK](verificacion-apk.md) — validar con herramientas Android; unzip antiguo puede rechazar extras de alineación válidos.
 - [Logo de QUILLAYAA](logo-quillayaa.md) — conservar la imagen elegida por el usuario como identidad de la aplicación y del APK.
+- [Horarios de negocios](horarios-negocios.md) — apertura en hora de Perú; el cierre manual prevalece y la madrugada pertenece al día de apertura.
