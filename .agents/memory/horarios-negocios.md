@@ -9,6 +9,12 @@ Cada negocio configura sus días de atención y horas de apertura y cierre desde
 
 **How to apply:** Mantener un único criterio para catálogo, menú, perfil y creación de pedidos. El horario de cierre es excluyente y el de apertura incluyente.
 
+El panel del negocio debe ofrecer una opción visible de horario, con hora de apertura, hora de cierre y selección «desde qué día» y «hasta qué día».
+
+**Why:** El usuario reiteró que quiere una opción en esa parte del panel para indicar explícitamente de qué hora a qué hora y de qué día a qué día atiende.
+
+**How to apply:** No dejar esta configuración únicamente entre los demás datos del perfil. Conservar también la selección de días específicos para negocios que no atienden todos los días de un intervalo.
+
 Un cierre manual prevalece sobre el horario. Los negocios sin horario configurado mantienen su estado manual, sin asumir horas de atención.
 
 **Why:** No inventar horarios para negocios existentes y permitir pausas operativas aunque el negocio normalmente atienda a esa hora.

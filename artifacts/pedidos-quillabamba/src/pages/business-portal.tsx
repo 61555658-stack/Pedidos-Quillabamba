@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowLeftRight, BarChart3, LogOut, Wallet, PackageCheck, Settings, Store, Tag } from 'lucide-react';
+import { ArrowLeftRight, BarChart3, Clock3, LogOut, Wallet, PackageCheck, Settings, Store, Tag } from 'lucide-react';
 import { Link, useLocation } from 'wouter';
 import { clearSession, readSession } from '@/pages/role-access';
 import { api, useMutationRunner, useOperationsState } from '@/lib/operations-api';
@@ -8,10 +8,12 @@ import { OrderBoard } from '@/components/ops/order-board';
 import { SalesReport } from '@/components/ops/sales-report';
 import { CashShiftsPanel } from '@/components/ops/cash-shifts';
 import { BusinessForm, CategoriesManager, ProductsManager, bizDraftFrom } from '@/components/ops/catalog';
+import { BusinessHoursForm } from '@/components/ops/opening-hours';
 
-type BusinessTab = 'orders' | 'products' | 'categories' | 'sales' | 'cash-shifts' | 'profile';
+type BusinessTab = 'orders' | 'hours' | 'products' | 'categories' | 'sales' | 'cash-shifts' | 'profile';
 const menu: Array<{ id: BusinessTab; label: string; icon: typeof Store }> = [
   { id: 'orders', label: 'Pedidos', icon: PackageCheck },
+  { id: 'hours', label: 'Horario de atención', icon: Clock3 },
   { id: 'products', label: 'Productos', icon: Store },
   { id: 'categories', label: 'Categorías', icon: Tag },
   { id: 'sales', label: 'Ventas', icon: BarChart3 },
@@ -67,6 +69,9 @@ export default function BusinessPortalPage() {
               <p className="font-mono-app text-[10px] font-bold uppercase tracking-[.18em] text-accent">Datos en vivo · cada 10 s</p>
               <h1 className="mt-2 font-display text-3xl font-bold tracking-[-.04em]">{menu.find((m) => m.id === tab)?.label}</h1>
               {biz && <p className="mt-1 text-sm text-muted-foreground">{biz.name} · {biz.openNow ? 'abierto' : 'cerrado'}{biz.active ? '' : ' · suspendido por la plataforma'}</p>}
+              {biz && tab !== 'hours' && <button onClick={() => { setTab('hours'); setMessage(null); }}
+                className="mt-2 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-primary underline underline-offset-4"
+                data-testid="button-configure-business-hours"><Clock3 className="h-4 w-4" />Configurar horario de atención</button>}
             </div>
             {businesses.length > 1 && biz && (
               <div className="w-full sm:w-64"><SelectInput label="Negocio" value={biz.id} onChange={(e) => setBizId(Number(e.target.value))} data-testid="select-business-scope">{businesses.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}</SelectInput></div>
@@ -83,6 +88,13 @@ export default function BusinessPortalPage() {
               {tab === 'categories' && <CategoriesManager key={biz.id} business={biz} categories={state.categories} products={state.products} run={run} busy={busy} onError={onError} />}
               {tab === 'sales' && <SalesReport key={biz.id} businesses={businesses} lockedBusinessId={biz.id} />}
               {tab === 'cash-shifts' && <CashShiftsPanel key={biz.id} businessId={biz.id} />}
+              {tab === 'hours' && (
+                <Panel kicker="Apertura y cierre" title={`Horario de ${biz.name}`}>
+                  <BusinessHoursForm key={biz.id} initialHours={biz.openingHours} initiallyOpen={biz.isOpen}
+                    saving={busy === 'hours-save'} onError={onError}
+                    onSubmit={body => run('hours-save', () => api(`/api/operations/businesses/${biz.id}`, 'PATCH', body), 'Horario de atención guardado.')} />
+                </Panel>
+              )}
               {tab === 'profile' && (
                 <Panel kicker="Perfil" title={biz.name}>
                   <BusinessForm key={biz.id} initial={bizDraftFrom(biz)} isSystemAdmin={false} saving={busy === 'biz-save'} onError={onError} submitLabel="Guardar perfil"
