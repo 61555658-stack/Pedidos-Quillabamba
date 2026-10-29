@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Briefcase, KeyRound, LogOut, Store } from 'lucide-react';
 import {
   getGetBusinessAccessQueryKey, useEnterBusinessAdministrator, useGetBusinessAccess, useOpenCashShift,
+  useSetupBusinessAdministrator,
 } from '@workspace/api-client-react';
 import { clearSession, readSession } from '@/pages/role-access';
 import { Banner, Empty, LoadError, SelectInput, Skeleton, TextInput, btnGhost, btnPrimary } from '@/components/ops/ui';
@@ -34,10 +35,14 @@ export function BusinessAccessPage() {
   const qc = useQueryClient();
   const access = useGetBusinessAccess({ query: { queryKey: getGetBusinessAccessQueryKey(), retry: false } });
   const enterAdmin = useEnterBusinessAdministrator();
+  const setupAdmin = useSetupBusinessAdministrator();
   const openShift = useOpenCashShift();
-  const [step, setStep] = useState<'choose' | 'cashier'>('choose');
+  const [step, setStep] = useState<'choose' | 'cashier' | 'administrator'>('choose');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [adminUsername, setAdminUsername] = useState('');
+  const [adminPassword, setAdminPassword] = useState('');
+  const [adminConfirmation, setAdminConfirmation] = useState('');
   const [bizId, setBizId] = useState<number | null>(null);
   const [message, setMessage] = useState<{ kind: 'ok' | 'error'; text: string } | null>(null);
   const logout = () => { clearSession(); setLocation('/login'); };
@@ -50,9 +55,34 @@ export function BusinessAccessPage() {
 
   const chooseAdmin = () => {
     setMessage(null);
-    enterAdmin.mutate(undefined, {
-      onSuccess: (res) => { qc.setQueryData(getGetBusinessAccessQueryKey(), res); setLocation('/business'); },
-      onError: (e) => setMessage({ kind: 'error', text: errText(e, 'No se pudo entrar como administrador.') }),
+    if (readSession()?.role === 'administrador_sistema') { setLocation('/business'); return; }
+    setAdminUsername('');
+    setAdminPassword('');
+    setAdminConfirmation('');
+    setStep('administrator');
+  };
+  const adminSetup = data?.administratorCredentialsConfigured === false;
+  const adminPending = setupAdmin.isPending || enterAdmin.isPending;
+  const submitAdministrator = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (adminPending) return;
+    setMessage(null);
+    if (adminSetup && adminPassword !== adminConfirmation) {
+      setMessage({ kind: 'error', text: 'Las contraseñas no coinciden.' }); return;
+    }
+    const mutation = adminSetup ? setupAdmin : enterAdmin;
+    mutation.mutate({ data: { username: adminUsername.trim(), password: adminPassword } }, {
+      onSuccess: (res) => {
+        setAdminPassword(''); setAdminConfirmation('');
+        qc.setQueryData(getGetBusinessAccessQueryKey(), res);
+        void qc.invalidateQueries();
+        setLocation('/business');
+      },
+      onError: (error) => {
+        setAdminPassword(''); setAdminConfirmation('');
+        setMessage({ kind: 'error', text: errText(error, 'No se pudo acceder a la administración.') });
+        void access.refetch();
+      },
     });
   };
   const submitCashier = (e: React.FormEvent) => {
@@ -94,6 +124,38 @@ export function BusinessAccessPage() {
               </span>
             </button>
           </div>
+        ) : step === 'administrator' && data.mode !== 'cashier_login' ? (
+          <form onSubmit={submitAdministrator} className="space-y-4 rounded-2xl bg-card p-5 ring-1 ring-border sm:p-6 animate-rise" data-testid="administrator-access-form">
+            <button type="button" disabled={adminPending} onClick={() => {
+              setStep('choose'); setAdminPassword(''); setAdminConfirmation(''); setMessage(null);
+            }} className={btnGhost} data-testid="administrator-back"><ArrowLeft className="h-4 w-4" /> Volver</button>
+            <div>
+              <h2 className="font-display text-xl font-bold">{adminSetup ? 'Crea tu acceso de administrador' : 'Ingresa como administrador'}</h2>
+              <p className="mt-1 text-sm text-muted-foreground">{adminSetup
+                ? 'Es tu primera vez. Crea el usuario y la contraseña que usarás para administrar tu negocio.'
+                : 'Ingresa el usuario y la contraseña de administrador que creaste anteriormente.'}</p>
+              <p className="mt-2 text-xs text-muted-foreground">Este acceso protege la administración y es independiente del correo y la contraseña con los que inicias sesión en la app.</p>
+            </div>
+            <TextInput label={adminSetup ? 'Crea tu usuario de administrador' : 'Usuario de administrador'}
+              value={adminUsername} onChange={e => setAdminUsername(e.target.value)} disabled={adminPending}
+              autoComplete="username" autoCapitalize="none" autoCorrect="off" spellCheck={false}
+              minLength={3} maxLength={40} pattern={'[a-zA-Z0-9._\\-]+'} required data-testid="administrator-username" />
+            {adminSetup && <p className="text-xs text-muted-foreground">De 3 a 40 caracteres. Usa letras sin tildes, números, puntos, guiones o guion bajo.</p>}
+            <TextInput label={adminSetup ? 'Crea tu contraseña' : 'Contraseña de administrador'} type="password"
+              value={adminPassword} onChange={e => setAdminPassword(e.target.value)} disabled={adminPending}
+              autoComplete={adminSetup ? 'new-password' : 'current-password'}
+              minLength={8} maxLength={128} required data-testid="administrator-password" />
+            {adminSetup && <>
+              <p className="text-xs text-muted-foreground">La contraseña debe tener al menos 8 caracteres.</p>
+              <TextInput label="Confirma tu contraseña" type="password" value={adminConfirmation}
+                onChange={e => setAdminConfirmation(e.target.value)} disabled={adminPending}
+                autoComplete="new-password" minLength={8} maxLength={128} required data-testid="administrator-password-confirmation" />
+            </>}
+            <button type="submit" disabled={adminPending || !adminUsername.trim() || !adminPassword || (adminSetup && !adminConfirmation)}
+              className={`${btnPrimary} w-full`} data-testid="administrator-submit">
+              {adminPending ? 'Verificando…' : adminSetup ? 'Crear acceso y entrar' : 'Entrar como administrador'}
+            </button>
+          </form>
         ) : (
           <form onSubmit={submitCashier} className="space-y-4 rounded-2xl bg-card p-5 ring-1 ring-border sm:p-6 animate-rise">
             {data.mode !== 'cashier_login' && <button type="button" onClick={() => setStep('choose')} className={btnGhost} data-testid="cashier-back"><ArrowLeft className="h-4 w-4" /> Volver</button>}

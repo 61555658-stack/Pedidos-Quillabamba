@@ -83,6 +83,7 @@ export const RegisterAccountResponse = zod.object({
 
 
 export const GetBusinessAccessResponse = zod.object({
+  "administratorCredentialsConfigured": zod.boolean(),
   "mode": zod.enum(['choose', 'administrator', 'cashier', 'cashier_login']),
   "businesses": zod.array(zod.object({
   "id": zod.number(),
@@ -101,7 +102,58 @@ export const GetBusinessAccessResponse = zod.object({
 })
 
 
+export const enterBusinessAdministratorBodyUsernameMin = 3;
+export const enterBusinessAdministratorBodyUsernameMax = 40;
+
+
+export const enterBusinessAdministratorBodyUsernameRegExp = new RegExp('^[a-zA-Z0-9._-]+$');
+export const enterBusinessAdministratorBodyPasswordMin = 8;
+export const enterBusinessAdministratorBodyPasswordMax = 128;
+
+
+
+export const EnterBusinessAdministratorBody = zod.object({
+  "username": zod.string().min(enterBusinessAdministratorBodyUsernameMin).max(enterBusinessAdministratorBodyUsernameMax).regex(enterBusinessAdministratorBodyUsernameRegExp),
+  "password": zod.string().min(enterBusinessAdministratorBodyPasswordMin).max(enterBusinessAdministratorBodyPasswordMax)
+})
+
 export const EnterBusinessAdministratorResponse = zod.object({
+  "administratorCredentialsConfigured": zod.boolean(),
+  "mode": zod.enum(['choose', 'administrator', 'cashier', 'cashier_login']),
+  "businesses": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string()
+})),
+  "shift": zod.union([zod.object({
+  "id": zod.number(),
+  "businessId": zod.number(),
+  "businessName": zod.string(),
+  "username": zod.string(),
+  "shift": zod.enum(['morning', 'afternoon']),
+  "openedAt": zod.string(),
+  "closedAt": zod.string().nullable(),
+  "openedByName": zod.string()
+}),zod.null()])
+})
+
+
+export const setupBusinessAdministratorBodyUsernameMin = 3;
+export const setupBusinessAdministratorBodyUsernameMax = 40;
+
+
+export const setupBusinessAdministratorBodyUsernameRegExp = new RegExp('^[a-zA-Z0-9._-]+$');
+export const setupBusinessAdministratorBodyPasswordMin = 8;
+export const setupBusinessAdministratorBodyPasswordMax = 128;
+
+
+
+export const SetupBusinessAdministratorBody = zod.object({
+  "username": zod.string().min(setupBusinessAdministratorBodyUsernameMin).max(setupBusinessAdministratorBodyUsernameMax).regex(setupBusinessAdministratorBodyUsernameRegExp),
+  "password": zod.string().min(setupBusinessAdministratorBodyPasswordMin).max(setupBusinessAdministratorBodyPasswordMax)
+})
+
+export const SetupBusinessAdministratorResponse = zod.object({
+  "administratorCredentialsConfigured": zod.boolean(),
   "mode": zod.enum(['choose', 'administrator', 'cashier', 'cashier_login']),
   "businesses": zod.array(zod.object({
   "id": zod.number(),

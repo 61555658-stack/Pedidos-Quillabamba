@@ -28,6 +28,7 @@ import type {
   BusinessAdminRegistrationDecision,
   BusinessAdminRegistrationDecisionResult,
   BusinessAdminRegistrationRequests,
+  BusinessAdministratorCredentials,
   CashOpenRequest,
   CashReleaseRequest,
   CashShift,
@@ -303,14 +304,14 @@ export const getEnterBusinessAdministratorUrl = () => {
   return `/api/business/access/administrator`
 }
 
-export const enterBusinessAdministrator = async ( options?: Parameters<typeof customFetch>[1]): Promise<BusinessAccess> => {
+export const enterBusinessAdministrator = async (businessAdministratorCredentials: BusinessAdministratorCredentials, options?: Parameters<typeof customFetch>[1]): Promise<BusinessAccess> => {
 
   return customFetch<BusinessAccess>(getEnterBusinessAdministratorUrl(),
   {
     ...options,
-    method: 'POST'
-
-
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(businessAdministratorCredentials)
   }
 );}
 
@@ -319,8 +320,8 @@ export const enterBusinessAdministrator = async ( options?: Parameters<typeof cu
 
 
 export const getEnterBusinessAdministratorMutationOptions = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof enterBusinessAdministrator>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof enterBusinessAdministrator>>, TError,void, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof enterBusinessAdministrator>>, TError,{data: BodyType<BusinessAdministratorCredentials>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof enterBusinessAdministrator>>, TError,{data: BodyType<BusinessAdministratorCredentials>}, TContext> => {
 
 const mutationKey = ['enterBusinessAdministrator'];
 const {mutation: mutationOptions, request: requestOptions} = options ?
@@ -332,10 +333,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof enterBusinessAdministrator>>, void> = () => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof enterBusinessAdministrator>>, {data: BodyType<BusinessAdministratorCredentials>}> = (props) => {
+          const {data} = props ?? {};
 
-
-          return  enterBusinessAdministrator(requestOptions)
+          return  enterBusinessAdministrator(data,requestOptions)
         }
 
 
@@ -346,18 +347,83 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
   return  { mutationFn, ...mutationOptions }}
 
     export type EnterBusinessAdministratorMutationResult = NonNullable<Awaited<ReturnType<typeof enterBusinessAdministrator>>>
-
+    export type EnterBusinessAdministratorMutationBody = BodyType<BusinessAdministratorCredentials>
     export type EnterBusinessAdministratorMutationError = ErrorType<unknown>
 
     export const useEnterBusinessAdministrator = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof enterBusinessAdministrator>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof enterBusinessAdministrator>>, TError,{data: BodyType<BusinessAdministratorCredentials>}, TContext>, request?: SecondParameter<typeof customFetch>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof enterBusinessAdministrator>>,
         TError,
-        void,
+        {data: BodyType<BusinessAdministratorCredentials>},
         TContext
       > => {
       return useMutation(getEnterBusinessAdministratorMutationOptions(options));
+    }
+
+export const getSetupBusinessAdministratorUrl = () => {
+
+
+
+
+  return `/api/business/access/administrator/setup`
+}
+
+export const setupBusinessAdministrator = async (businessAdministratorCredentials: BusinessAdministratorCredentials, options?: Parameters<typeof customFetch>[1]): Promise<BusinessAccess> => {
+
+  return customFetch<BusinessAccess>(getSetupBusinessAdministratorUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(businessAdministratorCredentials)
+  }
+);}
+
+
+
+
+
+export const getSetupBusinessAdministratorMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setupBusinessAdministrator>>, TError,{data: BodyType<BusinessAdministratorCredentials>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof setupBusinessAdministrator>>, TError,{data: BodyType<BusinessAdministratorCredentials>}, TContext> => {
+
+const mutationKey = ['setupBusinessAdministrator'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof setupBusinessAdministrator>>, {data: BodyType<BusinessAdministratorCredentials>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  setupBusinessAdministrator(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SetupBusinessAdministratorMutationResult = NonNullable<Awaited<ReturnType<typeof setupBusinessAdministrator>>>
+    export type SetupBusinessAdministratorMutationBody = BodyType<BusinessAdministratorCredentials>
+    export type SetupBusinessAdministratorMutationError = ErrorType<unknown>
+
+    export const useSetupBusinessAdministrator = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setupBusinessAdministrator>>, TError,{data: BodyType<BusinessAdministratorCredentials>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof setupBusinessAdministrator>>,
+        TError,
+        {data: BodyType<BusinessAdministratorCredentials>},
+        TContext
+      > => {
+      return useMutation(getSetupBusinessAdministratorMutationOptions(options));
     }
 
 export const getOpenCashShiftUrl = () => {

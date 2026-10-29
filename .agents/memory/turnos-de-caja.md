@@ -11,6 +11,12 @@ Después del inicio de sesión del negocio, ofrecer Cajero o Administrador del n
 
 **Why:** El usuario pidió volver al formulario de apertura después del cierre, sin el botón «Volver», y conservarlo solo al entrar inicialmente.
 
+Al elegir «Administrador del negocio», la primera vez se debe crear un usuario y una contraseña; en los accesos siguientes se deben pedir esas credenciales antes de abrir la administración.
+
+**Why:** El usuario pidió proteger esta opción, además del inicio de sesión general de la app.
+
+**How to apply:** Son credenciales secundarias de la cuenta de negocio, compartidas entre sus negocios asignados, no usuarios de caja ni un reemplazo del correo y contraseña principal. La elección administrativa no selecciona un negocio concreto. La autorización debe quedar en la sesión del servidor y sobrevivir a recargas, sin permitir saltarse la verificación mediante rutas o estado del navegador. Las sesiones administrativas anteriores sin esta verificación deben volver a solicitarla.
+
 La venta de un pedido se atribuye al turno que lo liberó por primera vez, pero solo cuenta cuando se entrega. Los turnos posteriores que intervengan conservan trazabilidad sin duplicar ingresos; cerrar caja no cancela repartos pendientes.
 
 **Why:** Un pedido puede liberarse en un turno y asignarse o entregarse después. Contarlo en cada intervención duplicaría ventas y perder los pendientes al cerrar falsearía la operación.

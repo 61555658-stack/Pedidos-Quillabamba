@@ -4,18 +4,21 @@ import { z } from "zod";
 import {
   OpenCashShiftBody, ReleaseCashierOrderBody, GetBusinessAccessResponse, GetCashierStateResponse,
   GetBusinessCashShiftResponse, ListBusinessCashShiftsResponse, GetOrderResponse,
+  EnterBusinessAdministratorBody, SetupBusinessAdministratorBody,
 } from "@workspace/api-zod";
 import { requireUser,ownsBusiness,AppError,orderSelect,toOrder,visibleOrder } from "../lib/operations-data";
 import { verifyPasswordHash } from "../lib/password";
 import { activeCashShift,cashShiftReport,closeCashShift,ownShift,shiftSelect,toShift } from "../lib/cash-register";
 import type { AppUser } from "../middlewares/appAuthMiddleware";
+import { unlockBusinessAdministration } from "../lib/business-administrator-access";
 
 const router:IRouter=Router();
 const id=(value:unknown)=>z.coerce.number().int().positive().parse(value);
 async function accessContext(user:AppUser){
   const businesses=await pool.query(`SELECT id,name FROM public.restaurants WHERE active AND ($1='administrador_sistema' OR administrator_id=$2) ORDER BY name`,[user.role,Number(user.id)]);
   const shift=user.cashShiftId?(await pool.query(`${shiftSelect} WHERE s.id=$1 AND s.closed_at IS NULL`,[user.cashShiftId])).rows[0]:null;
-  return GetBusinessAccessResponse.parse({mode:user.role==="administrador_sistema"?"administrator":user.businessMode||"choose",businesses:businesses.rows,shift:shift?toShift(shift):null});
+  const credential=await pool.query("SELECT user_id FROM public.business_administrator_credentials WHERE user_id=$1",[Number(user.id)]);
+  return GetBusinessAccessResponse.parse({mode:user.role==="administrador_sistema"?"administrator":user.businessMode||"choose",administratorCredentialsConfigured:credential.rows.length>0,businesses:businesses.rows,shift:shift?toShift(shift):null});
 }
 router.get("/business/access",async(req,res)=>{
   const user=requireUser(req,["administrador_negocio","administrador_sistema"],true);
@@ -23,8 +26,16 @@ router.get("/business/access",async(req,res)=>{
 });
 router.post("/business/access/administrator",async(req,res)=>{
   const user=requireUser(req,["administrador_negocio","administrador_sistema"],true);
-  const result=await pool.query("UPDATE public.sessions SET business_mode='administrator' WHERE id=$1 AND business_mode IN ('choose','administrator') RETURNING id",[req.cookies.sid]);
-  if(!result.rowCount)throw new AppError(403,"Cierra caja e inicia sesión nuevamente para administrar el negocio.");
+  if(user.role!=="administrador_sistema"){
+    const credentials=EnterBusinessAdministratorBody.parse(req.body);
+    await unlockBusinessAdministration(Number(user.id),req.cookies.sid,credentials,false);
+  }
+  res.json(await accessContext({...user,businessMode:"administrator"}));
+});
+router.post("/business/access/administrator/setup",async(req,res)=>{
+  const user=requireUser(req,["administrador_negocio"],true);
+  const credentials=SetupBusinessAdministratorBody.parse(req.body);
+  await unlockBusinessAdministration(Number(user.id),req.cookies.sid,credentials,true);
   res.json(await accessContext({...user,businessMode:"administrator"}));
 });
 router.post("/cashier/open",async(req,res)=>{

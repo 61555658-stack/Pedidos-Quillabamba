@@ -72,9 +72,29 @@ paths:
     post:
       operationId: enterBusinessAdministrator
       tags: [dashboard]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/BusinessAdministratorCredentials" }
       responses:
         "200":
           description: Administrator mode selected
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BusinessAccess" }
+  /business/access/administrator/setup:
+    post:
+      operationId: setupBusinessAdministrator
+      tags: [dashboard]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/BusinessAdministratorCredentials" }
+      responses:
+        "200":
+          description: Administrator credentials created and current session authorized
           content:
             application/json:
               schema: { $ref: "#/components/schemas/BusinessAccess" }
@@ -739,10 +759,17 @@ components:
         openedAt: { type: string }
         closedAt: { type: [string, "null"] }
         openedByName: { type: string }
+    BusinessAdministratorCredentials:
+      type: object
+      required: [username, password]
+      properties:
+        username: { type: string, minLength: 3, maxLength: 40, pattern: '^[a-zA-Z0-9._-]+$' }
+        password: { type: string, minLength: 8, maxLength: 128 }
     BusinessAccess:
       type: object
-      required: [mode, businesses, shift]
+      required: [mode, businesses, shift, administratorCredentialsConfigured]
       properties:
+        administratorCredentialsConfigured: { type: boolean }
         mode: { type: string, enum: [choose, administrator, cashier, cashier_login] }
         businesses:
           type: array

@@ -139,6 +139,20 @@ export interface CashShift {
   openedByName: string;
 }
 
+export interface BusinessAdministratorCredentials {
+  /**
+     * @minLength 3
+     * @maxLength 40
+     * @pattern ^[a-zA-Z0-9._-]+$
+     */
+  username: string;
+  /**
+     * @minLength 8
+     * @maxLength 128
+     */
+  password: string;
+}
+
 export type BusinessAccessMode = typeof BusinessAccessMode[keyof typeof BusinessAccessMode];
 
 
@@ -155,6 +169,7 @@ export type BusinessAccessBusinessesItem = {
 };
 
 export interface BusinessAccess {
+  administratorCredentialsConfigured: boolean;
   mode: BusinessAccessMode;
   businesses: BusinessAccessBusinessesItem[];
   shift: CashShift | null;

@@ -30,7 +30,10 @@ export async function appAuthMiddleware(req: Request, res: Response, next: NextF
   if (!sid || typeof sid !== "string") return next();
   try {
     const result = await pool.query(
-      `SELECT u.id, u.name, u.email, u.role, s.business_mode, s.cash_shift_id
+      `SELECT u.id, u.name, u.email, u.role,
+       CASE WHEN u.role='administrador_negocio' AND s.business_mode='administrator'
+         AND s.business_admin_verified_at IS NULL THEN 'choose' ELSE s.business_mode END AS business_mode,
+       s.cash_shift_id
        FROM public.sessions s JOIN public.users u ON u.id = s.user_id
        WHERE s.id = $1 AND s.expires_at > NOW() AND u.active
        AND u.role IN ('cliente','repartidor','administrador_negocio','administrador_sistema')`,

@@ -10,6 +10,7 @@ import type { BusinessAccessMode } from './businessAccessMode';
 import type { CashShift } from './cashShift';
 
 export interface BusinessAccess {
+  administratorCredentialsConfigured: boolean;
   mode: BusinessAccessMode;
   businesses: BusinessAccessBusinessesItem[];
   shift: CashShift | null;

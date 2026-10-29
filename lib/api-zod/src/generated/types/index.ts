@@ -16,6 +16,7 @@ export * from './authUserRole';
 export * from './businessAccess';
 export * from './businessAccessBusinessesItem';
 export * from './businessAccessMode';
+export * from './businessAdministratorCredentials';
 export * from './businessAdminRegistrationDecision';
 export * from './businessAdminRegistrationDecisionDecision';
 export * from './businessAdminRegistrationDecisionResult';
