@@ -12,3 +12,4 @@
 - [Registro de repartidores](registro-repartidores.md) — exigir nombre completo, DNI, licencia y placa; verificar por API que el SOAT esté activo antes de registrar.
 - [Ubicación de entrega](ubicacion-entrega.md) — el cliente elige GPS o un punto del mapa en lugar de escribir su dirección.
 - [Vouchers de compras](vouchers-compras.md) — constancia del pedido por correo y en el historial del cliente; no acredita pago ni es comprobante fiscal.
+- [Seguimiento de repartidores](seguimiento-repartidores.md) — mostrar la ubicación reciente del pedido asignado y dejar claro si la ruta usa un servicio externo.

@@ -4,6 +4,7 @@ import { z } from "zod";
 import {
   CreateOrderBody, CreateOrderResponse, GetOrderResponse, ListOrdersResponse,
   ListRestaurantsResponse, ListRestaurantProductsResponse, UpdateOrderStatusBody,
+  UpdateCourierLocationBody, GetCourierLocationResponse,
 } from "@workspace/api-zod";
 import { AppError, requireUser, visibleOrder, visibleOrders, toOrder, ownsBusiness } from "../lib/operations-data";
 import { isBusinessOpen } from "../lib/opening-hours";
@@ -102,7 +103,7 @@ router.put("/orders/:orderId/assignment",async(req,res)=>{
 router.put("/orders/:orderId/location",async(req,res)=>{
   const user=requireUser(req,["repartidor"]);
   const id=validId(req.params.orderId);
-  const location=z.object({latitude:z.number().min(-90).max(90),longitude:z.number().min(-180).max(180),accuracy:z.number().min(0).max(250)}).parse(req.body);
+  const location=UpdateCourierLocationBody.parse(req.body);
   const updatedAt=new Date().toISOString();
   const result=await pool.query(`UPDATE public.orders SET current_location=$1,updated_at=now()
     WHERE id=$2 AND delivery_partner_id=$3 AND status IN ('ready','on_the_way') RETURNING id`,[JSON.stringify({...location,updatedAt}),id,Number(user.id)]);
@@ -112,8 +113,9 @@ router.put("/orders/:orderId/location",async(req,res)=>{
 router.get("/orders/:orderId/location",async(req,res)=>{
   const user=requireUser(req);
   const row=await visibleOrder(user,validId(req.params.orderId));
-  if(row.status!=="on_the_way"||!row.current_location||Date.now()-Date.parse(row.current_location.updatedAt)>120000) throw new AppError(404,"Ubicación todavía no disponible.");
-  res.json(row.current_location);
+  res.setHeader("Cache-Control","private, no-store");
+  if(!row.delivery_partner_id||!["ready","on_the_way"].includes(row.status)||!row.current_location||!Number.isFinite(Date.parse(row.current_location.updatedAt))||Date.now()-Date.parse(row.current_location.updatedAt)>120000) throw new AppError(404,"Ubicación todavía no disponible.");
+  res.json(GetCourierLocationResponse.parse(row.current_location));
 });
 router.get("/orders/:orderId",async(req,res)=>{
   const user=requireUser(req);

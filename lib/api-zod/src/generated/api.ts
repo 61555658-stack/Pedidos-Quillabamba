@@ -8,6 +8,45 @@
 import * as zod from 'zod';
 
 
+export const GetCourierLocationParams = zod.object({
+  "orderId": zod.coerce.number().int()
+})
+
+export const GetCourierLocationResponse = zod.object({
+  "latitude": zod.number(),
+  "longitude": zod.number(),
+  "accuracy": zod.number(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+export const UpdateCourierLocationParams = zod.object({
+  "orderId": zod.coerce.number().int()
+})
+
+export const updateCourierLocationBodyLatitudeMin = -90;
+export const updateCourierLocationBodyLatitudeMax = 90;
+
+export const updateCourierLocationBodyLongitudeMin = -180;
+export const updateCourierLocationBodyLongitudeMax = 180;
+
+export const updateCourierLocationBodyAccuracyMin = 0;
+export const updateCourierLocationBodyAccuracyMax = 250;
+
+
+
+export const UpdateCourierLocationBody = zod.object({
+  "latitude": zod.number().min(updateCourierLocationBodyLatitudeMin).max(updateCourierLocationBodyLatitudeMax),
+  "longitude": zod.number().min(updateCourierLocationBodyLongitudeMin).max(updateCourierLocationBodyLongitudeMax),
+  "accuracy": zod.number().min(updateCourierLocationBodyAccuracyMin).max(updateCourierLocationBodyAccuracyMax)
+})
+
+export const UpdateCourierLocationResponse = zod.object({
+  "saved": zod.boolean(),
+  "updatedAt": zod.coerce.date()
+})
+
+
 export const ListMyVouchersResponseItem = zod.object({
   "orderId": zod.number(),
   "number": zod.string(),

@@ -36,6 +36,8 @@ import type {
   CashierState,
   CourierAssignmentInput,
   CourierClaimInput,
+  CourierLocation,
+  CourierLocationInput,
   CourierSoatInput,
   CourierSoatResult,
   CreateOperationalEntity201,
@@ -64,6 +66,7 @@ import type {
   RegistrationCodeVerified,
   Restaurant,
   SalesReport,
+  UpdateCourierLocation200,
   UpdateOperationalEntity200,
   UpdateOperationalSettings200,
   UploadProductImage201
@@ -95,6 +98,143 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   }
   return result;
 };
+
+export const getGetCourierLocationUrl = (orderId: number,) => {
+
+
+
+
+  return `/api/orders/${orderId}/location`
+}
+
+export const getCourierLocation = async (orderId: number, options?: Parameters<typeof customFetch>[1]): Promise<CourierLocation> => {
+
+  return customFetch<CourierLocation>(getGetCourierLocationUrl(orderId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetCourierLocationQueryKey = (orderId: number,) => {
+    return [
+    `/api/orders/${orderId}/location`
+    ] as const;
+    }
+
+
+export const getGetCourierLocationQueryOptions = <TData = Awaited<ReturnType<typeof getCourierLocation>>, TError = ErrorType<void>>(orderId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCourierLocation>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetCourierLocationQueryKey(orderId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCourierLocation>>> = ({ signal }) => getCourierLocation(orderId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: orderId !== null && orderId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCourierLocation>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetCourierLocationQueryResult = NonNullable<Awaited<ReturnType<typeof getCourierLocation>>>
+export type GetCourierLocationQueryError = ErrorType<void>
+
+
+
+export function useGetCourierLocation<TData = Awaited<ReturnType<typeof getCourierLocation>>, TError = ErrorType<void>>(
+ orderId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCourierLocation>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetCourierLocationQueryOptions(orderId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getUpdateCourierLocationUrl = (orderId: number,) => {
+
+
+
+
+  return `/api/orders/${orderId}/location`
+}
+
+export const updateCourierLocation = async (orderId: number,
+    courierLocationInput: CourierLocationInput, options?: Parameters<typeof customFetch>[1]): Promise<UpdateCourierLocation200> => {
+
+  return customFetch<UpdateCourierLocation200>(getUpdateCourierLocationUrl(orderId),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(courierLocationInput)
+  }
+);}
+
+
+
+
+
+export const getUpdateCourierLocationMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateCourierLocation>>, TError,{orderId: number;data: BodyType<CourierLocationInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateCourierLocation>>, TError,{orderId: number;data: BodyType<CourierLocationInput>}, TContext> => {
+
+const mutationKey = ['updateCourierLocation'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateCourierLocation>>, {orderId: number;data: BodyType<CourierLocationInput>}> = (props) => {
+          const {orderId,data} = props ?? {};
+
+          return  updateCourierLocation(orderId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateCourierLocationMutationResult = NonNullable<Awaited<ReturnType<typeof updateCourierLocation>>>
+    export type UpdateCourierLocationMutationBody = BodyType<CourierLocationInput>
+    export type UpdateCourierLocationMutationError = ErrorType<unknown>
+
+    export const useUpdateCourierLocation = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateCourierLocation>>, TError,{orderId: number;data: BodyType<CourierLocationInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateCourierLocation>>,
+        TError,
+        {orderId: number;data: BodyType<CourierLocationInput>},
+        TContext
+      > => {
+      return useMutation(getUpdateCourierLocationMutationOptions(options));
+    }
 
 export const getListMyVouchersUrl = () => {
 

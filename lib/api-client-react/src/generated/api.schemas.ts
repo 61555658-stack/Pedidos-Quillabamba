@@ -552,6 +552,31 @@ export interface CourierClaimInput {
   courierName: string;
 }
 
+export interface CourierLocationInput {
+  /**
+     * @minimum -90
+     * @maximum 90
+     */
+  latitude: number;
+  /**
+     * @minimum -180
+     * @maximum 180
+     */
+  longitude: number;
+  /**
+     * @minimum 0
+     * @maximum 250
+     */
+  accuracy: number;
+}
+
+export interface CourierLocation {
+  latitude: number;
+  longitude: number;
+  accuracy: number;
+  updatedAt: string;
+}
+
 export type OrderInputPaymentMethod = typeof OrderInputPaymentMethod[keyof typeof OrderInputPaymentMethod];
 
 
@@ -634,6 +659,11 @@ export interface SalesReport {
   businesses: SalesReportBusinessesItem[];
   totals: SalesReportTotals;
 }
+
+export type UpdateCourierLocation200 = {
+  saved: boolean;
+  updatedAt: string;
+};
 
 export type ListBusinessCashShiftsParams = {
 businessId: number;

@@ -84,12 +84,13 @@ function waitForAccuratePosition() {
   });
 }
 
-async function uploadCurrentPosition(orderId: number, position: GeolocationPosition) {
+async function uploadCurrentPosition(orderId: number, position: GeolocationPosition, signal?: AbortSignal) {
   if (position.coords.accuracy > maxLocationAccuracyMeters) {
     throw new Error('La ubicación todavía no es suficientemente precisa. Espera un momento y vuelve a intentar.');
   }
   const response = await fetch(`/api/orders/${orderId}/location`, {
     method: 'PUT',
+    signal,
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -195,6 +196,8 @@ export default function DeliveryPortalPage() {
   const queryClient = useQueryClient();
   const session = readSession();
   const [notice, setNotice] = useState('');
+  const [locationNotice, setLocationNotice] = useState('');
+  const [locationRetry, setLocationRetry] = useState(0);
   const [savingProof,setSavingProof]=useState(false);
   const [proofPhoto, setProofPhoto] = useState<{ orderId: number; file: File; url: string; sharpness: number } | null>(null);
   const [cameraOrderId, setCameraOrderId] = useState<number | null>(null);
@@ -221,7 +224,7 @@ export default function DeliveryPortalPage() {
   const completedOrders = orders.filter((order) => (
     order.deliveryPartnerEmail?.toLowerCase() === courierEmail && order.status === 'delivered'
   ));
-  const trackingIds = myActiveOrders.filter((order) => order.status === 'on_the_way').map((order) => order.id).join(',');
+  const trackingIds = myActiveOrders.filter((order) => ['ready', 'on_the_way'].includes(order.status)).map((order) => order.id).sort((a, b) => a - b).join(',');
 
   useEffect(() => () => {
     if (proofPhoto) URL.revokeObjectURL(proofPhoto.url);
@@ -237,20 +240,42 @@ export default function DeliveryPortalPage() {
   }, [cameraStream, cameraOrderId]);
 
   useEffect(() => {
-    if (!trackingIds || !navigator.geolocation) return;
-    const watchers = trackingIds.split(',').map(Number).map((orderId) => navigator.geolocation.watchPosition(
-      (position) => {
-        if (position.coords.accuracy > maxLocationAccuracyMeters) {
-          setNotice('El GPS está buscando una ubicación más precisa…');
-          return;
-        }
-        void uploadCurrentPosition(orderId, position).catch((error) => setNotice(errorMessage(error, 'No se pudo actualizar tu ubicación.')));
-      },
-      () => setNotice('No se pudo actualizar tu ubicación. Revisa el permiso de ubicación del navegador.'),
-      { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 },
-    ));
-    return () => watchers.forEach((watcher) => navigator.geolocation.clearWatch(watcher));
-  }, [trackingIds]);
+    if (!trackingIds) { setLocationNotice(''); return; }
+    if (!navigator.geolocation) {
+      setLocationNotice('Este dispositivo no permite compartir GPS. Usa un celular con ubicación habilitada.');
+      return;
+    }
+    let disposed = false, sending = false, lastSent = 0;
+    const controller = new AbortController();
+    const ids = trackingIds.split(',').map(Number);
+    setLocationNotice('Buscando tu ubicación para compartirla con el cliente…');
+    const publish = (position: GeolocationPosition) => {
+      if (disposed || sending || Date.now() - lastSent < 5000) return;
+      if (position.coords.accuracy > maxLocationAccuracyMeters || Date.now() - position.timestamp > 30000) {
+        setLocationNotice('El GPS está buscando una ubicación más precisa y reciente…');
+        return;
+      }
+      sending = true; lastSent = Date.now();
+      void Promise.all(ids.map(id => uploadCurrentPosition(id, position, controller.signal)))
+        .then(() => { if (!disposed) setLocationNotice(''); })
+        .catch(error => { if (!disposed) setLocationNotice(errorMessage(error, 'No se pudo actualizar tu ubicación. Revisa tu conexión.')); })
+        .finally(() => { sending = false; });
+    };
+    const failure = () => { if (!disposed) setLocationNotice('No se pudo actualizar tu ubicación. Activa el GPS y permite la ubicación en el navegador.'); };
+    const options = { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 };
+    const watcher = navigator.geolocation.watchPosition(publish, failure, options);
+    // Request a fresh fix even when stationary; never refresh an old coordinate's timestamp.
+    const heartbeat = window.setInterval(() => navigator.geolocation.getCurrentPosition(publish, failure, options), 15000);
+    const onVisible = () => { if (!document.hidden) navigator.geolocation.getCurrentPosition(publish, failure, options); };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      disposed = true;
+      controller.abort();
+      navigator.geolocation.clearWatch(watcher);
+      window.clearInterval(heartbeat);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
+  }, [trackingIds, locationRetry]);
 
   const claim = (orderId: number) => {
     if (!session || session.role !== 'repartidor') {
@@ -459,6 +484,11 @@ export default function DeliveryPortalPage() {
         </div>
 
         {notice && <p role="status" className="mt-4 rounded-xl bg-violet-50 px-4 py-3 text-sm font-bold text-violet-800" data-testid="status-delivery-feedback">{notice}</p>}
+        {trackingIds && <section className="mt-4 rounded-xl bg-card p-4 text-sm ring-1 ring-border" data-testid="courier-location-sharing">
+          <p className="font-bold text-primary">GPS compartido solo con los pedidos que tienes asignados</p>
+          <p className="mt-1 text-xs text-muted-foreground">Mantén esta pantalla abierta y permite la ubicación para que el cliente vea por dónde vas. Se detiene al entregar o cancelar el pedido.</p>
+          {locationNotice && <><p role="status" className="mt-2 text-xs font-bold text-orange-800">{locationNotice}</p><button type="button" className="mt-2 min-h-11 rounded-lg border border-border px-3 text-xs font-bold" onClick={() => setLocationRetry(value => value + 1)} data-testid="courier-location-retry">Volver a activar ubicación</button></>}
+        </section>}
         <div className="mt-6 grid gap-3 min-[520px]:grid-cols-3">
           <div className="rounded-2xl bg-card p-4 ring-1 ring-border sm:p-5"><PackageCheck className="h-5 w-5 text-accent" /><p className="mt-3 font-mono-app text-2xl font-bold">{pendingCount}</p><p className="mt-1 text-xs font-bold">Pedidos asignados</p></div>
           <div className="rounded-2xl bg-card p-4 ring-1 ring-border sm:p-5"><MapPin className="h-5 w-5 text-accent" /><p className="mt-3 font-mono-app text-2xl font-bold">{readyCount}</p><p className="mt-1 text-xs font-bold">Listos para tomar</p><p className="mt-1 text-xs text-muted-foreground">{availableOrders.length - readyCount} pendientes del negocio</p></div>
