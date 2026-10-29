@@ -1006,6 +1006,8 @@ components:
         deliveryAddress: { type: string }
         deliveryPartnerEmail: { type: string }
         deliveryPartnerName: { type: string }
+        deliveryPartnerDni: { type: string, description: "DNI del repartidor asignado; solo visible para el negocio autorizado y administración." }
+        deliveryPartnerVehiclePlate: { type: string, description: "Placa registrada del repartidor asignado; solo visible para el negocio autorizado y administración." }
         items:
           type: array
           items: { $ref: "#/components/schemas/OrderItem" }

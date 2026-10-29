@@ -43,7 +43,7 @@ export async function cashShiftReport(user:AppUser,id:number) {
   }
   totals.productSales/=100;totals.deliveryFees/=100;
   totals.total=Math.round((totals.productSales+totals.deliveryFees)*100)/100;
-  return{shift:toShift(shift),orders:orders.rows.map(toOrder),events:events.rows.map(e=>({id:e.id,orderId:e.order_id,action:e.action,createdAt:new Date(e.created_at).toISOString(),courierName:e.courier_name??null})),totals};
+  return{shift:toShift(shift),orders:orders.rows.map(row=>toOrder(row,"administrador_negocio")),events:events.rows.map(e=>({id:e.id,orderId:e.order_id,action:e.action,createdAt:new Date(e.created_at).toISOString(),courierName:e.courier_name??null})),totals};
 }
 export async function closeCashShift(user:AppUser,id:number) {
   await ownShift(user,id);

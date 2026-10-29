@@ -171,6 +171,8 @@ export const GetCashierStateResponse = zod.object({
   "deliveryAddress": zod.string().optional(),
   "deliveryPartnerEmail": zod.string().optional(),
   "deliveryPartnerName": zod.string().optional(),
+  "deliveryPartnerDni": zod.string().optional().describe('DNI del repartidor asignado; solo visible para el negocio autorizado y administración.'),
+  "deliveryPartnerVehiclePlate": zod.string().optional().describe('Placa registrada del repartidor asignado; solo visible para el negocio autorizado y administración.'),
   "items": zod.array(zod.object({
   "id": zod.number(),
   "name": zod.string(),
@@ -215,6 +217,8 @@ export const ReleaseCashierOrderResponse = zod.object({
   "deliveryAddress": zod.string().optional(),
   "deliveryPartnerEmail": zod.string().optional(),
   "deliveryPartnerName": zod.string().optional(),
+  "deliveryPartnerDni": zod.string().optional().describe('DNI del repartidor asignado; solo visible para el negocio autorizado y administración.'),
+  "deliveryPartnerVehiclePlate": zod.string().optional().describe('Placa registrada del repartidor asignado; solo visible para el negocio autorizado y administración.'),
   "items": zod.array(zod.object({
   "id": zod.number(),
   "name": zod.string(),
@@ -291,6 +295,8 @@ export const GetBusinessCashShiftResponse = zod.object({
   "deliveryAddress": zod.string().optional(),
   "deliveryPartnerEmail": zod.string().optional(),
   "deliveryPartnerName": zod.string().optional(),
+  "deliveryPartnerDni": zod.string().optional().describe('DNI del repartidor asignado; solo visible para el negocio autorizado y administración.'),
+  "deliveryPartnerVehiclePlate": zod.string().optional().describe('Placa registrada del repartidor asignado; solo visible para el negocio autorizado y administración.'),
   "items": zod.array(zod.object({
   "id": zod.number(),
   "name": zod.string(),
@@ -403,6 +409,8 @@ export const GetOperationsStateResponse = zod.object({
   "deliveryAddress": zod.string().optional(),
   "deliveryPartnerEmail": zod.string().optional(),
   "deliveryPartnerName": zod.string().optional(),
+  "deliveryPartnerDni": zod.string().optional().describe('DNI del repartidor asignado; solo visible para el negocio autorizado y administración.'),
+  "deliveryPartnerVehiclePlate": zod.string().optional().describe('Placa registrada del repartidor asignado; solo visible para el negocio autorizado y administración.'),
   "items": zod.array(zod.object({
   "id": zod.number(),
   "name": zod.string(),
@@ -597,6 +605,8 @@ export const AssignOrderCourierResponse = zod.object({
   "deliveryAddress": zod.string().optional(),
   "deliveryPartnerEmail": zod.string().optional(),
   "deliveryPartnerName": zod.string().optional(),
+  "deliveryPartnerDni": zod.string().optional().describe('DNI del repartidor asignado; solo visible para el negocio autorizado y administración.'),
+  "deliveryPartnerVehiclePlate": zod.string().optional().describe('Placa registrada del repartidor asignado; solo visible para el negocio autorizado y administración.'),
   "items": zod.array(zod.object({
   "id": zod.number(),
   "name": zod.string(),
@@ -639,6 +649,8 @@ export const SaveDeliveryProofResponse = zod.object({
   "deliveryAddress": zod.string().optional(),
   "deliveryPartnerEmail": zod.string().optional(),
   "deliveryPartnerName": zod.string().optional(),
+  "deliveryPartnerDni": zod.string().optional().describe('DNI del repartidor asignado; solo visible para el negocio autorizado y administración.'),
+  "deliveryPartnerVehiclePlate": zod.string().optional().describe('Placa registrada del repartidor asignado; solo visible para el negocio autorizado y administración.'),
   "items": zod.array(zod.object({
   "id": zod.number(),
   "name": zod.string(),
@@ -685,6 +697,8 @@ export const RateOrderResponse = zod.object({
   "deliveryAddress": zod.string().optional(),
   "deliveryPartnerEmail": zod.string().optional(),
   "deliveryPartnerName": zod.string().optional(),
+  "deliveryPartnerDni": zod.string().optional().describe('DNI del repartidor asignado; solo visible para el negocio autorizado y administración.'),
+  "deliveryPartnerVehiclePlate": zod.string().optional().describe('Placa registrada del repartidor asignado; solo visible para el negocio autorizado y administración.'),
   "items": zod.array(zod.object({
   "id": zod.number(),
   "name": zod.string(),
@@ -832,6 +846,8 @@ export const ListOrdersResponseItem = zod.object({
   "deliveryAddress": zod.string().optional(),
   "deliveryPartnerEmail": zod.string().optional(),
   "deliveryPartnerName": zod.string().optional(),
+  "deliveryPartnerDni": zod.string().optional().describe('DNI del repartidor asignado; solo visible para el negocio autorizado y administración.'),
+  "deliveryPartnerVehiclePlate": zod.string().optional().describe('Placa registrada del repartidor asignado; solo visible para el negocio autorizado y administración.'),
   "items": zod.array(zod.object({
   "id": zod.number(),
   "name": zod.string(),
@@ -881,6 +897,8 @@ export const CreateOrderResponse = zod.object({
   "deliveryAddress": zod.string().optional(),
   "deliveryPartnerEmail": zod.string().optional(),
   "deliveryPartnerName": zod.string().optional(),
+  "deliveryPartnerDni": zod.string().optional().describe('DNI del repartidor asignado; solo visible para el negocio autorizado y administración.'),
+  "deliveryPartnerVehiclePlate": zod.string().optional().describe('Placa registrada del repartidor asignado; solo visible para el negocio autorizado y administración.'),
   "items": zod.array(zod.object({
   "id": zod.number(),
   "name": zod.string(),
@@ -929,6 +947,8 @@ export const ClaimOrderResponse = zod.object({
   "deliveryAddress": zod.string().optional(),
   "deliveryPartnerEmail": zod.string().optional(),
   "deliveryPartnerName": zod.string().optional(),
+  "deliveryPartnerDni": zod.string().optional().describe('DNI del repartidor asignado; solo visible para el negocio autorizado y administración.'),
+  "deliveryPartnerVehiclePlate": zod.string().optional().describe('Placa registrada del repartidor asignado; solo visible para el negocio autorizado y administración.'),
   "items": zod.array(zod.object({
   "id": zod.number(),
   "name": zod.string(),
@@ -967,6 +987,8 @@ export const GetOrderResponse = zod.object({
   "deliveryAddress": zod.string().optional(),
   "deliveryPartnerEmail": zod.string().optional(),
   "deliveryPartnerName": zod.string().optional(),
+  "deliveryPartnerDni": zod.string().optional().describe('DNI del repartidor asignado; solo visible para el negocio autorizado y administración.'),
+  "deliveryPartnerVehiclePlate": zod.string().optional().describe('Placa registrada del repartidor asignado; solo visible para el negocio autorizado y administración.'),
   "items": zod.array(zod.object({
   "id": zod.number(),
   "name": zod.string(),
@@ -1009,6 +1031,8 @@ export const UpdateOrderStatusResponse = zod.object({
   "deliveryAddress": zod.string().optional(),
   "deliveryPartnerEmail": zod.string().optional(),
   "deliveryPartnerName": zod.string().optional(),
+  "deliveryPartnerDni": zod.string().optional().describe('DNI del repartidor asignado; solo visible para el negocio autorizado y administración.'),
+  "deliveryPartnerVehiclePlate": zod.string().optional().describe('Placa registrada del repartidor asignado; solo visible para el negocio autorizado y administración.'),
   "items": zod.array(zod.object({
   "id": zod.number(),
   "name": zod.string(),

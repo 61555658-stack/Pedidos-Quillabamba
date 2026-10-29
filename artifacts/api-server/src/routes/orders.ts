@@ -70,7 +70,7 @@ router.post("/orders",async(req,res)=>{
     for(const item of items) await client.query("UPDATE public.products SET stock=stock-$1,updated_at=now() WHERE id=$2",[item.quantity,item.id]);
     await client.query("COMMIT");
   }catch(e){await client.query("ROLLBACK");throw e;}finally{client.release();}
-  res.status(201).json(CreateOrderResponse.parse(toOrder(await visibleOrder(user,orderId))));
+  res.status(201).json(CreateOrderResponse.parse(toOrder(await visibleOrder(user,orderId),user.role)));
 });
 router.post("/orders/:orderId/claim",async(req,res)=>{
   const user=requireUser(req,["repartidor"]);
@@ -78,7 +78,7 @@ router.post("/orders/:orderId/claim",async(req,res)=>{
   const result=await pool.query(`UPDATE public.orders SET delivery_partner_id=$1,updated_at=now()
     WHERE id=$2 AND status='ready' AND (delivery_partner_id IS NULL OR delivery_partner_id=$1) RETURNING id`,[Number(user.id),id]);
   if(!result.rowCount) throw new AppError(409,"Otro repartidor tomó este pedido o aún no está listo para recoger.");
-  res.json(GetOrderResponse.parse(toOrder(await visibleOrder(user,id))));
+  res.json(GetOrderResponse.parse(toOrder(await visibleOrder(user,id),user.role)));
 });
 router.put("/orders/:orderId/assignment",async(req,res)=>{
   const user=requireUser(req,["administrador_sistema"]);
@@ -90,7 +90,7 @@ router.put("/orders/:orderId/assignment",async(req,res)=>{
   }
   const result=await pool.query("UPDATE public.orders SET delivery_partner_id=$1,current_location=NULL,updated_at=now() WHERE id=$2 AND status='ready' RETURNING id",[courierId,id]);
   if(!result.rowCount) throw new AppError(409,"Solo puedes asignar o reasignar pedidos listos para recoger.");
-  res.json(GetOrderResponse.parse(toOrder(await visibleOrder(user,id))));
+  res.json(GetOrderResponse.parse(toOrder(await visibleOrder(user,id),user.role)));
 });
 router.put("/orders/:orderId/location",async(req,res)=>{
   const user=requireUser(req,["repartidor"]);
@@ -110,7 +110,7 @@ router.get("/orders/:orderId/location",async(req,res)=>{
 });
 router.get("/orders/:orderId",async(req,res)=>{
   const user=requireUser(req);
-  res.json(GetOrderResponse.parse(toOrder(await visibleOrder(user,validId(req.params.orderId)))));
+  res.json(GetOrderResponse.parse(toOrder(await visibleOrder(user,validId(req.params.orderId)),user.role)));
 });
 router.patch("/orders/:orderId/status",async(req,res)=>{
   const user=requireUser(req,["administrador_sistema","administrador_negocio","repartidor"]);
@@ -133,7 +133,7 @@ router.patch("/orders/:orderId/status",async(req,res)=>{
     if(status==="cancelled") for(const item of row.items) await client.query("UPDATE public.products SET stock=stock+$1,updated_at=now() WHERE id=$2",[item.quantity,item.id]);
     await client.query("COMMIT");
   }catch(e){await client.query("ROLLBACK");throw e;}finally{client.release();}
-  res.json(GetOrderResponse.parse(toOrder(await visibleOrder(user,id))));
+  res.json(GetOrderResponse.parse(toOrder(await visibleOrder(user,id),user.role)));
 });
 router.put("/orders/:orderId/rating",async(req,res)=>{
   const user=requireUser(req,["cliente"]);
@@ -141,7 +141,7 @@ router.put("/orders/:orderId/rating",async(req,res)=>{
   const {rating}=z.object({rating:z.number().int().min(1).max(5)}).parse(req.body);
   const result=await pool.query("UPDATE public.orders SET rating=$1,updated_at=now() WHERE id=$2 AND customer_id=$3 AND status='delivered' RETURNING id",[rating,id,Number(user.id)]);
   if(!result.rowCount) throw new AppError(409,"Solo puedes calificar tus pedidos entregados.");
-  res.json(GetOrderResponse.parse(toOrder(await visibleOrder(user,id))));
+  res.json(GetOrderResponse.parse(toOrder(await visibleOrder(user,id),user.role)));
 });
 router.get("/dashboard/summary",async(req,res)=>{
   const user=requireUser(req,["administrador_sistema"]);

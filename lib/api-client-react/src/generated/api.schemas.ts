@@ -216,6 +216,10 @@ export interface Order {
   deliveryAddress?: string;
   deliveryPartnerEmail?: string;
   deliveryPartnerName?: string;
+  /** DNI del repartidor asignado; solo visible para el negocio autorizado y administración. */
+  deliveryPartnerDni?: string;
+  /** Placa registrada del repartidor asignado; solo visible para el negocio autorizado y administración. */
+  deliveryPartnerVehiclePlate?: string;
   items: OrderItem[];
 }
 

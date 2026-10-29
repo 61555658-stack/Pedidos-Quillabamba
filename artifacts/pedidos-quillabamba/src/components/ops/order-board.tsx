@@ -68,7 +68,12 @@ function OrderCard({ o, couriers, isAdmin, run, busy }: { o: OpsOrder; couriers?
         <dl className="space-y-2 text-xs">
           <div className="flex gap-2"><MapPin className="h-4 w-4 shrink-0 text-accent" /><div><dt className="sr-only">Dirección</dt><dd>{o.deliveryAddress || 'Sin dirección'}</dd></div></div>
           <div><dt className="inline font-bold">Método de pago declarado: </dt><dd className="inline">{paymentLabels[o.paymentMethod]} · cobro no verificado</dd></div>
-          <div className="flex gap-2"><Bike className="h-4 w-4 shrink-0 text-accent" /><dd>{o.deliveryPartnerName ? `${o.deliveryPartnerName}${o.deliveryPartnerEmail ? ` · ${o.deliveryPartnerEmail}` : ''}` : 'Sin repartidor asignado'}</dd></div>
+          <div className="flex min-w-0 gap-2"><Bike className="h-4 w-4 shrink-0 text-accent" /><div className="min-w-0 break-words"><dt className="sr-only">Repartidor asignado</dt><dd>{o.deliveryPartnerName ? `${o.deliveryPartnerName}${o.deliveryPartnerEmail ? ` · ${o.deliveryPartnerEmail}` : ''}` : 'Sin repartidor asignado'}</dd>
+            {o.deliveryPartnerUserId && <dd className="mt-1 space-y-1 text-muted-foreground" data-testid={`courier-documents-order-${o.id}`}>
+              <p><span className="font-bold">Placa: </span>{o.deliveryPartnerVehiclePlate || 'No registrada'}</p>
+              <p><span className="font-bold">DNI: </span>{o.deliveryPartnerDni || 'No registrado'}</p>
+            </dd>}
+          </div></div>
           {o.deliveredAt && <div><dt className="inline font-bold">Entregado: </dt><dd className="inline">{fmtDate(o.deliveredAt)}</dd></div>}
           {o.customerPhone&&<a className="flex min-h-11 items-center font-bold underline" href={`tel:${o.customerPhone.replace(/[^\d+]/g,'')}`}>Llamar al cliente</a>}
           {o.deliveryPartnerPhone&&<a className="flex min-h-11 items-center font-bold underline" href={`tel:${o.deliveryPartnerPhone.replace(/[^\d+]/g,'')}`}>Llamar al repartidor</a>}

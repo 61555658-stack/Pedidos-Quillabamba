@@ -66,7 +66,7 @@ router.get("/cashier/state",async(req,res)=>{
     pool.query("SELECT id,name FROM public.users WHERE active AND role='repartidor' ORDER BY name"),
   ]);
   res.setHeader("Cache-Control","no-store");
-  res.json(GetCashierStateResponse.parse({shift:toShift(await ownShift(user,shift.id)),orders:orders.rows.map(toOrder),couriers:couriers.rows}));
+  res.json(GetCashierStateResponse.parse({shift:toShift(await ownShift(user,shift.id)),orders:orders.rows.map(row=>toOrder(row,user.role)),couriers:couriers.rows}));
 });
 router.post("/cashier/orders/:orderId/release",async(req,res)=>{
   const user=requireUser(req,["administrador_negocio"],true);
@@ -90,7 +90,7 @@ router.post("/cashier/orders/:orderId/release",async(req,res)=>{
     }
     await client.query("COMMIT");
   }catch(e){await client.query("ROLLBACK");throw e;}finally{client.release();}
-  res.json(GetOrderResponse.parse(toOrder(await visibleOrder(user,orderId))));
+  res.json(GetOrderResponse.parse(toOrder(await visibleOrder(user,orderId),user.role)));
 });
 router.post("/cashier/close",async(req,res)=>{
   const user=requireUser(req,["administrador_negocio"],true);

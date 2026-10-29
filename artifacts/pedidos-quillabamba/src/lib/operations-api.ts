@@ -10,6 +10,7 @@ export type OpsOrder = {
   id: number; restaurantId: number; restaurantName: string; customerName: string; total: number; status: OrderStatus;
   paymentMethod: 'cash' | 'yape' | 'card'; createdAt: string; deliveryAddress: string;
   deliveryPartnerUserId?: string; deliveryPartnerName?: string; deliveryPartnerEmail?: string;
+  deliveryPartnerDni?: string; deliveryPartnerVehiclePlate?: string;
   businessPhone?: string; businessAddress?: string; customerPhone?: string; deliveryPartnerPhone?: string;
   items: { id: number; name: string; price: number; quantity: number }[]; deliveryFee: number; deliveredAt?: string; proofUrl?: string;
 };

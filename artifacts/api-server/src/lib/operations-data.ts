@@ -19,12 +19,14 @@ export async function ownsBusiness(user: AppUser, id: number, client = pool) {
 }
 export const orderSelect = `
  SELECT o.*, r.name AS current_restaurant_name, r.address AS business_address, r.phone AS business_phone,
- u.name AS courier_name, u.email AS courier_email, u.phone AS courier_phone, cu.phone AS customer_phone
+ u.name AS courier_name, u.email AS courier_email, u.phone AS courier_phone, cu.phone AS customer_phone,
+ cp.dni AS courier_dni, cp.vehicle_plate AS courier_vehicle_plate
  FROM public.orders o LEFT JOIN public.restaurants r ON r.id=o.restaurant_id
  LEFT JOIN public.users u ON u.id=o.delivery_partner_id
+ LEFT JOIN public.courier_registration_profiles cp ON cp.user_id=o.delivery_partner_id
  LEFT JOIN public.users cu ON cu.id=o.customer_id`;
 
-export function toOrder(o: Record<string, any>) {
+export function toOrder(o: Record<string, any>, viewerRole?: string) {
   return {
     id: o.id, restaurantId: o.restaurant_id, restaurantName: o.restaurant_name,
     customerName: o.customer_name, customerUserId: String(o.customer_id),
@@ -36,6 +38,8 @@ export function toOrder(o: Record<string, any>) {
     customerPhone: o.delivery_partner_id ? o.customer_phone || "" : "",
     deliveryPartnerPhone: o.courier_phone || "",
     ...(o.delivery_partner_id ? { deliveryPartnerUserId: String(o.delivery_partner_id), deliveryPartnerName: o.courier_name, deliveryPartnerEmail: o.courier_email } : {}),
+    ...(o.delivery_partner_id && (viewerRole === "administrador_negocio" || viewerRole === "administrador_sistema")
+      ? { deliveryPartnerDni: o.courier_dni || "", deliveryPartnerVehiclePlate: o.courier_vehicle_plate || "" } : {}),
     ...(o.delivered_at ? { deliveredAt: new Date(o.delivered_at).toISOString() } : {}),
     ...(o.proof_path ? { proofUrl: `/api/orders/${o.id}/proof` } : {}),
     rating: o.rating ?? null,
@@ -47,7 +51,7 @@ export async function visibleOrders(user: AppUser) {
     : user.role === "repartidor" ? "(o.delivery_partner_id=$1 OR (o.status IN ('received','preparing','ready') AND o.delivery_partner_id IS NULL))"
     : "o.customer_id=$1";
   const result = await pool.query(`${orderSelect} WHERE ${scope} ORDER BY o.created_at DESC, o.id DESC`, scope === "TRUE" ? [] : [Number(user.id)]);
-  return result.rows.map(toOrder);
+  return result.rows.map(row => toOrder(row, user.role));
 }
 export async function visibleOrder(user: AppUser, id: number, allowUnclaimed = false) {
   const result = await pool.query(`${orderSelect} WHERE o.id=$1`, [id]);

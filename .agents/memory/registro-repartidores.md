@@ -26,3 +26,9 @@ La verificación solicitada es del seguro del vehículo, no de identidad ni de t
 **Why:** El usuario pidió recopilar los números de DNI y licencia, pero solo solicitó comprobar el SOAT por API. Un seguro vigente no prueba quién es dueño del vehículo ni la validez de esos documentos.
 
 **How to apply:** No presentar estos datos como identidad o licencia verificadas. La exigencia de SOAT se limita a nuevas altas de repartidores; no bloquear cuentas existentes ni otros roles sin un pedido adicional.
+
+El negocio debe poder ver la placa y el DNI del repartidor asignado a cada pedido, junto a su nombre.
+
+**Why:** El usuario pidió mostrar estos datos en el panel del negocio.
+
+**How to apply:** Limitar su exposición al negocio autorizado del pedido y a administración; no ampliar su visibilidad a clientes ni a otros repartidores.
