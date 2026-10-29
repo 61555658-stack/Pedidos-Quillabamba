@@ -108,14 +108,14 @@ export function BusinessAccessPage() {
         ) : data.mode === 'cashier' ? <Skeleton /> : step === 'choose' && data.mode !== 'cashier_login' ? (
           <div className="grid gap-4 sm:grid-cols-[1.2fr_1fr]">
             <button onClick={() => { setStep('cashier'); setMessage(null); }} data-testid="access-choice-cashier"
-              className="group flex min-h-48 flex-col justify-between rounded-2xl bg-primary p-6 text-left text-white transition hover:-translate-y-0.5">
+              className="group flex min-h-48 flex-col items-center justify-center gap-5 rounded-2xl bg-primary p-6 text-center text-white transition hover:-translate-y-0.5">
               <KeyRound className="h-6 w-6 text-secondary" />
               <span>
                 <span className="block font-display text-2xl font-bold">Cajero</span>
               </span>
             </button>
             <button onClick={chooseAdmin} disabled={enterAdmin.isPending} data-testid="access-choice-administrator"
-              className="flex min-h-48 flex-col justify-between rounded-2xl bg-card p-6 text-left ring-1 ring-border transition hover:-translate-y-0.5 disabled:opacity-60">
+              className="flex min-h-48 flex-col items-center justify-center gap-5 rounded-2xl bg-card p-6 text-center ring-1 ring-border transition hover:-translate-y-0.5 disabled:opacity-60">
               <Briefcase className="h-6 w-6 text-accent" />
               <span>
                 <span className="block font-display text-2xl font-bold">Administrador del negocio</span>
