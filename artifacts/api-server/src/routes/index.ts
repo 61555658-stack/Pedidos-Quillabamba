@@ -8,6 +8,7 @@ import reportsRouter from "./reports";
 import filesRouter from "./files";
 import cashRegisterRouter from "./cash-register";
 import courierRegistrationRouter from "./courier-registration";
+import vouchersRouter from "./vouchers";
 
 const router: IRouter = Router();
 
@@ -20,5 +21,6 @@ router.use(operationsRouter);
 router.use(reportsRouter);
 router.use(filesRouter);
 router.use(cashRegisterRouter);
+router.use(vouchersRouter);
 
 export default router;

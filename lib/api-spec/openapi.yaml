@@ -23,6 +23,54 @@ tags:
   - name: Auth
     description: Browser and mobile authentication endpoints
 paths:
+  /vouchers:
+    get:
+      operationId: listMyVouchers
+      tags: [orders]
+      responses:
+        "200":
+          description: Authenticated customer's purchase vouchers
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/OrderVoucher" }
+  /vouchers/{orderId}:
+    get:
+      operationId: getMyVoucher
+      tags: [orders]
+      parameters:
+        - { in: path, name: orderId, required: true, schema: { type: number } }
+      responses:
+        "200":
+          description: Private voucher
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/OrderVoucher" }
+  /vouchers/{orderId}/pdf:
+    get:
+      operationId: downloadMyVoucher
+      tags: [orders]
+      parameters:
+        - { in: path, name: orderId, required: true, schema: { type: number } }
+      responses:
+        "200":
+          description: Private receipt PDF
+          content:
+            application/pdf:
+              schema: { type: string, format: binary }
+  /vouchers/{orderId}/email:
+    post:
+      operationId: emailMyVoucher
+      tags: [orders]
+      parameters:
+        - { in: path, name: orderId, required: true, schema: { type: number } }
+      responses:
+        "200":
+          description: Voucher email queued for the customer's original email
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/OrderVoucher" }
   /auth/courier-soat:
     post:
       operationId: verifyCourierSoat
@@ -689,6 +737,25 @@ paths:
           description: Pending request not found
 components:
   schemas:
+    OrderVoucher:
+      type: object
+      required: [orderId, number, issuedAt, customerName, customerEmail, restaurantName, items, subtotal, deliveryFee, total, paymentMethod, emailStatus, pdfUrl]
+      properties:
+        orderId: { type: number }
+        number: { type: string }
+        issuedAt: { type: string }
+        customerName: { type: string }
+        customerEmail: { type: string }
+        restaurantName: { type: string }
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/OrderItem" }
+        subtotal: { type: number }
+        deliveryFee: { type: number }
+        total: { type: number }
+        paymentMethod: { type: string, enum: [cash, yape, card] }
+        emailStatus: { type: string, enum: [not_requested, pending, sending, sent, failed] }
+        pdfUrl: { type: string }
     CourierDocuments:
       type: object
       required: [dni, licenseNumber, vehiclePlate]

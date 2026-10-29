@@ -7,6 +7,8 @@ import {
 } from "@workspace/api-zod";
 import { AppError, requireUser, visibleOrder, visibleOrders, toOrder, ownsBusiness } from "../lib/operations-data";
 import { isBusinessOpen } from "../lib/opening-hours";
+import { ensureOrderVouchers } from "../lib/order-vouchers";
+import { processVoucherEmails } from "../lib/voucher-email";
 
 const router: IRouter = Router();
 const validId = (value: unknown) => z.number().int().positive().parse(Number(value));
@@ -71,9 +73,11 @@ router.post("/orders",async(req,res)=>{
       [restaurant.restaurant_id,restaurant.restaurant_name,Number(user.id),user.firstName,(subtotal+fee)/100,data.paymentMethod,deliveryAddress,JSON.stringify(items),fee/100,data.deliveryLocation?JSON.stringify(data.deliveryLocation):null]);
     orderId=created.rows[0].id;
     for(const item of items) await client.query("UPDATE public.products SET stock=stock-$1,updated_at=now() WHERE id=$2",[item.quantity,item.id]);
+    await ensureOrderVouchers(Number(user.id),orderId,true,client);
     await client.query("COMMIT");
   }catch(e){await client.query("ROLLBACK");throw e;}finally{client.release();}
   res.status(201).json(CreateOrderResponse.parse(toOrder(await visibleOrder(user,orderId),user.role)));
+  void processVoucherEmails(orderId);
 });
 router.post("/orders/:orderId/claim",async(req,res)=>{
   const user=requireUser(req,["repartidor"]);

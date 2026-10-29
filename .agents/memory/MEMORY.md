@@ -11,3 +11,4 @@
 - [Horarios de negocios](horarios-negocios.md) — apertura en hora de Perú; el cierre manual prevalece y la madrugada pertenece al día de apertura.
 - [Registro de repartidores](registro-repartidores.md) — exigir nombre completo, DNI, licencia y placa; verificar por API que el SOAT esté activo antes de registrar.
 - [Ubicación de entrega](ubicacion-entrega.md) — el cliente elige GPS o un punto del mapa en lugar de escribir su dirección.
+- [Vouchers de compras](vouchers-compras.md) — constancia del pedido por correo y en el historial del cliente; no acredita pago ni es comprobante fiscal.

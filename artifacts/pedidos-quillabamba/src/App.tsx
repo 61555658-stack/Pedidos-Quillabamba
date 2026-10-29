@@ -19,8 +19,9 @@ import type {
 import { ErrorBoundary } from '@/components/error-boundary';
 import { BrandLogo } from '@/components/brand-logo';
 import { DeliveryLocationPicker } from '@/components/delivery-location-picker';
+import { CustomerVouchersPage, OrderVoucherLink } from '@/pages/customer-vouchers';
 import { OpeningHoursSummary } from '@/components/ops/opening-hours';
-import { getListRestaurantsQueryKey } from '@workspace/api-client-react';
+import { getListRestaurantsQueryKey, getListMyVouchersQueryKey } from '@workspace/api-client-react';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
@@ -114,6 +115,7 @@ function CustomerHeader({ cartCount }: { cartCount: number }) {
       <div className="hidden items-center gap-7 pl-8 text-[13px] font-bold text-muted-foreground md:flex">
         <Link href="/" data-testid="link-discover" className={location === '/' ? 'text-primary' : 'hover:text-primary'}>Descubrir</Link>
         <Link href="/orders" data-testid="link-orders" className={location.startsWith('/orders') ? 'text-primary' : 'hover:text-primary'}>Mis pedidos</Link>
+        <Link href="/vouchers" data-testid="link-vouchers" className={location.startsWith('/vouchers') ? 'text-primary' : 'hover:text-primary'}>Mis vouchers</Link>
       </div>
       <div className="ml-auto flex items-center gap-2">
         <div className="hidden items-center gap-2 rounded-full bg-card px-3 py-2 text-xs font-semibold text-muted-foreground ring-1 ring-border md:flex"><MapPin className="h-3.5 w-3.5 text-accent" /> Quillabamba, Cusco <ChevronDown className="h-3.5 w-3.5" /></div>
@@ -123,9 +125,10 @@ function CustomerHeader({ cartCount }: { cartCount: number }) {
       </div>
     </div>
      <nav className="mx-auto flex max-w-[1400px] items-center justify-around border-t border-border/70 px-3 md:hidden" aria-label="Navegación del cliente">
-       <Link href="/" className={`flex min-h-12 items-center gap-1.5 px-2 text-xs font-bold ${location === '/' ? 'text-primary' : 'text-muted-foreground'}`} aria-current={location === '/' ? 'page' : undefined}><Store className="h-4 w-4" /> Descubrir</Link>
-       <Link href="/orders" className={`flex min-h-12 items-center gap-1.5 px-2 text-xs font-bold ${location.startsWith('/orders') ? 'text-primary' : 'text-muted-foreground'}`} aria-current={location.startsWith('/orders') ? 'page' : undefined}><PackageCheck className="h-4 w-4" /> Mis pedidos</Link>
-       <Link href="/settings" className={`flex min-h-12 items-center gap-1.5 px-2 text-xs font-bold ${location === '/settings' ? 'text-primary' : 'text-muted-foreground'}`} aria-current={location === '/settings' ? 'page' : undefined}><CircleUserRound className="h-4 w-4" /> Mi cuenta</Link>
+       <Link href="/" className={`flex min-h-12 flex-col items-center justify-center gap-1 px-1 py-2 text-[10px] font-bold ${location === '/' ? 'text-primary' : 'text-muted-foreground'}`} aria-current={location === '/' ? 'page' : undefined}><Store className="h-4 w-4" /> Descubrir</Link>
+       <Link href="/orders" className={`flex min-h-12 flex-col items-center justify-center gap-1 px-1 py-2 text-[10px] font-bold ${location.startsWith('/orders') ? 'text-primary' : 'text-muted-foreground'}`} aria-current={location.startsWith('/orders') ? 'page' : undefined}><PackageCheck className="h-4 w-4" /> Mis pedidos</Link>
+       <Link href="/vouchers" data-testid="link-vouchers-mobile" className={`flex min-h-12 flex-col items-center justify-center gap-1 px-1 py-2 text-[10px] font-bold ${location.startsWith('/vouchers') ? 'text-primary' : 'text-muted-foreground'}`} aria-current={location.startsWith('/vouchers') ? 'page' : undefined}><PackageCheck className="h-4 w-4" /> Mis vouchers</Link>
+       <Link href="/settings" className={`flex min-h-12 flex-col items-center justify-center gap-1 px-1 py-2 text-[10px] font-bold ${location === '/settings' ? 'text-primary' : 'text-muted-foreground'}`} aria-current={location === '/settings' ? 'page' : undefined}><CircleUserRound className="h-4 w-4" /> Mi cuenta</Link>
      </nav>
   </header>;
 }
@@ -290,7 +293,7 @@ function CartPage({ cart }: { cart: ReturnType<typeof useCart> }) {
     localStorage.setItem('pq-name', name);
     const address = `Ubicación de entrega: ${deliveryLocation.latitude.toFixed(6)}, ${deliveryLocation.longitude.toFixed(6)}`;
     const items: OrderItem[] = cart.cart.map((item) => ({ id: item.id, name: item.name, quantity: item.quantity, price: item.price }));
-    createOrder.mutate({ data: { restaurantName: cart.cart[0].restaurantName, customerName: name, total, paymentMethod: payment, deliveryAddress: address, deliveryLocation, items } }, { onSuccess: (order) => { queryClient.invalidateQueries({ queryKey: getListOrdersQueryKey() }); queryClient.invalidateQueries({ queryKey: getGetDashboardSummaryQueryKey() }); queryClient.invalidateQueries({ queryKey: getGetOrderQueryKey(order.id) }); cart.clear(); setLocation(`/orders/${order.id}`); }, onError: (error) => setNotice({ type: 'error', text: (error as {data?:{error?:string}})?.data?.error || 'No pudimos confirmar tu pedido. Intenta de nuevo.' }) });
+    createOrder.mutate({ data: { restaurantName: cart.cart[0].restaurantName, customerName: name, total, paymentMethod: payment, deliveryAddress: address, deliveryLocation, items } }, { onSuccess: (order) => { queryClient.invalidateQueries({ queryKey: getListOrdersQueryKey() }); queryClient.invalidateQueries({ queryKey: getListMyVouchersQueryKey() }); queryClient.invalidateQueries({ queryKey: getGetDashboardSummaryQueryKey() }); queryClient.invalidateQueries({ queryKey: getGetOrderQueryKey(order.id) }); cart.clear(); setLocation(`/orders/${order.id}`); }, onError: (error) => setNotice({ type: 'error', text: (error as {data?:{error?:string}})?.data?.error || 'No pudimos confirmar tu pedido. Intenta de nuevo.' }) });
   };
   return <><CustomerHeader cartCount={cart.cart.reduce((a, b) => a + b.quantity, 0)} />
     <main className="mx-auto max-w-[1120px] px-5 pb-20 pt-8 lg:px-8">
@@ -346,10 +349,17 @@ function ServiceRating({ orderId }: { orderId: number }) {
 }
 
 // Seguimiento visual del pedido mediante una línea de estados.
-function OrderDetailPage() {
+function OrderDetailContent() {
   const { id } = useParams<{ id: string }>(); const orderId = Number(id); const orderQuery = useGetOrder(orderId, { query: { enabled: !!orderId, queryKey: getGetOrderQueryKey(orderId), refetchInterval: 4000, refetchOnWindowFocus: true } }); const order = orderQuery.data;
   const steps: OrderStatus[] = ['received', 'preparing', 'ready', 'on_the_way', 'delivered']; const current = order ? steps.indexOf(order.status) : -1;
   return <><CustomerHeader cartCount={0} /><main className="mx-auto max-w-[960px] px-5 pb-20 pt-8 lg:px-8"><Link href="/orders" className="inline-flex items-center gap-2 text-xs font-bold text-muted-foreground hover:text-primary" data-testid="link-back-orders"><ArrowLeft className="h-4 w-4" /> Mis pedidos</Link>{orderQuery.isLoading ? <div className="mt-8 space-y-4"><div className="h-10 w-2/3 animate-pulse-soft rounded bg-muted" /><div className="h-56 animate-pulse-soft rounded-2xl bg-muted" /></div> : orderQuery.isError || !order ? <div className="mt-8"><QueryError retry={() => orderQuery.refetch()} /></div> : <><div className="mt-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end"><div><p className="font-mono-app text-[10px] font-bold uppercase tracking-[.16em] text-accent">Pedido #{String(order.id).padStart(4, '0')}</p><h1 className="mt-2 font-display text-4xl font-bold tracking-[-.05em] text-primary">{statusLabel[order.status]}</h1><p className="mt-2 text-sm text-muted-foreground">{order.restaurantName} · {dateLabel(order.createdAt)}</p></div><Badge tone={order.status === 'delivered' ? 'green' : order.status === 'cancelled' ? 'red' : 'orange'}>Método de pago: {order.paymentMethod === 'yape' ? 'Yape' : order.paymentMethod === 'card' ? 'Tarjeta' : 'Efectivo'} · Pendiente de confirmación</Badge></div><div className="mt-8 rounded-2xl bg-primary p-6 text-white sm:p-9"><div className="flex items-center justify-between"><div><p className="font-mono-app text-[10px] uppercase tracking-[.16em] text-secondary">Seguimiento en vivo</p><p className="mt-2 text-sm text-white/70">{order.status === 'delivered' ? 'Gracias por pedir local.' : 'Tu pedido está avanzando.'}</p></div><Bike className="h-7 w-7 text-secondary" /></div><div className="mt-10 grid grid-cols-5">{steps.map((step, index) => <div key={step} className="relative text-center"><div className={`relative z-10 mx-auto flex h-8 w-8 items-center justify-center rounded-full border-2 ${index <= current ? 'border-secondary bg-secondary text-primary' : 'border-white/25 bg-primary text-white/45'}`}>{index <= current ? <Check className="h-4 w-4" /> : <span className="font-mono-app text-[10px]">{index + 1}</span>}</div>{index < steps.length - 1 && <div className={`absolute left-[calc(50%+16px)] right-[calc(-50%+16px)] top-4 h-0.5 ${index < current ? 'bg-secondary' : 'bg-white/15'}`} />}<p className={`mt-3 text-[10px] font-bold ${index <= current ? 'text-secondary' : 'text-white/45'}`}>{statusLabel[step]}</p></div>)}</div></div><div className="mt-5 grid gap-5 md:grid-cols-[1fr_270px]"><div className="rounded-2xl bg-card p-6 ring-1 ring-border"><h2 className="font-display text-xl font-bold text-primary">Lo que pediste</h2><div className="mt-4 space-y-3">{order.items.map((item) => <div key={item.id} className="flex justify-between text-sm"><span className="text-muted-foreground"><b className="mr-2 font-mono-app text-xs text-primary">{item.quantity}×</b>{item.name}</span><span className="font-mono-app text-xs font-bold text-primary">{money(item.price * item.quantity)}</span></div>)}</div><div className="mt-5 border-t border-border pt-4 text-sm font-bold text-primary"><div className="flex justify-between"><span>Total</span><span className="font-mono-app">{money(order.total)}</span></div></div></div><div className="rounded-2xl bg-[#e5dfc8] p-6"><MapPin className="h-5 w-5 text-accent" /><p className="mt-4 text-xs font-bold uppercase tracking-wide text-primary/50">Entregar en</p><p className="mt-1 text-sm font-bold leading-5 text-primary">{order.deliveryAddress || 'Dirección no registrada'}</p><p className="mt-5 text-xs font-semibold text-primary/60">A nombre de {order.customerName}</p></div></div>{order.status === 'delivered' && <ServiceRating orderId={order.id} />}</>}</main></>;
+}
+
+function OrderDetailPage() {
+  const { id } = useParams<{ id: string }>();
+  const orderId = Number(id);
+  const order = useGetOrder(orderId, { query: { enabled: Number.isInteger(orderId) && orderId > 0, queryKey: getGetOrderQueryKey(orderId) } });
+  return <><OrderDetailContent />{order.data && <section className="mx-auto mb-8 max-w-[960px] px-5"><OrderVoucherLink orderId={orderId} /></section>}</>;
 }
 
 // Resumen operativo con ventas, pedidos activos y actividad reciente.
@@ -461,6 +471,7 @@ function Router() {
       <Route path="/restaurant/:id"><RoleGate allowed={['cliente']}><RestaurantPage cart={cart} /></RoleGate></Route>
       <Route path="/cart"><RoleGate allowed={['cliente']}><CartPage cart={cart} /></RoleGate></Route>
       <Route path="/orders"><RoleGate allowed={['cliente']}><OrdersPage /></RoleGate></Route>
+      <Route path="/vouchers"><RoleGate allowed={['cliente']}><CustomerHeader cartCount={cart.cart.reduce((n, i) => n + i.quantity, 0)} /><CustomerVouchersPage /></RoleGate></Route>
       <Route path="/orders/:id"><RoleGate allowed={['cliente']}><OrderDetailPage /></RoleGate></Route>
       <Route path="/business/access"><RoleGate allowed={['administrador_negocio', 'administrador_sistema']}><BusinessAccessPage /></RoleGate></Route>
       <Route path="/business/cashier"><RoleGate allowed={['administrador_negocio']}><BusinessModeGate mode="cashier"><CashierPortalPage /></BusinessModeGate></RoleGate></Route>

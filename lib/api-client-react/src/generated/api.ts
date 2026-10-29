@@ -55,6 +55,7 @@ import type {
   Order,
   OrderInput,
   OrderStatusInput,
+  OrderVoucher,
   Product,
   RatingInput,
   RegistrationCodeConfirmation,
@@ -94,6 +95,284 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   }
   return result;
 };
+
+export const getListMyVouchersUrl = () => {
+
+
+
+
+  return `/api/vouchers`
+}
+
+export const listMyVouchers = async ( options?: Parameters<typeof customFetch>[1]): Promise<OrderVoucher[]> => {
+
+  return customFetch<OrderVoucher[]>(getListMyVouchersUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListMyVouchersQueryKey = () => {
+    return [
+    `/api/vouchers`
+    ] as const;
+    }
+
+
+export const getListMyVouchersQueryOptions = <TData = Awaited<ReturnType<typeof listMyVouchers>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listMyVouchers>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListMyVouchersQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listMyVouchers>>> = ({ signal }) => listMyVouchers({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listMyVouchers>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListMyVouchersQueryResult = NonNullable<Awaited<ReturnType<typeof listMyVouchers>>>
+export type ListMyVouchersQueryError = ErrorType<unknown>
+
+
+
+export function useListMyVouchers<TData = Awaited<ReturnType<typeof listMyVouchers>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listMyVouchers>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListMyVouchersQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetMyVoucherUrl = (orderId: number,) => {
+
+
+
+
+  return `/api/vouchers/${orderId}`
+}
+
+export const getMyVoucher = async (orderId: number, options?: Parameters<typeof customFetch>[1]): Promise<OrderVoucher> => {
+
+  return customFetch<OrderVoucher>(getGetMyVoucherUrl(orderId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetMyVoucherQueryKey = (orderId: number,) => {
+    return [
+    `/api/vouchers/${orderId}`
+    ] as const;
+    }
+
+
+export const getGetMyVoucherQueryOptions = <TData = Awaited<ReturnType<typeof getMyVoucher>>, TError = ErrorType<unknown>>(orderId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMyVoucher>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetMyVoucherQueryKey(orderId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMyVoucher>>> = ({ signal }) => getMyVoucher(orderId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: orderId !== null && orderId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getMyVoucher>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetMyVoucherQueryResult = NonNullable<Awaited<ReturnType<typeof getMyVoucher>>>
+export type GetMyVoucherQueryError = ErrorType<unknown>
+
+
+
+export function useGetMyVoucher<TData = Awaited<ReturnType<typeof getMyVoucher>>, TError = ErrorType<unknown>>(
+ orderId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMyVoucher>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetMyVoucherQueryOptions(orderId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getDownloadMyVoucherUrl = (orderId: number,) => {
+
+
+
+
+  return `/api/vouchers/${orderId}/pdf`
+}
+
+export const downloadMyVoucher = async (orderId: number, options?: Parameters<typeof customFetch>[1]): Promise<Blob> => {
+
+  return customFetch<Blob>(getDownloadMyVoucherUrl(orderId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getDownloadMyVoucherQueryKey = (orderId: number,) => {
+    return [
+    `/api/vouchers/${orderId}/pdf`
+    ] as const;
+    }
+
+
+export const getDownloadMyVoucherQueryOptions = <TData = Awaited<ReturnType<typeof downloadMyVoucher>>, TError = ErrorType<unknown>>(orderId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof downloadMyVoucher>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getDownloadMyVoucherQueryKey(orderId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof downloadMyVoucher>>> = ({ signal }) => downloadMyVoucher(orderId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: orderId !== null && orderId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof downloadMyVoucher>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type DownloadMyVoucherQueryResult = NonNullable<Awaited<ReturnType<typeof downloadMyVoucher>>>
+export type DownloadMyVoucherQueryError = ErrorType<unknown>
+
+
+
+export function useDownloadMyVoucher<TData = Awaited<ReturnType<typeof downloadMyVoucher>>, TError = ErrorType<unknown>>(
+ orderId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof downloadMyVoucher>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getDownloadMyVoucherQueryOptions(orderId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getEmailMyVoucherUrl = (orderId: number,) => {
+
+
+
+
+  return `/api/vouchers/${orderId}/email`
+}
+
+export const emailMyVoucher = async (orderId: number, options?: Parameters<typeof customFetch>[1]): Promise<OrderVoucher> => {
+
+  return customFetch<OrderVoucher>(getEmailMyVoucherUrl(orderId),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getEmailMyVoucherMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof emailMyVoucher>>, TError,{orderId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof emailMyVoucher>>, TError,{orderId: number}, TContext> => {
+
+const mutationKey = ['emailMyVoucher'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof emailMyVoucher>>, {orderId: number}> = (props) => {
+          const {orderId} = props ?? {};
+
+          return  emailMyVoucher(orderId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type EmailMyVoucherMutationResult = NonNullable<Awaited<ReturnType<typeof emailMyVoucher>>>
+
+    export type EmailMyVoucherMutationError = ErrorType<unknown>
+
+    export const useEmailMyVoucher = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof emailMyVoucher>>, TError,{orderId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof emailMyVoucher>>,
+        TError,
+        {orderId: number},
+        TContext
+      > => {
+      return useMutation(getEmailMyVoucherMutationOptions(options));
+    }
 
 export const getVerifyCourierSoatUrl = () => {
 

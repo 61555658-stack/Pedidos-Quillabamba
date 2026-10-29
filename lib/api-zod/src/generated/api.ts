@@ -8,6 +8,88 @@
 import * as zod from 'zod';
 
 
+export const ListMyVouchersResponseItem = zod.object({
+  "orderId": zod.number(),
+  "number": zod.string(),
+  "issuedAt": zod.string(),
+  "customerName": zod.string(),
+  "customerEmail": zod.string(),
+  "restaurantName": zod.string(),
+  "items": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "quantity": zod.number(),
+  "price": zod.number()
+})),
+  "subtotal": zod.number(),
+  "deliveryFee": zod.number(),
+  "total": zod.number(),
+  "paymentMethod": zod.enum(['cash', 'yape', 'card']),
+  "emailStatus": zod.enum(['not_requested', 'pending', 'sending', 'sent', 'failed']),
+  "pdfUrl": zod.string()
+})
+export const ListMyVouchersResponse = zod.array(ListMyVouchersResponseItem)
+
+
+export const GetMyVoucherParams = zod.object({
+  "orderId": zod.coerce.number()
+})
+
+export const GetMyVoucherResponse = zod.object({
+  "orderId": zod.number(),
+  "number": zod.string(),
+  "issuedAt": zod.string(),
+  "customerName": zod.string(),
+  "customerEmail": zod.string(),
+  "restaurantName": zod.string(),
+  "items": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "quantity": zod.number(),
+  "price": zod.number()
+})),
+  "subtotal": zod.number(),
+  "deliveryFee": zod.number(),
+  "total": zod.number(),
+  "paymentMethod": zod.enum(['cash', 'yape', 'card']),
+  "emailStatus": zod.enum(['not_requested', 'pending', 'sending', 'sent', 'failed']),
+  "pdfUrl": zod.string()
+})
+
+
+export const DownloadMyVoucherParams = zod.object({
+  "orderId": zod.coerce.number()
+})
+
+export const DownloadMyVoucherResponse = zod.unknown()
+
+
+export const EmailMyVoucherParams = zod.object({
+  "orderId": zod.coerce.number()
+})
+
+export const EmailMyVoucherResponse = zod.object({
+  "orderId": zod.number(),
+  "number": zod.string(),
+  "issuedAt": zod.string(),
+  "customerName": zod.string(),
+  "customerEmail": zod.string(),
+  "restaurantName": zod.string(),
+  "items": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "quantity": zod.number(),
+  "price": zod.number()
+})),
+  "subtotal": zod.number(),
+  "deliveryFee": zod.number(),
+  "total": zod.number(),
+  "paymentMethod": zod.enum(['cash', 'yape', 'card']),
+  "emailStatus": zod.enum(['not_requested', 'pending', 'sending', 'sent', 'failed']),
+  "pdfUrl": zod.string()
+})
+
+
 export const verifyCourierSoatBodyEmailMax = 254;
 
 

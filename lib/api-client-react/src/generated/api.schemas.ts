@@ -5,6 +5,49 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+export type OrderVoucherPaymentMethod = typeof OrderVoucherPaymentMethod[keyof typeof OrderVoucherPaymentMethod];
+
+
+export const OrderVoucherPaymentMethod = {
+  cash: 'cash',
+  yape: 'yape',
+  card: 'card',
+} as const;
+
+export type OrderVoucherEmailStatus = typeof OrderVoucherEmailStatus[keyof typeof OrderVoucherEmailStatus];
+
+
+export const OrderVoucherEmailStatus = {
+  not_requested: 'not_requested',
+  pending: 'pending',
+  sending: 'sending',
+  sent: 'sent',
+  failed: 'failed',
+} as const;
+
+export interface OrderItem {
+  id: number;
+  name: string;
+  quantity: number;
+  price: number;
+}
+
+export interface OrderVoucher {
+  orderId: number;
+  number: string;
+  issuedAt: string;
+  customerName: string;
+  customerEmail: string;
+  restaurantName: string;
+  items: OrderItem[];
+  subtotal: number;
+  deliveryFee: number;
+  total: number;
+  paymentMethod: OrderVoucherPaymentMethod;
+  emailStatus: OrderVoucherEmailStatus;
+  pdfUrl: string;
+}
+
 export interface CourierDocuments {
   /** @pattern ^\d{8}$ */
   dni: string;
@@ -223,13 +266,6 @@ export interface DeliveryLocation {
   source: DeliveryLocationSource;
   /** @minimum 0 */
   accuracy?: number;
-}
-
-export interface OrderItem {
-  id: number;
-  name: string;
-  quantity: number;
-  price: number;
 }
 
 export interface Order {
