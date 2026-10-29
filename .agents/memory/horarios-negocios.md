@@ -13,7 +13,7 @@ El panel del negocio debe ofrecer una opción visible de horario, con hora de ap
 
 **Why:** El usuario reiteró que quiere una opción en esa parte del panel para indicar explícitamente de qué hora a qué hora y de qué día a qué día atiende.
 
-**How to apply:** El usuario pidió quitar el editor de horarios de «Perfil del negocio» y mantenerlo en su sección propia. Guardar el perfil no debe modificar el horario. Conservar la selección de días específicos para negocios que no atienden todos los días de un intervalo.
+**How to apply:** El usuario pidió quitar de «Perfil del negocio» tanto el editor de horarios como la casilla «Permitir pedidos dentro del horario». Ambos controles pertenecen a «Horario de atención». Guardar el perfil no debe modificar el horario ni el estado de apertura. Conservar la selección de días específicos para negocios que no atienden todos los días de un intervalo.
 
 Un cierre manual prevalece sobre el horario. Los negocios sin horario configurado mantienen su estado manual, sin asumir horas de atención.
 
