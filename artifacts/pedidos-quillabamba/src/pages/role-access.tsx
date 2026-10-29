@@ -1,8 +1,9 @@
 import { useEffect, useState, type InputHTMLAttributes, type ReactNode } from 'react';
 import { ArrowRight, Bike, Building2, Check, ClipboardList, Eye, EyeOff, LogOut, MapPin, PackageCheck, ShieldCheck, Store, Users } from 'lucide-react';
 import { Link, useLocation } from 'wouter';
-import { confirmRegistrationCode, sendRegistrationCode } from '@workspace/api-client-react';
+import { confirmRegistrationCode, sendRegistrationCode, type CourierDocuments } from '@workspace/api-client-react';
 import { BrandLogo } from '@/components/brand-logo';
+import { CourierRegistrationFields, useCourierSoat } from '@/components/courier-registration-fields';
 
 export type UserRole = 'cliente' | 'administrador_negocio' | 'repartidor' | 'administrador_sistema';
 
@@ -12,7 +13,7 @@ export type UserSession = {
   role: UserRole;
 };
 
-type StoredAccount = UserSession & { password: string };
+type StoredAccount = UserSession & { password: string; courier?: CourierDocuments; soatVerificationId?: string };
 type PendingVerification = { account: StoredAccount; mode: 'login' | 'register' };
 type AuthField = 'name' | 'email' | 'password' | 'role' | 'verificationCode' | 'passwordConfirmation';
 
@@ -145,6 +146,10 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
   const [pendingVerification, setPendingVerification] = useState<PendingVerification | null>(null);
   const [registrationPendingApproval, setRegistrationPendingApproval] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [courier, setCourier] = useState<CourierDocuments>({ dni: '', licenseNumber: '', vehiclePlate: '' });
+  const [emailVerified, setEmailVerified] = useState(false);
+  const courierRegistration = mode === 'register' && role === 'repartidor';
+  const soat = useCourierSoat(email, courier.vehiclePlate, courierRegistration);
 
   const clearFieldError = (field: AuthField) => {
     setFieldErrors((current) => ({ ...current, [field]: undefined }));
@@ -157,6 +162,7 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
     setFieldErrors({});
     setRole(null);
     setRegistrationPendingApproval(false);
+    setEmailVerified(false);
   }, [mode]);
 
   const submit = async () => {
@@ -184,18 +190,31 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
     if (Object.keys(errors).length > 0 || !role) {
       return;
     }
+    if (courierRegistration) {
+      if (name.trim().split(/\s+/).length < 2) {
+        setFieldErrors(current => ({ ...current, name: 'Ingresa tu nombre y apellidos completos.' })); return;
+      }
+      if (!/^\d{8}$/.test(courier.dni) || !/^[A-Z0-9-]{5,20}$/.test(courier.licenseNumber) || !/^[A-Z0-9-]{4,10}$/.test(courier.vehiclePlate)) {
+        setNotice('Completa el DNI de 8 dígitos, el número de licencia y la placa del vehículo.'); return;
+      }
+      if (soat.result?.status !== 'active') {
+        setNotice('Verifica primero que tu vehículo tenga un SOAT activo.'); return;
+      }
+    }
 
     if (mode === 'register') {
       if (role === 'administrador_sistema') {
         setNotice('El administrador del sistema no puede registrarse. Inicia sesión con tu cuenta.');
         return;
       }
-      const account: StoredAccount = { name: name.trim(), email: normalizedEmail, password, role };
+      const account: StoredAccount = { name: name.trim(), email: normalizedEmail, password, role,
+        ...(courierRegistration ? { courier: { ...courier }, soatVerificationId: soat.result?.verificationId } : {}) };
       setSubmitting(true);
       try {
         const result = await sendRegistrationCode({ email: normalizedEmail, role });
         if (!result.sent) throw new Error('No se pudo enviar el código.');
         setPendingVerification({ account, mode: 'register' });
+        setEmailVerified(false);
         setVerificationCode('');
       } catch (error) {
         setNotice(apiErrorMessage(error, 'No pudimos enviar el código. Inténtalo más tarde.'));
@@ -242,17 +261,26 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
     clearFieldError('verificationCode');
     setSubmitting(true);
     try {
-      const result = await confirmRegistrationCode({
-        email: pendingVerification.account.email,
-        role: pendingVerification.account.role,
-        code: verificationCode,
-      });
-      if (!result.verified) throw new Error('No se pudo verificar el correo.');
+      if (!emailVerified) {
+        const result = await confirmRegistrationCode({
+          email: pendingVerification.account.email,
+          role: pendingVerification.account.role,
+          code: verificationCode,
+        });
+        if (!result.verified) throw new Error('No se pudo verificar el correo.');
+        setEmailVerified(true);
+      }
+      const registration = { ...pendingVerification.account };
+      if (registration.role === 'repartidor') {
+        const currentSoat = await soat.verify();
+        if (currentSoat?.status !== 'active' || !currentSoat.verificationId) throw new Error('No se pudo confirmar un SOAT vigente. Revisa la consulta del seguro antes de crear la cuenta.');
+        registration.soatVerificationId = currentSoat.verificationId;
+      }
       const response = await fetch('/api/auth/register', {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(pendingVerification.account),
+        body: JSON.stringify(registration),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'No se pudo crear la cuenta.');
@@ -323,6 +351,8 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
             {fieldErrors.role && <FieldError id="role-choice-error" message={fieldErrors.role} />}
           </div>
           <label className="mt-5 block"><span className="mb-1.5 block text-xs font-bold text-primary">Correo electrónico</span><input type="email" value={email} disabled={!!pendingVerification} onChange={(event) => { setEmail(event.target.value); setNotice(''); clearFieldError('email'); }} autoComplete="email" aria-invalid={Boolean(fieldErrors.email)} aria-describedby={fieldErrors.email ? 'role-email-error' : undefined} className={`h-11 w-full rounded-xl border bg-background px-3 text-base outline-none focus:border-accent disabled:opacity-60 sm:text-sm ${fieldErrors.email ? 'border-red-600 focus:border-red-600' : 'border-input'}`} placeholder="tu@correo.com" data-testid="input-role-email" />{fieldErrors.email && <FieldError id="role-email-error" message={fieldErrors.email} />}</label>
+          {courierRegistration && <CourierRegistrationFields value={courier} onChange={value => { setCourier(value); setNotice(''); }} disabled={!!pendingVerification || submitting}
+            soat={{ ...soat, verify: () => { setNotice(''); return soat.verify(); } }} />}
           <div className="mt-5">
             <label htmlFor="role-password" className="mb-1.5 block text-xs font-bold text-primary">Contraseña</label>
             <PasswordVisibilityInput id="role-password" value={password} disabled={!!pendingVerification} onChange={(event) => { setPassword(event.target.value); setNotice(''); clearFieldError('password'); }} autoComplete={mode === 'register' ? 'new-password' : 'current-password'} aria-invalid={Boolean(fieldErrors.password)} aria-describedby={fieldErrors.password ? 'role-password-error' : undefined} className={`h-11 w-full rounded-xl border bg-background px-3 text-base outline-none focus:border-accent disabled:opacity-60 sm:text-sm ${fieldErrors.password ? 'border-red-600 focus:border-red-600' : 'border-input'}`} placeholder="••••••••" data-testid="input-role-password" toggleTestId="button-toggle-role-password" />
@@ -337,7 +367,7 @@ export function RoleAuthPage({ mode }: { mode: 'login' | 'register' }) {
             <button type="button" disabled={submitting} onClick={() => { setPendingVerification(null); setVerificationCode(''); setNotice(''); }} className="mt-3 min-h-11 text-left text-xs font-bold text-accent underline">Cambiar correo o solicitar otro código</button>
           </div>}
           {notice && <p role="alert" className="mt-4 rounded-xl bg-red-50 px-3 py-2.5 text-xs font-bold text-red-700" data-testid="status-role-auth-feedback">{notice}</p>}
-          <button type="submit" disabled={submitting} className="mt-7 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-primary text-sm font-extrabold text-white disabled:opacity-60" data-testid="button-role-auth-submit">{submitting ? 'Procesando...' : pendingVerification?.mode === 'register' && mode === 'register' ? 'Verificar y crear cuenta' : mode === 'login' ? 'Iniciar sesión' : 'Enviar código a mi correo'} <ArrowRight className="h-4 w-4 text-secondary" /></button>
+          <button type="submit" disabled={submitting || soat.checking} className="mt-7 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-primary text-sm font-extrabold text-white disabled:opacity-60" data-testid="button-role-auth-submit">{submitting ? 'Procesando...' : pendingVerification?.mode === 'register' && mode === 'register' ? 'Verificar y crear cuenta' : mode === 'login' ? 'Iniciar sesión' : 'Enviar código a mi correo'} <ArrowRight className="h-4 w-4 text-secondary" /></button>
           <p className="mt-6 text-center text-xs text-muted-foreground">{mode === 'login' ? '¿Aún no tienes cuenta? ' : '¿Ya tienes cuenta? '}<Link href={mode === 'login' ? '/register' : '/login'} className="font-bold text-accent" data-testid="link-role-auth-switch">{mode === 'login' ? 'Regístrate' : 'Inicia sesión'}</Link></p>
           </>
           )}

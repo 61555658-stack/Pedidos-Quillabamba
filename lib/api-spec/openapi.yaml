@@ -23,6 +23,41 @@ tags:
   - name: Auth
     description: Browser and mobile authentication endpoints
 paths:
+  /auth/courier-soat:
+    post:
+      operationId: verifyCourierSoat
+      tags: [verification]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CourierSoatInput" }
+      responses:
+        "200":
+          description: Server-owned SOAT verification result; pending results must be polled
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CourierSoatResult" }
+  /auth/register:
+    post:
+      operationId: registerAccount
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AccountRegistrationInput" }
+      responses:
+        "201":
+          description: Verified account created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AccountRegistrationResult" }
+        "202":
+          description: Business administrator awaits approval
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AccountRegistrationResult" }
   /business/access:
     get:
       operationId: getBusinessAccess
@@ -634,6 +669,52 @@ paths:
           description: Pending request not found
 components:
   schemas:
+    CourierDocuments:
+      type: object
+      required: [dni, licenseNumber, vehiclePlate]
+      properties:
+        dni: { type: string, pattern: '^\d{8}$' }
+        licenseNumber: { type: string, minLength: 5, maxLength: 20, pattern: '^[A-Za-z0-9-]+$' }
+        vehiclePlate: { type: string, minLength: 4, maxLength: 10, pattern: '^[A-Za-z0-9-]+$' }
+    CourierSoatInput:
+      type: object
+      required: [email, plate]
+      properties:
+        email: { type: string, pattern: '^[^\s@]+@[^\s@]+\.[^\s@]+$', maxLength: 254 }
+        plate: { type: string, minLength: 4, maxLength: 10, pattern: '^[A-Za-z0-9-]+$' }
+    CourierSoatResult:
+      type: object
+      required: [status, plate]
+      properties:
+        status: { type: string, enum: [pending, active, inactive] }
+        plate: { type: string }
+        verificationId: { type: string }
+        company: { type: string }
+        startDate: { type: string }
+        endDate: { type: string }
+    AccountRegistrationInput:
+      type: object
+      required: [name, email, password, role]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 150 }
+        email: { type: string, pattern: '^[^\s@]+@[^\s@]+\.[^\s@]+$', maxLength: 254 }
+        password: { type: string, minLength: 8, maxLength: 256 }
+        role: { type: string, enum: [cliente, administrador_negocio, repartidor, administrador_sistema] }
+        courier: { $ref: "#/components/schemas/CourierDocuments" }
+        soatVerificationId: { type: string, maxLength: 100 }
+    RegisteredAccount:
+      type: object
+      required: [id, name, email, role]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        email: { type: string }
+        role: { type: string, enum: [cliente, administrador_negocio, repartidor, administrador_sistema] }
+    AccountRegistrationResult:
+      type: object
+      properties:
+        pendingApproval: { type: boolean }
+        user: { $ref: "#/components/schemas/RegisteredAccount" }
     CashOpenRequest:
       type: object
       required: [businessId, username, password]

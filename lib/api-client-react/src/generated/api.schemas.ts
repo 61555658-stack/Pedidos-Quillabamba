@@ -5,6 +5,109 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+export interface CourierDocuments {
+  /** @pattern ^\d{8}$ */
+  dni: string;
+  /**
+     * @minLength 5
+     * @maxLength 20
+     * @pattern ^[A-Za-z0-9-]+$
+     */
+  licenseNumber: string;
+  /**
+     * @minLength 4
+     * @maxLength 10
+     * @pattern ^[A-Za-z0-9-]+$
+     */
+  vehiclePlate: string;
+}
+
+export interface CourierSoatInput {
+  /**
+     * @maxLength 254
+     * @pattern ^[^\s@]+@[^\s@]+\.[^\s@]+$
+     */
+  email: string;
+  /**
+     * @minLength 4
+     * @maxLength 10
+     * @pattern ^[A-Za-z0-9-]+$
+     */
+  plate: string;
+}
+
+export type CourierSoatResultStatus = typeof CourierSoatResultStatus[keyof typeof CourierSoatResultStatus];
+
+
+export const CourierSoatResultStatus = {
+  pending: 'pending',
+  active: 'active',
+  inactive: 'inactive',
+} as const;
+
+export interface CourierSoatResult {
+  status: CourierSoatResultStatus;
+  plate: string;
+  verificationId?: string;
+  company?: string;
+  startDate?: string;
+  endDate?: string;
+}
+
+export type AccountRegistrationInputRole = typeof AccountRegistrationInputRole[keyof typeof AccountRegistrationInputRole];
+
+
+export const AccountRegistrationInputRole = {
+  cliente: 'cliente',
+  administrador_negocio: 'administrador_negocio',
+  repartidor: 'repartidor',
+  administrador_sistema: 'administrador_sistema',
+} as const;
+
+export interface AccountRegistrationInput {
+  /**
+     * @minLength 1
+     * @maxLength 150
+     */
+  name: string;
+  /**
+     * @maxLength 254
+     * @pattern ^[^\s@]+@[^\s@]+\.[^\s@]+$
+     */
+  email: string;
+  /**
+     * @minLength 8
+     * @maxLength 256
+     */
+  password: string;
+  role: AccountRegistrationInputRole;
+  courier?: CourierDocuments;
+  /** @maxLength 100 */
+  soatVerificationId?: string;
+}
+
+export type RegisteredAccountRole = typeof RegisteredAccountRole[keyof typeof RegisteredAccountRole];
+
+
+export const RegisteredAccountRole = {
+  cliente: 'cliente',
+  administrador_negocio: 'administrador_negocio',
+  repartidor: 'repartidor',
+  administrador_sistema: 'administrador_sistema',
+} as const;
+
+export interface RegisteredAccount {
+  id: string;
+  name: string;
+  email: string;
+  role: RegisteredAccountRole;
+}
+
+export interface AccountRegistrationResult {
+  pendingApproval?: boolean;
+  user?: RegisteredAccount;
+}
+
 export interface CashOpenRequest {
   businessId: number;
   username: string;

@@ -21,6 +21,8 @@ import type {
 
 import type {
   AccountProfile,
+  AccountRegistrationInput,
+  AccountRegistrationResult,
   AuthUserEnvelope,
   BusinessAccess,
   BusinessAdminRegistrationDecision,
@@ -33,6 +35,8 @@ import type {
   CashierState,
   CourierAssignmentInput,
   CourierClaimInput,
+  CourierSoatInput,
+  CourierSoatResult,
   CreateOperationalEntity201,
   DashboardSummary,
   DeleteOperationalEntity200,
@@ -89,6 +93,136 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   }
   return result;
 };
+
+export const getVerifyCourierSoatUrl = () => {
+
+
+
+
+  return `/api/auth/courier-soat`
+}
+
+export const verifyCourierSoat = async (courierSoatInput: CourierSoatInput, options?: Parameters<typeof customFetch>[1]): Promise<CourierSoatResult> => {
+
+  return customFetch<CourierSoatResult>(getVerifyCourierSoatUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(courierSoatInput)
+  }
+);}
+
+
+
+
+
+export const getVerifyCourierSoatMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof verifyCourierSoat>>, TError,{data: BodyType<CourierSoatInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof verifyCourierSoat>>, TError,{data: BodyType<CourierSoatInput>}, TContext> => {
+
+const mutationKey = ['verifyCourierSoat'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof verifyCourierSoat>>, {data: BodyType<CourierSoatInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  verifyCourierSoat(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type VerifyCourierSoatMutationResult = NonNullable<Awaited<ReturnType<typeof verifyCourierSoat>>>
+    export type VerifyCourierSoatMutationBody = BodyType<CourierSoatInput>
+    export type VerifyCourierSoatMutationError = ErrorType<unknown>
+
+    export const useVerifyCourierSoat = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof verifyCourierSoat>>, TError,{data: BodyType<CourierSoatInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof verifyCourierSoat>>,
+        TError,
+        {data: BodyType<CourierSoatInput>},
+        TContext
+      > => {
+      return useMutation(getVerifyCourierSoatMutationOptions(options));
+    }
+
+export const getRegisterAccountUrl = () => {
+
+
+
+
+  return `/api/auth/register`
+}
+
+export const registerAccount = async (accountRegistrationInput: AccountRegistrationInput, options?: Parameters<typeof customFetch>[1]): Promise<AccountRegistrationResult> => {
+
+  return customFetch<AccountRegistrationResult>(getRegisterAccountUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(accountRegistrationInput)
+  }
+);}
+
+
+
+
+
+export const getRegisterAccountMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof registerAccount>>, TError,{data: BodyType<AccountRegistrationInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof registerAccount>>, TError,{data: BodyType<AccountRegistrationInput>}, TContext> => {
+
+const mutationKey = ['registerAccount'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof registerAccount>>, {data: BodyType<AccountRegistrationInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  registerAccount(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RegisterAccountMutationResult = NonNullable<Awaited<ReturnType<typeof registerAccount>>>
+    export type RegisterAccountMutationBody = BodyType<AccountRegistrationInput>
+    export type RegisterAccountMutationError = ErrorType<unknown>
+
+    export const useRegisterAccount = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof registerAccount>>, TError,{data: BodyType<AccountRegistrationInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof registerAccount>>,
+        TError,
+        {data: BodyType<AccountRegistrationInput>},
+        TContext
+      > => {
+      return useMutation(getRegisterAccountMutationOptions(options));
+    }
 
 export const getGetBusinessAccessUrl = () => {
 

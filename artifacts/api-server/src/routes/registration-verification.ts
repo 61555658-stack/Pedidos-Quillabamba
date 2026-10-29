@@ -49,11 +49,6 @@ router.post("/auth/verification/send", async (req, res): Promise<void> => {
   }
 
   const email = parsed.data.email.trim().toLowerCase();
-  const requestedRole = parsed.data.role;
-  if (requestedRole === "repartidor" && email !== (process.env.INITIAL_COURIER_EMAIL || "").trim().toLowerCase()) {
-    res.status(403).json({ error: "El acceso de repartidor requiere autorización previa." });
-    return;
-  }
   const challengeKey = key(email, parsed.data.role);
   const now = Date.now();
   const historyKey = `${req.ip || "unknown"}:${email}`;

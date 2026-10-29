@@ -8,6 +8,80 @@
 import * as zod from 'zod';
 
 
+export const verifyCourierSoatBodyEmailMax = 254;
+
+
+export const verifyCourierSoatBodyEmailRegExp = new RegExp('^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$');
+export const verifyCourierSoatBodyPlateMin = 4;
+export const verifyCourierSoatBodyPlateMax = 10;
+
+
+export const verifyCourierSoatBodyPlateRegExp = new RegExp('^[A-Za-z0-9-]+$');
+
+
+export const VerifyCourierSoatBody = zod.object({
+  "email": zod.string().max(verifyCourierSoatBodyEmailMax).regex(verifyCourierSoatBodyEmailRegExp),
+  "plate": zod.string().min(verifyCourierSoatBodyPlateMin).max(verifyCourierSoatBodyPlateMax).regex(verifyCourierSoatBodyPlateRegExp)
+})
+
+export const VerifyCourierSoatResponse = zod.object({
+  "status": zod.enum(['pending', 'active', 'inactive']),
+  "plate": zod.string(),
+  "verificationId": zod.string().optional(),
+  "company": zod.string().optional(),
+  "startDate": zod.string().optional(),
+  "endDate": zod.string().optional()
+})
+
+
+export const registerAccountBodyNameMax = 150;
+
+export const registerAccountBodyEmailMax = 254;
+
+
+export const registerAccountBodyEmailRegExp = new RegExp('^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$');
+export const registerAccountBodyPasswordMin = 8;
+export const registerAccountBodyPasswordMax = 256;
+
+export const registerAccountBodyCourierDniRegExp = new RegExp('^\\d{8}$');
+export const registerAccountBodyCourierLicenseNumberMin = 5;
+export const registerAccountBodyCourierLicenseNumberMax = 20;
+
+
+export const registerAccountBodyCourierLicenseNumberRegExp = new RegExp('^[A-Za-z0-9-]+$');
+export const registerAccountBodyCourierVehiclePlateMin = 4;
+export const registerAccountBodyCourierVehiclePlateMax = 10;
+
+
+export const registerAccountBodyCourierVehiclePlateRegExp = new RegExp('^[A-Za-z0-9-]+$');
+export const registerAccountBodySoatVerificationIdMax = 100;
+
+
+
+export const RegisterAccountBody = zod.object({
+  "name": zod.string().min(1).max(registerAccountBodyNameMax),
+  "email": zod.string().max(registerAccountBodyEmailMax).regex(registerAccountBodyEmailRegExp),
+  "password": zod.string().min(registerAccountBodyPasswordMin).max(registerAccountBodyPasswordMax),
+  "role": zod.enum(['cliente', 'administrador_negocio', 'repartidor', 'administrador_sistema']),
+  "courier": zod.object({
+  "dni": zod.string().regex(registerAccountBodyCourierDniRegExp),
+  "licenseNumber": zod.string().min(registerAccountBodyCourierLicenseNumberMin).max(registerAccountBodyCourierLicenseNumberMax).regex(registerAccountBodyCourierLicenseNumberRegExp),
+  "vehiclePlate": zod.string().min(registerAccountBodyCourierVehiclePlateMin).max(registerAccountBodyCourierVehiclePlateMax).regex(registerAccountBodyCourierVehiclePlateRegExp)
+}).optional(),
+  "soatVerificationId": zod.string().max(registerAccountBodySoatVerificationIdMax).optional()
+})
+
+export const RegisterAccountResponse = zod.object({
+  "pendingApproval": zod.boolean().optional(),
+  "user": zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "email": zod.string(),
+  "role": zod.enum(['cliente', 'administrador_negocio', 'repartidor', 'administrador_sistema'])
+}).optional()
+})
+
+
 export const GetBusinessAccessResponse = zod.object({
   "mode": zod.enum(['choose', 'administrator', 'cashier', 'cashier_login']),
   "businesses": zod.array(zod.object({

@@ -7,6 +7,9 @@
  */
 
 export * from './accountProfile';
+export * from './accountRegistrationInput';
+export * from './accountRegistrationInputRole';
+export * from './accountRegistrationResult';
 export * from './authUser';
 export * from './authUserEnvelope';
 export * from './authUserRole';
@@ -30,6 +33,10 @@ export * from './cashShiftReportTotals';
 export * from './cashShiftShift';
 export * from './courierAssignmentInput';
 export * from './courierClaimInput';
+export * from './courierDocuments';
+export * from './courierSoatInput';
+export * from './courierSoatResult';
+export * from './courierSoatResultStatus';
 export * from './createOperationalEntity201';
 export * from './dashboardSummary';
 export * from './dashboardSummaryWeeklySalesItem';
@@ -64,6 +71,8 @@ export * from './orderStatusInput';
 export * from './orderStatusInputStatus';
 export * from './product';
 export * from './ratingInput';
+export * from './registeredAccount';
+export * from './registeredAccountRole';
 export * from './registrationCodeConfirmation';
 export * from './registrationCodeConfirmationRole';
 export * from './registrationCodeRequest';
